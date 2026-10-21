@@ -35,6 +35,12 @@ def _looks_like_function(name: str, called: bool) -> bool:
 # helpers defined in a reporter's scripts: Python/JS/shell functions
 _SCRIPT_DEF = re.compile(r"^\s*(?:async\s+)?(?:def|function)\s+([A-Za-z_]\w*)\s*\(|^\s*([A-Za-z_]\w*)\s*\(\)\s*\{", re.M)
 _CALLED = re.compile(r"\b([A-Za-z_]\w*)\s*\(")
+SYSTEM_HEADERS = {
+    "curl.h", "stdio.h", "stdlib.h", "string.h", "strings.h", "unistd.h", "stdint.h", "stddef.h",
+    "stdbool.h", "errno.h", "fcntl.h", "signal.h", "time.h", "limits.h", "assert.h", "ctype.h",
+    "math.h", "pthread.h", "netdb.h", "socket.h", "types.h", "stat.h", "windows.h", "winsock2.h",
+    "inttypes.h", "stdarg.h", "setjmp.h", "locale.h", "wchar.h", "dirent.h", "poll.h", "select.h",
+}
 _UNSAFE_CALL = re.compile(r"\b(strcpy|strcat|sprintf|vsprintf|gets|strncpy|strncat)\s*\(")
 _VERSION = re.compile(r"\b(?:curl|libcurl|version|v)[\s/:-]*([1-9]\d?\.\d+\.\d+)(?![.\d])", re.I)
 # functions the reporter defines in their own code (PoC harnesses, servers) are not claims
@@ -97,7 +103,7 @@ def extract_rules(text: str, blocks) -> list[Claim]:
     known = {c.file.rsplit("/", 1)[-1] for c in claims if c.file}
     for match in _BARE_FILE.finditer(prose):
         name = match.group(1)
-        if name not in known and name not in ("curl.h",):
+        if name not in known and name not in SYSTEM_HEADERS:
             known.add(name)
             _add(claims, kind="file", text=name, file=name)
     for match in _LINE_WORD.finditer(prose):
