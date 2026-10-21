@@ -1,0 +1,76 @@
+name: ProofGate triage
+description: >-
+  Checks an incoming vulnerability report against your repository's real code and history,
+  using NVIDIA Nemotron on Nebius Token Factory, and comments an evidence card on the issue.
+author: ProofGate
+branding:
+  icon: shield
+  color: green
+
+inputs:
+  nebius-api-key:
+    description: Nebius Token Factory API key (store as a secret).
+    required: false
+  tavily-api-key:
+    description: Tavily API key for prior-art search (store as a secret).
+    required: false
+  github-token:
+    description: Token used ONLY by the final posting step.
+    default: ${{ github.token }}
+  tag-prefix:
+    description: Prefix of your release tags (v1.2.3 -> "v").
+    default: v
+  source-dirs:
+    description: Comma-separated source directories to index.
+    default: src,lib,include
+
+runs:
+  using: composite
+  steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        path: .proofgate-target
+
+    - uses: actions/setup-python@v5
+      with:
+        python-version: "3.11"
+
+    - name: Install ProofGate
+      shell: bash
+      run: pip install -q "proofgate @ git+https://github.com/Mohammad-Umar7/proofgate#subdirectory=engine"
+
+    # The reasoning step gets model keys but no GitHub token: it cannot post, push or merge.
+    - name: Triage the report (no GitHub credentials in this step)
+      shell: bash
+      env:
+        NEBIUS_API_KEY: ${{ inputs.nebius-api-key }}
+        TAVILY_API_KEY: ${{ inputs.tavily-api-key }}
+        PG_SANDBOX: "off"
+        PG_REPO_URL: ${{ github.server_url }}/${{ github.repository }}.git
+        PG_REPO_WEB: ${{ github.server_url }}/${{ github.repository }}
+        PG_REPO_PATH: ${{ github.workspace }}/.proofgate-target
+        PG_DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+        PG_TAG_PREFIX: ${{ inputs.tag-prefix }}
+        PG_SOURCE_DIRS: ${{ inputs.source-dirs }}
+        ISSUE_TITLE: ${{ github.event.issue.title }}
+        ISSUE_BODY: ${{ github.event.issue.body }}
+        ISSUE_DATE: ${{ github.event.issue.created_at }}
+      run: |
+        python - <<'PY'
+        import json, os
+        report = {"title": os.environ["ISSUE_TITLE"], "body": os.environ["ISSUE_BODY"] or "",
+                  "project": os.environ["GITHUB_REPOSITORY"].split("/")[-1],
+                  "submitted_at": os.environ.get("ISSUE_DATE")}
+        json.dump(report, open("report.json", "w"))
+        PY
+        git -C .proofgate-target remote set-url origin "$PG_REPO_URL" || true
+        proofgate check report.json --json > card.json
+        python "${{ github.action_path }}/render_comment.py" card.json > comment.md
+
+    # A separate step (the orchestrator) is the only one holding the GitHub token.
+    - name: Post the evidence card
+      shell: bash
+      env:
+        GH_TOKEN: ${{ inputs.github-token }}
+      run: gh issue comment "${{ github.event.issue.number }}" --repo "${{ github.repository }}" --body-file comment.md
