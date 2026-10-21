@@ -97,6 +97,10 @@ def main(argv: list[str] | None = None) -> int:
         from .bench.run import main as bench_main
 
         return bench_main(argv[1:])
+    if argv and argv[0] == "export-web":
+        from .export import main as export_main
+
+        return export_main(argv[1:])
     args = parser.parse_args(argv)
     if args.cmd == "check":
         return asyncio.run(_check(args))
