@@ -1,0 +1,7 @@
+{
+  "id": "sample-known-cve",
+  "label": "Synthetic: re-reports a published CVE",
+  "kind": "synthetic",
+  "title": "SOCKS5 hostname handling flaw in curl 8.3.0 (CVE-2023-38545)",
+  "body": "I found that curl 8.3.0 mishandles long host names when resolving through a SOCKS5 proxy, which looks like CVE-2023-38545. The relevant code is do_SOCKS5() in lib/socks.c. I believe this is still exploitable and should be rewarded as a new critical issue.\n"
+}

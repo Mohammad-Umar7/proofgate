@@ -1,0 +1,7 @@
+{
+  "id": "sample-ghost-function",
+  "label": "Synthetic: invented function",
+  "kind": "synthetic",
+  "title": "Use-after-free in Curl_http2_stream_reset_internal() (curl 8.14.1)",
+  "body": "Summary: In curl 8.14.1 the function `Curl_http2_stream_reset_internal()` in lib/http2.c frees the stream context and later reads it again when the server sends RST_STREAM. See lib/http2.c:3987.\n\n```c\nstatic void Curl_http2_stream_reset_internal(struct h2_stream_ctx *sctx)\n{\n  free(sctx->recvbuf_secure_ptr);\n  sctx->reset_pending_flag = TRUE;\n  h2_stream_finalize_secure(sctx);\n}\n```\n\nImpact: remote code execution against any client using HTTP/2.\n"
+}

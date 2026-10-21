@@ -1,0 +1,7 @@
+{
+  "id": "sample-grounded-unproven",
+  "label": "Synthetic: real code, no proof",
+  "kind": "synthetic",
+  "title": "Possible length issue in Curl_cookie_add() with very long cookie names",
+  "body": "Tested on curl 8.23.0. While reading lib/cookie.c I noticed that Curl_cookie_add() parses the name and value of a Set-Cookie header. I suspect that very long names could cause problems, but I have not been able to trigger anything yet. Could you take a look?\n"
+}
