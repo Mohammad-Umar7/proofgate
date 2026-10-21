@@ -20,8 +20,14 @@ _FILE_LINE = re.compile(r"\b([\w/.+-]+\.(?:c|h)):(\d{1,5})\b")
 _LINE_WORD = re.compile(r"\blines?\s+(\d{1,5})(?:\s*[-–]\s*(\d{1,5}))?", re.I)
 _FUNC = re.compile(r"`?\b((?:Curl_|curl_|Curl|ossl_|cf_|http2?_|ws_|ftp_|smtp_|imap_|pop3_|"
                    r"tool_|cookie_|socks_|telnet_|mqtt_|parse_|do_)\w+)\s*\(")
-_TICKED = re.compile(r"`([A-Za-z_]\w{3,})(?:\(\))?`")
-_VERSION = re.compile(r"\b(?:curl|libcurl|version|v)[\s/:-]*(\d+\.\d+\.\d+)\b", re.I)
+_TICKED = re.compile(r"`([A-Za-z_]\w{2,})\([^`]*\)`")  # only `name()` / `name(args)` style
+_VERSION = re.compile(r"\b(?:curl|libcurl|version|v)[\s/:-]*([1-9]\d?\.\d+\.\d+)(?![.\d])", re.I)
+# functions the reporter defines in their own code (PoC harnesses, servers) are not claims
+_DEFINED = re.compile(
+    r"^[ \t]*(?:static\s+|inline\s+|const\s+|unsigned\s+|struct\s+\w+\s*\**\s*)*"
+    r"(?:void|int|char|size_t|ssize_t|long|bool|CURLcode|CURLMcode|double|float|\w+_t)\s*\**\s*"
+    r"([A-Za-z_]\w*)\s*\([^;{}]*\)\s*\{?\s*$", re.M,
+)
 _CVE = re.compile(r"\bCVE-\d{4}-\d{4,7}\b", re.I)
 _OPTION = re.compile(r"\b(CURL(?:OPT|INFO|MOPT|E|M)_[A-Z0-9_]+)\b")
 
@@ -62,7 +68,11 @@ def extract_rules(text: str, blocks) -> list[Claim]:
             _add(claims, kind="file", text=name, file=name)
     for match in _LINE_WORD.finditer(prose):
         _add(claims, kind="line", text=match.group(0), line=int(match.group(1)))
-    seen_funcs = set()
+    own = {m.group(1) for m in _DEFINED.finditer(text)}
+    for block in blocks:
+        if block.role in ("poc", "shell", "other"):
+            own |= {m.group(1) for m in _DEFINED.finditer(block.text)}
+    seen_funcs = set(own)
     for match in list(_FUNC.finditer(prose)) + list(_TICKED.finditer(prose)):
         name = match.group(1)
         if name in seen_funcs or name.isupper():
@@ -110,11 +120,14 @@ async def run(ctx: Context) -> None:
             ctx.run.notes["summary"] = data.get("summary")
             ctx.run.notes["bug_class"] = data.get("bug_class")
             before = len(claims)
+            own = {m.group(1) for m in _DEFINED.finditer(text)}
             for item in data.get("claims", [])[:40]:
                 kind = item.get("kind")
                 if kind not in ("file", "function", "line", "version", "cve", "symbol",
                                 "crash", "behavior"):
                     continue
+                if kind == "function" and (item.get("function") or "").strip("()") in own:
+                    continue  # the reporter's own helper, not a claim about the project
                 line = item.get("line")
                 _add(
                     claims,
