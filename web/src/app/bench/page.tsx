@@ -7,7 +7,7 @@ import styles from "./bench.module.css";
 
 type Metrics = {
   n: number; n_slop: number; n_valid: number; slop_closed: number; slop_ungrounded: number;
-  valid_dismissed: number; valid_dismissed_ids: string[]; agreement: number; cost_mean_usd: number;
+  valid_dismissed: number; valid_dismissed_ids: string[]; valid_closed?: number; agreement: number; cost_mean_usd: number;
   cost_total_usd: number; seconds_mean: number; seconds_p90: number;
   verdicts_slop: Partial<Record<Verdict, number>>; verdicts_valid: Partial<Record<Verdict, number>>;
 };
@@ -83,13 +83,14 @@ export default function BenchPage() {
             </div>
           ))}
           <table className={styles.table}>
-            <thead><tr><th>Configuration</th><th>Slop closed</th><th>Valid dismissed</th><th>Agreement</th><th>$ / report</th><th>s / report</th></tr></thead>
+            <thead><tr><th>Configuration</th><th>Slop closed</th><th>Valid dismissed</th><th>Valid closed as dup</th><th>Agreement</th><th>$ / report</th><th>s / report</th></tr></thead>
             <tbody>
               {configs.map(([name, m]) => (
                 <tr key={name}>
                   <td>{CONFIG_LABEL[name] ?? name}</td>
                   <td>{(m.slop_closed * 100).toFixed(1)}%</td>
                   <td className={m.valid_dismissed ? styles.red : styles.green}>{m.valid_dismissed}</td>
+                  <td>{(m.valid_closed ?? m.valid_dismissed) - m.valid_dismissed}</td>
                   <td>{(m.agreement * 100).toFixed(1)}%</td>
                   <td>${m.cost_mean_usd.toFixed(4)}</td>
                   <td>{m.seconds_mean.toFixed(1)}</td>
