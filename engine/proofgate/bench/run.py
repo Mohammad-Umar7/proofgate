@@ -75,7 +75,9 @@ def metrics(rows: list[dict]) -> dict:
     closed = [r for r in slop if r["verdict"] in ("UNGROUNDED", "DUPLICATE")]
     ungrounded = [r for r in slop if r["verdict"] == "UNGROUNDED"]
     dismissed = [r for r in valid if r["verdict"] == "UNGROUNDED"]
-    agree = len(closed) + (len(valid) - len(dismissed))
+    valid_closed = [r for r in valid if r["verdict"] in ("UNGROUNDED", "DUPLICATE")]
+    # agreement: slop closed, valid kept open for a human (NEEDS_INFO or REPRODUCED)
+    agree = len(closed) + (len(valid) - len(valid_closed))
     costs = [r["cost_usd"] for r in rows]
     secs = [r["seconds"] for r in rows]
 
@@ -91,6 +93,7 @@ def metrics(rows: list[dict]) -> dict:
         "slop_ungrounded": round(len(ungrounded) / max(1, len(slop)), 3),
         "valid_dismissed": len(dismissed),
         "valid_dismissed_ids": [r["id"] for r in dismissed],
+        "valid_closed": len(valid_closed),
         "agreement": round(agree / max(1, len(rows)), 3),
         "cost_mean_usd": round(statistics.mean(costs), 5) if costs else 0.0,
         "cost_total_usd": round(sum(costs), 4),
