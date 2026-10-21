@@ -20,7 +20,16 @@ _FILE_LINE = re.compile(r"\b([\w/.+-]+\.(?:c|h)):(\d{1,5})\b")
 _LINE_WORD = re.compile(r"\blines?\s+(\d{1,5})(?:\s*[-–]\s*(\d{1,5}))?", re.I)
 _FUNC = re.compile(r"`?\b((?:Curl_|curl_|Curl|ossl_|cf_|http2?_|ws_|ftp_|smtp_|imap_|pop3_|"
                    r"tool_|cookie_|socks_|telnet_|mqtt_|parse_|do_)\w+)\s*\(")
-_TICKED = re.compile(r"`([A-Za-z_]\w{2,})\([^`]*\)`")  # only `name()` / `name(args)` style
+_TICKED = re.compile(r"`([A-Za-z_]\w{3,})(?:\([^`]*\))?`")
+
+
+def _looks_like_function(name: str, called: bool) -> bool:
+    """Backticked words are often types, options or plain words; keep likely function names."""
+    if called:
+        return True
+    if name.endswith("_t") or name.isupper() or len(name) < 6:
+        return False
+    return "_" in name or any(c.isupper() for c in name[1:])
 _VERSION = re.compile(r"\b(?:curl|libcurl|version|v)[\s/:-]*([1-9]\d?\.\d+\.\d+)(?![.\d])", re.I)
 # functions the reporter defines in their own code (PoC harnesses, servers) are not claims
 _DEFINED = re.compile(
@@ -76,6 +85,8 @@ def extract_rules(text: str, blocks) -> list[Claim]:
     for match in list(_FUNC.finditer(prose)) + list(_TICKED.finditer(prose)):
         name = match.group(1)
         if name in seen_funcs or name.isupper():
+            continue
+        if match.re is _TICKED and not _looks_like_function(name, "(" in match.group(0)):
             continue
         seen_funcs.add(name)
         _add(claims, kind="function", text=f"{name}()", function=name)
