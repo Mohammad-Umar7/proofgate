@@ -64,9 +64,18 @@ async def run_one(row: dict, config: str) -> dict | None:
         "confidence": card.get("confidence"), "cost_usd": run.cost_usd,
         "seconds": round(time.perf_counter() - started, 2),
         "contradictions": len(contradictions),
+        "credibility": card.get("credibility"),
         "evidence": [e.detail[:200] for e in contradictions[:3]],
         "flags": run.flags, "version": run.resolved_version,
     }
+
+
+def auc(pos: list[float], neg: list[float]) -> float | None:
+    """Probability a random valid report outranks a random slop report (Mann-Whitney)."""
+    if not pos or not neg:
+        return None
+    wins = sum((p > n) + 0.5 * (p == n) for p in pos for n in neg)
+    return round(wins / (len(pos) * len(neg)), 3)
 
 
 def metrics(rows: list[dict]) -> dict:
@@ -100,6 +109,12 @@ def metrics(rows: list[dict]) -> dict:
         "seconds_mean": round(statistics.mean(secs), 2) if secs else 0.0,
         "seconds_p90": round(_p90(secs), 2),
         "verdicts_slop": dist(slop), "verdicts_valid": dist(valid),
+        # ranking quality of the credibility score, overall and inside the NEEDS_INFO queue
+        "credibility_auc": auc([r["credibility"] for r in valid if r.get("credibility") is not None],
+                               [r["credibility"] for r in slop if r.get("credibility") is not None]),
+        "credibility_auc_needs_info": auc(
+            [r["credibility"] for r in valid if r["verdict"] == "NEEDS_INFO" and r.get("credibility") is not None],
+            [r["credibility"] for r in slop if r["verdict"] == "NEEDS_INFO" and r.get("credibility") is not None]),
     }
 
 
