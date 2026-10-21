@@ -50,6 +50,15 @@ class Report(BaseModel):
     attachments: list[Attachment] = Field(default_factory=list)
 
 
+class CodeBlock(BaseModel):
+    """A fenced block from the report: either quoted project source or the reporter's PoC."""
+
+    index: int
+    lang: str
+    text: str
+    role: Literal["quoted-source", "poc", "shell", "output", "other"]
+
+
 class Claim(BaseModel):
     id: str
     kind: ClaimKind
@@ -161,6 +170,8 @@ class Run(BaseModel):
     calls: list[ModelCall] = Field(default_factory=list)
     events: list[StageEvent] = Field(default_factory=list)
     flags: list[str] = Field(default_factory=list)  # e.g. prompt-injection-detected
+    code_blocks: list[CodeBlock] = Field(default_factory=list)
+    notes: dict[str, Any] = Field(default_factory=dict)  # stage-to-stage scratch data
 
     @property
     def cost_usd(self) -> float:
