@@ -98,12 +98,33 @@ async def export_replays(options: Options, picks: int = 4) -> list[dict]:
     return replays
 
 
+async def export_arena(options: Options, seeds: tuple[int, ...] = (7, 11)) -> list[dict]:
+    from .arena import LEVELS, red_team_report, template_report
+
+    rounds = []
+    for seed in seeds:
+        for level in range(1, 6):
+            report = (await red_team_report(level, seed=seed)) if options.use_llm \
+                else template_report(level, seed=seed)
+            events, card = await record(report, options)
+            verdict = card.get("verdict")
+            rounds.append({
+                "seed": seed, "level": level, "strategy": LEVELS[level],
+                "author": "Nemotron Super" if options.use_llm else "template",
+                "report": {"title": report.title, "body": report.body},
+                "verdict": verdict, "caught": verdict in ("UNGROUNDED", "NEEDS_INFO"),
+                "events": _strip(events), "card": card,
+            })
+    return rounds
+
+
 def main(argv: list[str] | None = None) -> int:
     import argparse
 
     parser = argparse.ArgumentParser(prog="proofgate export-web")
     parser.add_argument("--offline", action="store_true", help="deterministic stages only")
-    parser.add_argument("--only", choices=["graph", "history", "replays", "bench"], default=None)
+    parser.add_argument("--only", choices=["graph", "history", "replays", "bench", "arena"],
+                        default=None)
     args = parser.parse_args(argv)
     OUT.mkdir(parents=True, exist_ok=True)
 
@@ -121,8 +142,10 @@ def main(argv: list[str] | None = None) -> int:
         if src.exists():
             bench = json.loads(src.read_text(encoding="utf-8"))
             write("bench.json", bench)
+    options = Options(use_llm=not args.offline, sandbox=False, fix=False,
+                      prior_art_web=not args.offline)
     if args.only in (None, "replays"):
-        options = Options(use_llm=not args.offline, sandbox=False, fix=False,
-                          prior_art_web=not args.offline)
         write("replays.json", asyncio.run(export_replays(options)))
+    if args.only in (None, "arena"):
+        write("arena.json", asyncio.run(export_arena(options)))
     return 0
