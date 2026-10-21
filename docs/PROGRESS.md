@@ -1,35 +1,32 @@
-# Build progress (paused 2026-10-21)
+# Build progress (updated 2026-10-21, late)
 
-## Done and pushed
-- Public repo, Apache-2.0, `docs/HACKATHON.md` (all rules/fields/credits), `docs/PITCH.md`, `CLAUDE.md`.
-- Engine (`engine/proofgate`): settings, data model, Token Factory client (Nemotron role routing,
-  live model-id resolution, JSON mode, cost tracking, budget cap), git layer over curl's full
-  history (40,188 commits, 215 releases), tree-sitter code index + call graph + reachability
-  (incl. dispatch tables), prompt-injection guard.
-- Stages done: intake, claims, grounding, prior_art (curl OSV feed with 239 advisories, OSV.dev,
-  Tavily), rules (19 categories auto-built from curl's VULN-DISCLOSURE-POLICY.md).
-- Sandbox: Docker backend (no network, read-only, caps dropped, limits) + sanitizer parser with
-  crash attribution (project code vs reporter's own code).
-- Tests: `engine/tests/test_grounding.py` passes (fabricated report contradicted, real verified).
+## Done and pushed (~100 commits on main)
+- **Engine** (`engine/proofgate`): all nine stages, pipeline, FastAPI server with SSE, CLI,
+  SQLite store, arena, SlopBench (dataset + runner + metrics), export for the static demo,
+  draft-PR publisher, sandbox backends (Docker + NVIDIA OpenShell SDK), sanitizer attribution.
+- **Grounding** is time-travel aware (release at the report date + master on that date), treats
+  removed/renamed code as partial, ignores the reporter's own files/functions, whole-history pickaxe
+  cached per needle. Works for any git project via `PG_REPO_URL` etc.
+- **Web** (`web/`): landing with GPU gate hero + history helix, triage console (replay + live),
+  code galaxy explorer (ghost nodes, path beams), arena (10–0 offline), SlopBench dashboard.
+  Static export builds; `NEXT_PUBLIC_BASE_PATH` supports GitHub Pages.
+- **Shipping**: docker-compose one-command setup, engine/web Dockerfiles, CI workflow, Pages workflow
+  (manual trigger), GitHub Action (`action/`), README, architecture, video script, feedback draft.
 
-## Next steps (in order)
-1. `sandbox/openshell.py` — OpenShell backend via its Python SDK (`SandboxClient.create/exec/delete`,
-   docs: github.com/NVIDIA/OpenShell docs/sdk/python.mdx). Needs Linux/WSL2 + Docker.
-2. Stages: `repro.py` (run reporter's PoC only), `adjudicate.py` (Ultra verdict + adversarial
-   challenge; UNGROUNDED requires a deterministic contradiction), `fix.py` (regression test, patch,
-   test loop, draft PR), `card.py` (evidence card + reply draft).
-3. `pipeline.py` orchestrator + `server.py` (FastAPI, SSE event stream) + `cli.py`.
-4. SlopBench: slop list (bagder gist, 2025-26) + real CVEs (vuln.json `issue` -> HackerOne), runner,
-   metrics, ablations.
-5. Frontend `web/`: Next.js + React Three Fiber — gate hero, code galaxy with ghost nodes,
-   history helix, live pipeline, evidence card, sandbox terminal, arena, bench dashboard.
-6. README with Built on Nebius + NVIDIA section, cost table, bench results; GitHub Action; deploy.
+## Waiting on the team
+1. `engine/.env` with `NEBIUS_API_KEY` and `TAVILY_API_KEY` → then run
+   `proofgate bench run --config full`, `--config single-model`, `--config no-grounding`, and
+   `proofgate export-web` (re-records replays/arena with real Nemotron calls and costs).
+2. Approve enabling GitHub Pages (Settings → Pages → Source: GitHub Actions), then run the
+   "Deploy demo" workflow.
+3. Record the video (`docs/VIDEO.md`), personalize `docs/FEEDBACK.md`, fill the Devpost form.
 
-## Needed from the team
-- `engine/.env` with `NEBIUS_API_KEY` (credits code NEBIUS-DEVPOST-GLOBAL26) and `TAVILY_API_KEY`
-  (promo BBDEVPOST). Copy from `engine/.env.example`.
+## Known gaps / next
+- REPRODUCED path: engine + sandbox image are built, but no recorded demo run yet.
+- Fix loop needs a live key and a sanitizer image (`proofgate image <tag>`) to demo.
+- Optional: plausibility ranking of the NEEDS_INFO queue from Nemotron Super's assessment.
 
 ## Local setup notes (Windows)
-- Python venv lives at `%USERPROFILE%\.cache\proofgate\venv` (session folder path is too long for
-  tree-sitter DLLs). Run: `& "$HOME\.cache\proofgate\venv\Scripts\python.exe" -m pytest -q` in `engine/`.
-- curl clone cache: `%USERPROFILE%\.cache\proofgate\repos\curl`.
+- Python venv: `%USERPROFILE%\.cache\proofgate\venv` (session folder path too long for tree-sitter).
+- curl clone + caches: `%USERPROFILE%\.cache\proofgate\`.
+- Web: `cd web && npm run dev` (port 3000). Engine: `proofgate serve` (port 8000).
