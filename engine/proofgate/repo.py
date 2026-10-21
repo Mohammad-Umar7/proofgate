@@ -159,7 +159,7 @@ class Repo:
 
     def identifier_exists(self, rev: str, name: str) -> GrepHit | None:
         """Any whole-word use of `name` (function, macro, variable, external API) at `rev`."""
-        hits = self.grep(rev, rf"\b{re.escape(name)}\b", fixed=False, limit=1)
+        hits = self.grep(rev, name, word=True, limit=1)
         return hits[0] if hits else None
 
     def resolve(self, version: str | None, as_of: str | None = None) -> tuple[str, str]:
@@ -254,9 +254,10 @@ class Repo:
         fixed: bool = True,
         paths: tuple[str, ...] | None = None,
         limit: int = 50,
+        word: bool = False,
     ) -> list[GrepHit]:
         paths = paths or self.source_dirs
-        args = ["grep", "-n", "-I"]
+        args = ["grep", "-n", "-I"] + (["-w"] if word else [])
         args += ["-F"] if fixed else ["-E"]
         args += ["-e", needle, rev, "--", *paths]
         out = self.git(*args, check=False)
