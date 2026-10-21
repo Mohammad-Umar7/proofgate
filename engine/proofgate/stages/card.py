@@ -15,6 +15,44 @@ COLORS = {
 }
 
 
+def credibility(ctx: Context) -> tuple[int, list[str]]:
+    """Order the NEEDS_INFO queue: a transparent 0-100 score, fixed weights (not fitted to any
+    benchmark). Explains itself so a maintainer can see why one report ranks above another."""
+    run = ctx.run
+    score, why = 50, []
+    verified = [e for e in run.evidence if e.deterministic and e.status == "verified"
+                and e.method in ("tree-sitter", "git-show", "git-grep", "sandbox")]
+    if verified:
+        bump = min(32, 8 * len(verified))
+        score += bump
+        why.append(f"+{bump} {len(verified)} precise claims check out")
+    contradicted = [e for e in run.evidence if e.deterministic and e.status == "contradicted"]
+    if contradicted:
+        hit = min(60, 15 * len(contradicted))
+        score -= hit
+        why.append(f"-{hit} {len(contradicted)} claims contradict the code")
+    roles = {b.role for b in run.code_blocks}
+    if "output" in roles:
+        score += 15
+        why.append("+15 includes sanitizer or crash output")
+    if roles & {"poc", "shell"}:
+        score += 10
+        why.append("+10 includes reproduction steps")
+    if run.rules_hit:
+        score -= 10 * len(run.rules_hit)
+        why.append(f"-{10 * len(run.rules_hit)} matches the project's 'not a security issue' policy")
+    if "prompt-injection" in run.flags:
+        score -= 10
+        why.append("-10 tries to instruct the triage model")
+    analysis = next((e for e in run.evidence if e.method == "llm-super"), None)
+    if analysis is not None:
+        delta = {"plausible": 20, "implausible": -20}.get(analysis.data.get("assessment"), 0)
+        if delta:
+            score += delta
+            why.append(f"{delta:+d} Nemotron Super reading the real code: {analysis.data.get('assessment')}")
+    return max(0, min(100, score)), why
+
+
 def build(ctx: Context) -> dict:
     run = ctx.run
     decision = run.decision
@@ -59,7 +97,10 @@ def build(ctx: Context) -> dict:
         slot["cost_usd"] = round(slot["cost_usd"] + call.cost_usd, 6)
         slot["ms"] += call.ms
     finished = run.finished_at or time.time()
+    cred, cred_why = credibility(ctx)
     return {
+        "credibility": cred,
+        "credibility_why": cred_why,
         "run_id": run.id,
         "report": {"id": run.report.id, "title": run.report.title,
                    "source_url": run.report.source_url, "project": run.report.project},
