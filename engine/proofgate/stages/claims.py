@@ -30,6 +30,7 @@ def _looks_like_function(name: str, called: bool) -> bool:
     if name.endswith("_t") or name.isupper() or len(name) < 6:
         return False
     return "_" in name or any(c.isupper() for c in name[1:])
+_UNSAFE_CALL = re.compile(r"\b(strcpy|strcat|sprintf|vsprintf|gets|strncpy|strncat)\s*\(")
 _VERSION = re.compile(r"\b(?:curl|libcurl|version|v)[\s/:-]*([1-9]\d?\.\d+\.\d+)(?![.\d])", re.I)
 # functions the reporter defines in their own code (PoC harnesses, servers) are not claims
 _DEFINED = re.compile(
@@ -90,6 +91,14 @@ def extract_rules(text: str, blocks) -> list[Claim]:
             continue
         seen_funcs.add(name)
         _add(claims, kind="function", text=f"{name}()", function=name)
+    # "curl calls strcpy in lib/x.c": unsafe libc calls named in prose are checkable claims
+    files_named = [c.file for c in claims if c.kind == "file" and c.file]
+    for match in _UNSAFE_CALL.finditer(prose):
+        name = match.group(1)
+        if name not in seen_funcs:
+            seen_funcs.add(name)
+            _add(claims, kind="function", text=f"{name}() call", function=name,
+                 file=files_named[0] if len(files_named) == 1 else None)
     for match in _VERSION.finditer(text):
         _add(claims, kind="version", text=match.group(0), version=match.group(1))
     for match in _CVE.finditer(text):

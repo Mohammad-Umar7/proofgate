@@ -210,7 +210,8 @@ class Grounder:
             where = " in " + paths[0] if len(paths) == 1 else " anywhere in lib/ or src/"
             self.ev(claim, "contradicted", "git-grep",
                     f"{name}() is never called{where} at {self.version}",
-                    data={"banned_by_checksrc": name in ("strcpy", "strcat", "sprintf", "gets")})
+                    data={"libc": True,
+                          "banned_by_checksrc": name in ("strcpy", "strcat", "sprintf", "gets")})
 
     def check_line(self, claim: Claim) -> None:
         if not claim.file or not claim.line:
