@@ -38,6 +38,20 @@ def significant_lines(code: str) -> list[str]:
     return out
 
 
+_ERE_SPECIAL = set(".[]()*+?{}|^$\\")
+
+
+def _ws_tolerant(line: str) -> str:
+    """POSIX ERE matching `line` with any amount of whitespace between its tokens."""
+    tokens = [t for t in re.split(r"\s+", line.strip()) if t]
+    esc = ["".join("\\" + ch if ch in _ERE_SPECIAL else ch for ch in t) for t in tokens]
+    return "[[:space:]]*".join(esc)
+
+
+def _longest_token(line: str) -> str:
+    return max(re.split(r"\s+", line.strip()), key=len, default="")
+
+
 def _context(repo: Repo, rev: str, path: str, start: int, end: int) -> str:
     lines = repo.lines(rev, path)
     lo, hi = max(1, start), min(len(lines), end)
@@ -51,13 +65,9 @@ class Grounder:
         self.rev = rev
         self.version = version
         self.index = get_index(self.repo, rev)
-        self.head_index = None
+        # the code a reporter could have been reading: master on the day the report was filed
+        self.head_rev = self.repo.head_at(ctx.run.report.submitted_at)
         self.files: dict[str, str] = {}  # claimed name -> resolved path
-
-    def head(self):
-        if self.head_index is None:
-            self.head_index = get_index(self.repo, self.repo.head())
-        return self.head_index
 
     def ev(self, claim: Claim, status: str, method: str, detail: str, **kw) -> Evidence:
         evidence = Evidence(claim_id=claim.id, status=status, method=method, detail=detail,
@@ -87,14 +97,29 @@ class Grounder:
                     f"{path} exists at {self.version}" + ("" if exact else f" (reporter wrote {name})"),
                     file=path, url=self.repo.blob_url(self.rev, path))
             return path
-        at_head = self.repo.find_by_name(self.repo.head(), name)
-        if at_head:
-            self.ev(claim, "partial", "git-ls-tree",
-                    f"{name} does not exist at {self.version}; it exists on master as {at_head[0]}",
-                    file=at_head[0])
+        for rev, label in ((self.head_rev, "master on the report date"), (self.repo.head(), "master")):
+            at = self.repo.find_by_name(rev, name)
+            if at:
+                self.ev(claim, "partial", "git-ls-tree",
+                        f"{name} does not exist at {self.version}; it exists on {label} as {at[0]}",
+                        file=at[0])
+                return None
+        ever = self.repo.ever_had_file(name)
+        if ever:
+            self.ev(claim, "partial", "git-log",
+                    f"{name} is not in {self.version} but existed in curl's history "
+                    f"(last touched {ever['date']}, {ever['sha'][:10]})",
+                    url=self.repo.commit_url(ever["sha"]))
             return None
-        self.ev(claim, "contradicted", "git-ls-tree",
-                f"No file named {name} exists at {self.version} or on master",
+        if "/" not in name.strip("./"):
+            # a bare name like poc.c or server.c that is nowhere in the project's history is
+            # almost always the reporter's own file, not a claim about the project
+            self.ev(claim, "unverifiable", "git-log",
+                    f"{name} is not a {self.repo.project} file (likely the reporter's own)")
+            return None
+        self.ev(claim, "contradicted", "git-log",
+                f"No file named {name} has ever existed in curl: not at {self.version}, not on "
+                "master, and nowhere in its history",
                 data={"files_checked": len(self.repo.ls(self.rev))})
         return None
 
@@ -123,13 +148,23 @@ class Grounder:
                     url=self.repo.blob_url(self.rev, fn.file, fn.start, fn.end),
                     data={"reachable_via": chain})
             return
-        head_defs = self.head().lookup(name)
-        if head_defs:
-            fn = head_defs[0]
-            self.ev(claim, "partial", "tree-sitter",
-                    f"{name}() does not exist at {self.version} but exists on master in {fn.file}",
-                    file=fn.file, line_start=fn.start, rev=self.repo.head())
+        used = self.repo.identifier_exists(self.rev, name)
+        if used:
+            # referenced but not defined in the project: an external API (OpenSSL, zlib...),
+            # a macro, or a variable. Real, so never a contradiction.
+            self.ev(claim, "partial", "git-grep",
+                    f"{name} is not a function defined in curl {self.version}, but it is referenced "
+                    f"at {used.path}:{used.line} (external API, macro or variable)",
+                    file=used.path, line_start=used.line, actual_code=used.text.strip(),
+                    url=self.repo.blob_url(self.rev, used.path, used.line))
             return
+        for rev, label in ((self.head_rev, "master on the report date"), (self.repo.head(), "master")):
+            hit = self.repo.identifier_exists(rev, name)
+            if hit:
+                self.ev(claim, "partial", "git-grep",
+                        f"{name}() is not in {self.version} but exists on {label} ({hit.path}:{hit.line})",
+                        file=hit.path, line_start=hit.line, rev=rev)
+                return
         history = self.repo.pickaxe(f"{name}(")
         near = self.index.near_names(name)
         if history:
@@ -146,7 +181,7 @@ class Grounder:
                 data={"near": near, "ghost": True, "commits_searched": commits})
 
     def check_libc_use(self, claim: Claim, name: str) -> None:
-        paths = ("lib", "src")
+        paths = tuple(d for d in self.repo.source_dirs if d != "include")
         if claim.file and claim.file in self.files:
             paths = (self.files[claim.file],)
         hits = self.repo.grep(self.rev, f"{name}(", paths=paths, limit=20)
@@ -169,11 +204,24 @@ class Grounder:
             return
         path = self.files.get(claim.file) or next(iter(self.repo.find_by_name(self.rev, claim.file)), None)
         if not path:
-            self.ev(claim, "contradicted", "git-show",
-                    f"Line {claim.line} cites {claim.file}, which does not exist at {self.version}")
+            at_head = next(iter(self.repo.find_by_name(self.head_rev, claim.file)), None)
+            if at_head and claim.line <= len(self.repo.lines(self.head_rev, at_head)):
+                self.ev(claim, "partial", "git-show",
+                        f"{claim.file}:{claim.line} matches master on the report date, not {self.version}",
+                        file=at_head, line_start=claim.line, rev=self.head_rev)
+            else:
+                # the file claim already carries the verdict on whether the file is real
+                self.ev(claim, "unverifiable", "git-show",
+                        f"Line {claim.line} cites {claim.file}, which is not in {self.version}")
             return
         lines = self.repo.lines(self.rev, path)
         if claim.line > len(lines):
+            head_lines = self.repo.lines(self.head_rev, path) if self.repo.exists(self.head_rev, path) else []
+            if claim.line <= len(head_lines):
+                self.ev(claim, "partial", "git-show",
+                        f"{path} has {len(lines)} lines at {self.version}; line {claim.line} exists on "
+                        "master as of the report date", file=path, rev=self.head_rev)
+                return
             self.ev(claim, "contradicted", "git-show",
                     f"{path} has only {len(lines)} lines at {self.version}; line {claim.line} "
                     "does not exist", file=path, data={"file_lines": len(lines)})
@@ -208,8 +256,9 @@ class Grounder:
         matched: list[dict] = []
         missing: list[str] = []
         for line in wanted[:30]:
-            probe = line if len(line) <= 80 else line[:80]
-            hits = self.repo.grep(self.rev, probe, paths=("lib", "src", "include"), limit=3)
+            probe = _ws_tolerant(line[:120])
+            hits = self.repo.grep(self.rev, probe, fixed=False, limit=3) or \
+                self.repo.grep(self.head_rev, probe, fixed=False, limit=3)
             if hits:
                 matched.append({"claimed": line, "path": hits[0].path, "line": hits[0].line,
                                 "actual": hits[0].text.strip()})
@@ -229,9 +278,10 @@ class Grounder:
                     actual_code=actual, data=data,
                     url=self.repo.blob_url(self.rev, where["path"], where["line"]))
             return
-        # Has the missing code ever existed anywhere in history?
-        probes = sorted(missing, key=len, reverse=True)[:2]
-        ever = [c for p in probes for c in self.repo.pickaxe(p[:80], limit=1)]
+        # Has the missing code ever existed anywhere in history? Probe with the most distinctive
+        # whitespace-free fragment of each line, so formatting differences cannot hide a match.
+        fragments = sorted({_longest_token(m) for m in missing}, key=len, reverse=True)[:2]
+        ever = [c for p in fragments if len(p) >= 8 for c in self.repo.pickaxe(p, limit=1)]
         data["history"] = ever
         if ratio == 0 and not ever:
             commits = self.ctx.run.notes.setdefault("commits_searched", self.repo.commit_count())
@@ -332,10 +382,13 @@ async def run(ctx: Context) -> None:
     repo = ctx.repo
     claims = ctx.run.claims
     claimed = next((c.version for c in claims if c.kind == "version" and c.version), None)
-    rev, version = repo.resolve(claimed)
+    filed = ctx.run.report.submitted_at
+    rev, version = repo.resolve(claimed, as_of=filed)
     ctx.run.resolved_rev, ctx.run.resolved_version = rev, version
-    await ctx.event("grounding", "progress", f"Resolved {claimed or 'unspecified version'} -> {rev}",
-                    rev=rev, version=version, claimed=claimed)
+    when = f" (newest release on {filed[:10]})" if filed and not claimed else ""
+    await ctx.event("grounding", "progress",
+                    f"Resolved {claimed or 'unspecified version'} -> {rev}{when}",
+                    rev=rev, version=version, claimed=claimed, filed=filed)
 
     if not ctx.options.grounding:
         await ctx.event("grounding", "skipped", "Grounding disabled (ablation)")
