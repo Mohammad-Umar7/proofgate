@@ -3,7 +3,7 @@
 import { motion } from "motion/react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { API, card as fetchCard, stream } from "@/lib/api";
+import { API, card as fetchCard, data, stream } from "@/lib/api";
 import { VERDICT_META, type Card, type StageEvent, type Verdict } from "@/lib/types";
 import styles from "./arena.module.css";
 
@@ -22,7 +22,7 @@ export default function ArenaPage() {
   const [liveState, setLiveState] = useState<string>("");
 
   useEffect(() => {
-    fetch("/data/arena.json").then((r) => r.json()).then(setRounds).catch(() => {});
+    fetch(data("arena.json")).then((r) => r.json()).then(setRounds).catch(() => {});
   }, []);
 
   const caught = rounds.filter((r) => r.caught).length;

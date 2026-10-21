@@ -2,6 +2,8 @@ import type { Card, GraphData, Replay, StageEvent } from "./types";
 
 /** Live mode talks to a running engine; replay mode plays recorded real runs from /data. */
 export const API = (process.env.NEXT_PUBLIC_API_URL || "").replace(/\/$/, "");
+/** Static data path, aware of the deploy sub-path (e.g. GitHub Pages /proofgate). */
+export const data = (name: string) => `${process.env.NEXT_PUBLIC_BASE_PATH || ""}/data/${name}`;
 
 export async function health(): Promise<Record<string, unknown> | null> {
   if (!API) return null;
@@ -14,22 +16,22 @@ export async function health(): Promise<Record<string, unknown> | null> {
 }
 
 export async function loadReplays(): Promise<Replay[]> {
-  const res = await fetch("/data/replays.json");
+  const res = await fetch(data("replays.json"));
   return res.ok ? res.json() : [];
 }
 
 export async function loadGraph(): Promise<GraphData> {
-  const res = await fetch("/data/graph.json");
+  const res = await fetch(data("graph.json"));
   return res.json();
 }
 
 export async function loadBench(): Promise<any> {
-  const res = await fetch("/data/bench.json");
+  const res = await fetch(data("bench.json"));
   return res.ok ? res.json() : null;
 }
 
 export async function loadHistory(): Promise<{ months: [string, number][]; total: number }> {
-  const res = await fetch("/data/history.json");
+  const res = await fetch(data("history.json"));
   return res.json();
 }
 
