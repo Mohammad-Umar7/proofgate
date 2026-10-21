@@ -11,6 +11,11 @@ from ..schema import Evidence, PriorArt
 from .base import Context
 
 
+def _excluded(ctx: Context, *keys: str) -> bool:
+    banned = ctx.options.exclude
+    return any(k and any(b in k for b in banned) for k in keys)
+
+
 def _identifiers(ctx: Context) -> set[str]:
     out = set()
     for c in ctx.run.claims:
@@ -25,6 +30,8 @@ def _identifiers(ctx: Context) -> set[str]:
 async def check_cited_cves(ctx: Context) -> None:
     for claim in [c for c in ctx.run.claims if c.kind == "cve" and c.cve]:
         adv = advisories.by_cve(claim.cve)
+        if adv and _excluded(ctx, adv.cve, adv.www or ""):
+            adv = None
         if adv:
             affected = adv.affects(ctx.run.resolved_version)
             note = ""
@@ -73,6 +80,8 @@ async def run(ctx: Context) -> None:
                                       f" {' '.join(ids)}")
     scored = []
     for adv in advisories.curl_advisories():
+        if _excluded(ctx, adv.cve, adv.www or "", adv.issue_url or ""):
+            continue
         score = advisories.similarity(report_tokens, ids, adv)
         if score >= 0.35:
             scored.append((score, adv))
@@ -97,6 +106,8 @@ async def run(ctx: Context) -> None:
                 url = item.get("url", "")
                 # Skip the report itself if it was published already.
                 if ctx.run.report.source_url and url.rstrip("/") == ctx.run.report.source_url.rstrip("/"):
+                    continue
+                if _excluded(ctx, url):
                     continue
                 ctx.run.prior_art.append(PriorArt(
                     source="hackerone" if "hackerone.com" in url else "tavily",

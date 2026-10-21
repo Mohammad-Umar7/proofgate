@@ -22,6 +22,9 @@ class Options:
     sandbox: bool = True
     fix: bool = True
     prior_art_web: bool = True
+    # Benchmark leakage control: advisory ids / URLs that must not count as prior art
+    # (a CVE's own advisory, the report's own page, lists that label the report).
+    exclude: frozenset[str] = frozenset()
 
 
 @dataclass
