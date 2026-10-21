@@ -21,6 +21,10 @@ LIBC = {
     "malloc", "calloc", "realloc", "free", "printf", "fprintf", "snprintf", "strlen", "strdup",
     "sscanf", "atoi", "strtok", "system", "popen", "fopen", "read", "write", "recv", "send",
 }
+# libraries curl builds against; their source trees are often quoted in real reports
+DEPENDENCIES = ("libssh2", "libssh", "openssl", "boringssl", "wolfssl", "gnutls", "mbedtls",
+                "rustls", "schannel", "nghttp2", "nghttp3", "ngtcp2", "quiche", "zlib", "brotli",
+                "zstd", "c-ares", "libidn2", "libpsl", "libgsasl", "openldap", "librtmp")
 _WS = re.compile(r"\s+")
 _COMMENT = re.compile(r"/\*.*?\*/|//[^\n]*", re.S)
 
@@ -121,10 +125,17 @@ class Grounder:
                     f"No file named {name} has ever existed in curl's history",
                     data={"bare": True})
             return None
+        dep = next((d for d in DEPENDENCIES if d in name.lower() or
+                    re.search(rf"\b{d}\b", self.ctx.run.report.body or "", re.I)), None)
+        if dep and (dep in name.lower() or name.startswith(("src/", "include/"))):
+            # e.g. include/libssh/libssh.h: the report is reading a dependency's source tree
+            self.ev(claim, "unverifiable", "git-log",
+                    f"{name} is not a curl file; it looks like {dep}'s source")
+            return None
         self.ev(claim, "contradicted", "git-log",
                 f"No file named {name} has ever existed in curl: not at {self.version}, not on "
                 "master, and nowhere in its history",
-                data={"files_checked": len(self.repo.ls(self.rev))})
+                data={"files_checked": len(self.repo.ls(self.rev)), "bare": bool(dep)})
         return None
 
     def _reporters_file(self, name: str) -> bool:
