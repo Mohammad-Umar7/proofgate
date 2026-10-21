@@ -1,0 +1,31 @@
+# curl built from an exact release tag with AddressSanitizer + UBSan, for running a reporter's
+# own reproduction. Built with network access; every container started from it runs with
+# `--network none`. Build context: `git archive <tag>` of the curl repo (see images.py).
+FROM debian:bookworm-slim
+
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends \
+      build-essential autoconf automake libtool pkg-config perl python3 \
+      libssl-dev zlib1g-dev ca-certificates \
+ && rm -rf /var/lib/apt/lists/*
+
+COPY . /build/curl
+WORKDIR /build/curl
+
+ENV SAN_FLAGS="-fsanitize=address,undefined -fno-omit-frame-pointer -g -O1"
+RUN (test -x ./configure || autoreconf -fi) \
+ && ./configure --prefix=/opt/curl --with-openssl --disable-shared --disable-docs \
+      --without-libpsl --without-brotli --without-zstd --without-libidn2 --without-nghttp2 \
+      CFLAGS="$SAN_FLAGS" LDFLAGS="-fsanitize=address,undefined" \
+ && make -j"$(nproc)" \
+ && make install \
+ && rm -rf /build/curl/lib/*.o /build/curl/src/*.o
+
+# Helper the repro stage uses to compile a C reproduction against the sanitized libcurl.
+RUN printf '#!/bin/sh\nexec cc %s -I/opt/curl/include "$@" /opt/curl/lib/libcurl.a -lssl -lcrypto -lz -lpthread\n' \
+      "$SAN_FLAGS" > /usr/local/bin/pg-cc && chmod +x /usr/local/bin/pg-cc
+
+ENV PATH="/opt/curl/bin:${PATH}"
+RUN useradd --create-home --uid 10001 runner
+USER runner
+WORKDIR /work
