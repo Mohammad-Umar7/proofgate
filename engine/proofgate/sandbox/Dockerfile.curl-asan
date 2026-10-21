@@ -18,8 +18,7 @@ RUN (test -x ./configure || autoreconf -fi) \
       --without-libpsl --without-brotli --without-zstd --without-libidn2 --without-nghttp2 \
       CFLAGS="$SAN_FLAGS" LDFLAGS="-fsanitize=address,undefined" \
  && make -j"$(nproc)" \
- && make install \
- && rm -rf /build/curl/lib/*.o /build/curl/src/*.o
+ && make install
 
 # Helper the repro stage uses to compile a C reproduction against the sanitized libcurl.
 RUN printf '#!/bin/sh\nexec cc %s -I/opt/curl/include "$@" /opt/curl/lib/libcurl.a -lssl -lcrypto -lz -lpthread\n' \

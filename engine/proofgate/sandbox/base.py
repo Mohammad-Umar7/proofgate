@@ -22,6 +22,7 @@ class Job:
     command: str  # run with `sh -c` inside the sandbox
     image: str
     timeout: int = DEFAULT_TIMEOUT
+    work_size: str = "128m"  # tmpfs for /work; the fix loop needs room for a source tree
 
 
 class Sandbox:
@@ -53,7 +54,7 @@ class DockerSandbox(Sandbox):
             "docker", "run", "--rm",
             "--network", "none",
             "--read-only",
-            "--tmpfs", "/work:rw,exec,size=128m",
+            "--tmpfs", f"/work:rw,exec,size={job.work_size}",
             "--tmpfs", "/tmp:rw,size=64m",
             "--cap-drop", "ALL",
             "--security-opt", "no-new-privileges",
