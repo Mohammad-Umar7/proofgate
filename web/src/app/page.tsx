@@ -3,6 +3,7 @@
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { HelixSection } from "@/components/HelixSection";
 import { loadBench } from "@/lib/api";
 import { STAGES } from "@/lib/types";
 import styles from "./page.module.css";
@@ -80,6 +81,8 @@ export default function Home() {
           </div>
         )}
       </section>
+
+      <HelixSection />
 
       <section className={`container ${styles.section}`}>
         <p className="eyebrow">How it works</p>
