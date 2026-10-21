@@ -21,8 +21,29 @@ PROJECTS: dict[str, dict[str, str]] = {
         "web": "https://github.com/curl/curl",
         "default_branch": "master",
         "tag_prefix": "curl-",
+        "source_dirs": "lib,src,include",
     },
 }
+
+
+def project_meta(project: str) -> dict[str, str]:
+    """Known projects, or any git project described by PG_* environment variables
+    (this is how the GitHub Action points ProofGate at the repository it runs in)."""
+    import os
+
+    if project in PROJECTS:
+        return PROJECTS[project]
+    url = os.environ.get("PG_REPO_URL", "")
+    if not url:
+        raise ValueError(f"unknown project {project!r}; set PG_REPO_URL to triage any git repo")
+    return {
+        "url": url,
+        "web": os.environ.get("PG_REPO_WEB", url.removesuffix(".git")),
+        "default_branch": os.environ.get("PG_DEFAULT_BRANCH", "main"),
+        "tag_prefix": os.environ.get("PG_TAG_PREFIX", "v"),
+        "source_dirs": os.environ.get("PG_SOURCE_DIRS", "src,lib,include"),
+        "path": os.environ.get("PG_REPO_PATH", ""),
+    }
 
 _VERSION = re.compile(r"(\d+)\.(\d+)(?:\.(\d+))?")
 
@@ -47,11 +68,12 @@ class GrepHit:
 
 class Repo:
     def __init__(self, project: str = "curl") -> None:
-        if project not in PROJECTS:
-            raise ValueError(f"unknown project {project!r}")
         self.project = project
-        self.meta = PROJECTS[project]
-        self.path = get_settings().repos_dir / project
+        self.meta = project_meta(project)
+        explicit = self.meta.get("path")
+        self.path = Path(explicit) if explicit else get_settings().repos_dir / project
+        self.source_dirs = tuple(d for d in self.meta.get("source_dirs", "lib,src,include").split(",") if d)
+        self._pickaxe_cache: dict[tuple[str, tuple[str, ...], int], list[dict[str, str]]] = {}
 
     # -- plumbing ---------------------------------------------------------
 
@@ -95,13 +117,64 @@ class Repo:
     def head(self) -> str:
         return f"origin/{self.meta['default_branch']}"
 
-    def resolve(self, version: str | None) -> tuple[str, str]:
-        """Map a claimed version to (rev, label). Unknown or missing -> latest release."""
+    @lru_cache(maxsize=1)
+    def release_dates(self) -> list[tuple[str, tuple[int, int, int], str]]:
+        """(date, version, tag) for every release tag, oldest first."""
+        prefix = self.meta["tag_prefix"]
+        out = []
+        rows = self.git("for-each-ref", "--format=%(creatordate:short) %(refname:short)",
+                        f"refs/tags/{prefix}*").splitlines()
+        for row in rows:
+            date, _, tag = row.partition(" ")
+            version = parse_version(tag[len(prefix):].replace("_", "."))
+            if version:
+                out.append((date, version, tag))
+        return sorted(out)
+
+    def release_at(self, date: str) -> tuple[str, str] | None:
+        """The newest release published on or before `date` (YYYY-MM-DD...)."""
+        day = (date or "")[:10]
+        if not day:
+            return None
+        older = [(v, tag) for d, v, tag in self.release_dates() if d <= day]
+        if not older:
+            return None
+        version, tag = max(older)
+        return tag, ".".join(map(str, version))
+
+    def head_at(self, date: str | None) -> str:
+        """The default branch as it was on `date` (the code a reporter could have read)."""
+        if not date:
+            return self.head()
+        sha = self.git("rev-list", "-1", f"--before={date[:19]}", self.head(), check=False).strip()
+        return sha or self.head()
+
+    def ever_had_file(self, name: str) -> dict[str, str] | None:
+        """Last commit that touched a file with this name anywhere in history (deleted files too)."""
+        base = name.strip().lstrip("./").rsplit("/", 1)[-1]
+        out = self.git("log", self.head(), "-1", "--format=%H\x1f%cs\x1f%s", "--",
+                       f"*{base}", check=False).strip()
+        parts = out.split("\x1f")
+        return {"sha": parts[0], "date": parts[1], "subject": parts[2]} if len(parts) == 3 else None
+
+    def identifier_exists(self, rev: str, name: str) -> GrepHit | None:
+        """Any whole-word use of `name` (function, macro, variable, external API) at `rev`."""
+        hits = self.grep(rev, rf"\b{re.escape(name)}\b", fixed=False, limit=1)
+        return hits[0] if hits else None
+
+    def resolve(self, version: str | None, as_of: str | None = None) -> tuple[str, str]:
+        """Map a claimed version to (rev, label).
+
+        No claimed version -> the newest release on the day the report was filed (`as_of`),
+        or the latest release for a report filed now."""
         releases = self.releases()
         if not releases:
             return self.head(), "HEAD"
         wanted = parse_version(version or "")
         if wanted is None:
+            dated = self.release_at(as_of) if as_of else None
+            if dated:
+                return dated
             ver, tag = releases[-1]
             return tag, ".".join(map(str, ver))
         exact = [tag for ver, tag in releases if ver == wanted]
@@ -179,9 +252,10 @@ class Repo:
         needle: str,
         *,
         fixed: bool = True,
-        paths: tuple[str, ...] = ("lib", "src", "include"),
+        paths: tuple[str, ...] | None = None,
         limit: int = 50,
     ) -> list[GrepHit]:
+        paths = paths or self.source_dirs
         args = ["grep", "-n", "-I"]
         args += ["-F"] if fixed else ["-E"]
         args += ["-e", needle, rev, "--", *paths]
@@ -199,9 +273,15 @@ class Repo:
         return hits
 
     def pickaxe(
-        self, needle: str, *, paths: tuple[str, ...] = ("lib", "src", "include"), limit: int = 5
+        self, needle: str, *, paths: tuple[str, ...] | None = None, limit: int = 5
     ) -> list[dict[str, str]]:
-        """Commits anywhere in history that added or removed `needle` (git log -S)."""
+        """Commits anywhere in history that added or removed `needle` (git log -S).
+
+        Cached per (needle, paths): reports cite the same invented names over and over."""
+        paths = paths or self.source_dirs
+        key = (needle, paths, limit)
+        if key in self._pickaxe_cache:
+            return self._pickaxe_cache[key]
         out = self.git(
             "log",
             self.head(),
@@ -218,6 +298,7 @@ class Repo:
             parts = row.split("\x1f")
             if len(parts) == 3:
                 commits.append({"sha": parts[0], "date": parts[1], "subject": parts[2]})
+        self._pickaxe_cache[key] = commits
         return commits
 
     # -- links ------------------------------------------------------------

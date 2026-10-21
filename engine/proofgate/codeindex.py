@@ -228,7 +228,7 @@ class CodeIndex:
             files = [
                 f
                 for f in repo.ls(rev)
-                if f.endswith(".c") and f.split("/", 1)[0] in SOURCE_DIRS
+                if f.endswith(".c") and f.split("/", 1)[0] in (repo.source_dirs or SOURCE_DIRS)
             ]
             for path, source in repo.show_many(rev, files).items():
                 self.functions.extend(parse_functions(source, path, self.table_refs))
