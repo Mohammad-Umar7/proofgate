@@ -36,7 +36,7 @@ def score(ctx: Context) -> dict:
             continue
         kind = _kind(ctx, evidence)
         if evidence.status == "contradicted":
-            contra += CONTRA_WEIGHT.get(kind, 1)
+            contra += 1 if evidence.data.get("bare") else CONTRA_WEIGHT.get(kind, 1)
             contradictions.append(evidence)
         elif evidence.status == "verified":
             verify += VERIFY_WEIGHT.get(kind, 0.5)

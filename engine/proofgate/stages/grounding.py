@@ -112,16 +112,30 @@ class Grounder:
                     url=self.repo.commit_url(ever["sha"]))
             return None
         if "/" not in name.strip("./"):
-            # a bare name like poc.c or server.c that is nowhere in the project's history is
-            # almost always the reporter's own file, not a claim about the project
-            self.ev(claim, "unverifiable", "git-log",
-                    f"{name} is not a {self.repo.project} file (likely the reporter's own)")
+            if self._reporters_file(name):
+                self.ev(claim, "unverifiable", "git-log",
+                        f"{name} is the reporter's own file, not part of {self.repo.project}")
+                return None
+            # cited as if it were project code, but no such file has ever existed: weak alone
+            self.ev(claim, "contradicted", "git-log",
+                    f"No file named {name} has ever existed in curl's history",
+                    data={"bare": True})
             return None
         self.ev(claim, "contradicted", "git-log",
                 f"No file named {name} has ever existed in curl: not at {self.version}, not on "
                 "master, and nowhere in its history",
                 data={"files_checked": len(self.repo.ls(self.rev))})
         return None
+
+    def _reporters_file(self, name: str) -> bool:
+        """The report itself shows the file is the reporter's: compiled, saved or run by them."""
+        base = re.escape(name)
+        for block in self.ctx.run.code_blocks:
+            if block.role != "quoted-source" and re.search(rf"(?<![\w/.]){base}\b", block.text):
+                return True
+        text = self.ctx.run.report.body
+        cue = r"(?:my|our|attached|following|save[d]?\s+as|compile[d]?|create[d]?|run|poc|exploit|test(?:ing)?|reproducer|harness)"
+        return bool(re.search(rf"{cue}\W+(?:\w+\W+){{0,4}}{base}\b", text, re.I))
 
     def check_function(self, claim: Claim) -> None:
         name = claim.function or ""
