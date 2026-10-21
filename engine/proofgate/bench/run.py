@@ -142,6 +142,41 @@ async def run_bench(config: str, limit: int | None = None, concurrency: int = 4,
     return summary
 
 
+LABELS = {
+    "deterministic": "Deterministic only (git + tree-sitter + advisories)",
+    "full": "Full pipeline (routed Nemotron + Tavily)",
+    "no-grounding": "Ablation: no grounding",
+    "single-model": "Ablation: Nemotron Ultra for every role",
+}
+
+
+def results_table() -> str:
+    combined = json.loads((RESULTS / "latest.json").read_text(encoding="utf-8"))
+    rows = ["| Configuration | Slop closed with proof | Real CVEs wrongly dismissed | Real CVEs closed as duplicate | Agreement with curl | Cost / report | Time / report |",
+            "|---|---|---|---|---|---|---|"]
+    for name in ("deterministic", "full", "single-model", "no-grounding"):
+        m = combined.get("configs", {}).get(name)
+        if not m:
+            continue
+        dup = m.get("valid_closed", m["valid_dismissed"]) - m["valid_dismissed"]
+        rows.append(
+            f"| {LABELS[name]} | {m['slop_closed'] * 100:.0f}% ({round(m['slop_closed'] * m['n_slop'])}/{m['n_slop']}) "
+            f"| **{m['valid_dismissed']}** / {m['n_valid']} | {dup} | {m['agreement'] * 100:.0f}% "
+            f"| ${m['cost_mean_usd']:.4f} | {m['seconds_mean']:.1f}s |")
+    missing = [LABELS[n] for n in ("full", "single-model", "no-grounding") if n not in combined.get("configs", {})]
+    note = f"\n\n_Not yet run (needs Token Factory + Tavily keys): {', '.join(missing)}._" if missing else ""
+    return "\n".join(rows) + note + f"\n\n_Generated {combined.get('generated')} by `proofgate bench table`._"
+
+
+def update_readme() -> None:
+    readme = RESULTS.parent.parent / "README.md"
+    text = readme.read_text(encoding="utf-8")
+    start, end = "<!-- BENCH:START -->", "<!-- BENCH:END -->"
+    before, _, rest = text.partition(start)
+    _, _, after = rest.partition(end)
+    readme.write_text(f"{before}{start}\n{results_table()}\n{end}{after}", encoding="utf-8")
+
+
 def main(argv: list[str]) -> int:
     import argparse
 
@@ -149,6 +184,7 @@ def main(argv: list[str]) -> int:
     sub = parser.add_subparsers(dest="cmd", required=True)
     sub.add_parser("build", help="rebuild bench/slopbench.jsonl from the public sources")
     sub.add_parser("fetch", help="download disclosed report text into the local cache")
+    sub.add_parser("table", help="print the results table and update README.md")
     run = sub.add_parser("run", help="run a configuration")
     run.add_argument("--config", choices=sorted(CONFIGS), default="deterministic")
     run.add_argument("--limit", type=int, default=None, help="per-class cap for quick runs")
@@ -163,6 +199,9 @@ def main(argv: list[str]) -> int:
               f"{sum(r['label'] == 'valid' for r in rows)} valid")
     elif args.cmd == "fetch":
         print(asyncio.run(fetch_reports(load_index())))
+    elif args.cmd == "table":
+        update_readme()
+        print(results_table())
     else:
         summary = asyncio.run(run_bench(args.config, args.limit, args.concurrency))
         print(json.dumps(summary["metrics"], indent=1))
