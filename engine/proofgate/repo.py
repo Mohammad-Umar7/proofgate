@@ -133,6 +133,28 @@ class Repo:
     def show(self, rev: str, path: str) -> str:
         return self.git("show", f"{rev}:{path}")
 
+    def show_many(self, rev: str, paths: list[str]) -> dict[str, str]:
+        """Read many blobs through one `git cat-file --batch` process."""
+        proc = subprocess.Popen(
+            ["git", "-C", str(self.path), "cat-file", "--batch"],
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+        )
+        request = "".join(f"{rev}:{p}\n" for p in paths).encode()
+        out, _ = proc.communicate(request, timeout=300)
+        result: dict[str, str] = {}
+        pos = 0
+        for path in paths:
+            header_end = out.index(b"\n", pos)
+            header = out[pos:header_end].split()
+            pos = header_end + 1
+            if len(header) < 3 or header[1] == b"missing":
+                continue
+            size = int(header[2])
+            result[path] = out[pos : pos + size].decode("utf-8", "replace")
+            pos += size + 1  # trailing newline after each object
+        return result
+
     def lines(self, rev: str, path: str) -> list[str]:
         return self.show(rev, path).splitlines()
 
