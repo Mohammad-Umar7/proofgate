@@ -80,6 +80,15 @@ export function EvidenceCard({ card }: { card: Card }) {
         <div>
           <h3>Why</h3>
           <ul className={styles.reasons}>{card.reasons.map((r, i) => <li key={i}>{r}</li>)}</ul>
+          {card.verdict === "NEEDS_INFO" && card.credibility != null && (
+            <div className={styles.cred}>
+              <div className={styles.credTop}>
+                <span>Queue priority (credibility)</span><b>{card.credibility}</b>
+              </div>
+              <span className={styles.credBar}><i style={{ width: `${card.credibility}%` }} /></span>
+              <ul>{(card.credibility_why ?? []).map((w, i) => <li key={i}>{w}</li>)}</ul>
+            </div>
+          )}
           {card.challenge && (
             <div className={styles.challenge}>
               <h4>Adversarial pass · Nemotron Ultra argued the reporter&apos;s side</h4>

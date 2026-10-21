@@ -8,6 +8,7 @@ import styles from "./bench.module.css";
 type Metrics = {
   n: number; n_slop: number; n_valid: number; slop_closed: number; slop_ungrounded: number;
   valid_dismissed: number; valid_dismissed_ids: string[]; valid_closed?: number; agreement: number; cost_mean_usd: number;
+  credibility_auc?: number | null; credibility_auc_needs_info?: number | null;
   cost_total_usd: number; seconds_mean: number; seconds_p90: number;
   verdicts_slop: Partial<Record<Verdict, number>>; verdicts_valid: Partial<Record<Verdict, number>>;
 };
@@ -66,6 +67,16 @@ export default function BenchPage() {
           <div className="panel"><b>{Math.round(main.agreement * 100)}%</b><span>agreement with the curl team&apos;s outcome</span></div>
           <div className="panel"><b>${main.cost_mean_usd.toFixed(4)}</b><span>mean Token Factory cost per report</span></div>
           <div className="panel"><b>{main.seconds_mean.toFixed(1)}s</b><span>mean time per report (p90 {main.seconds_p90.toFixed(0)}s)</span></div>
+        </div>
+      )}
+      {main?.credibility_auc_needs_info != null && (
+        <div className={`panel ${styles.section}`}>
+          <h2>Ranking the NEEDS INFO queue</h2>
+          <p className={styles.note} style={{ marginTop: 0 }}>
+            Reports ProofGate cannot prove or disprove are ordered by a transparent credibility score with fixed
+            weights. Probability that a real CVE ranks above a slop report: <b>{main.credibility_auc_needs_info}</b>{" "}
+            inside the queue, <b>{main.credibility_auc}</b> overall (0.5 = random, 1.0 = perfect).
+          </p>
         </div>
       )}
 

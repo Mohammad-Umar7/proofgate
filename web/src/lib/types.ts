@@ -51,6 +51,8 @@ export interface Card {
   verdict: Verdict;
   color: string;
   confidence: number;
+  credibility?: number;
+  credibility_why?: string[];
   headline: string;
   reasons: string[];
   challenge?: string | null;
