@@ -7,10 +7,16 @@ across disclosed HackerOne reports, curl.se, GitHub issues and mailing lists.
 from __future__ import annotations
 
 import json
+import re
 
 from .. import advisories, tavily
 from ..schema import Evidence, PriorArt
 from .base import Context
+
+
+_VARIANT = re.compile(
+    r"\b(bypass|incomplete(ly)?\s+fix|regression|variant|similar\s+to|another\s+(case|way)|"
+    r"not\s+(fully\s+)?fixed|re-?introduc|follow[- ]?up|related\s+to)\b", re.I)
 
 
 def _excluded(ctx: Context, *keys: str) -> bool:
@@ -44,9 +50,13 @@ async def check_cited_cves(ctx: Context) -> None:
                 detail=f"{claim.cve} is a real curl advisory: {adv.summary}{note}",
                 url=adv.www, data={"affects_claimed_version": affected, "fixed_in": adv.fixed_in},
             ))
+            # Citing an advisory is a duplicate signal only when the reported version is still
+            # affected by it and the report is not about a bypass or variant of that fix.
+            variant = _VARIANT.search(ctx.run.report.body or "")
+            score = 1.0 if affected and not variant else 0.5
             ctx.run.prior_art.append(PriorArt(
                 source="curl-advisory", id=adv.cve, title=adv.summary, url=adv.www or "",
-                score=1.0, fixed_in=adv.fixed_in, snippet=adv.details[:300],
+                score=score, fixed_in=adv.fixed_in, snippet=adv.details[:300],
             ))
             continue
         try:
@@ -94,6 +104,8 @@ async def run(ctx: Context) -> None:
         if _excluded(ctx, adv.cve, adv.www or "", adv.issue_url or ""):
             continue
         score = advisories.similarity(report_tokens, ids, adv)
+        if adv.affects(ctx.run.resolved_version) is False:
+            score = min(score, 0.6)  # already fixed in the reported version: related, not a duplicate
         if score >= 0.35:
             scored.append((score, adv))
     scored.sort(key=lambda s: s[0], reverse=True)
