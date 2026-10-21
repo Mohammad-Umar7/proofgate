@@ -29,7 +29,12 @@ def _looks_like_function(name: str, called: bool) -> bool:
         return True
     if name.endswith("_t") or name.isupper() or len(name) < 6:
         return False
-    return "_" in name or any(c.isupper() for c in name[1:])
+    return "_" in name  # CamelCase words without parens are usually attributes (HttpOnly)
+
+
+# helpers defined in a reporter's scripts: Python/JS/shell functions
+_SCRIPT_DEF = re.compile(r"^\s*(?:async\s+)?(?:def|function)\s+([A-Za-z_]\w*)\s*\(|^\s*([A-Za-z_]\w*)\s*\(\)\s*\{", re.M)
+_CALLED = re.compile(r"\b([A-Za-z_]\w*)\s*\(")
 _UNSAFE_CALL = re.compile(r"\b(strcpy|strcat|sprintf|vsprintf|gets|strncpy|strncat)\s*\(")
 _VERSION = re.compile(r"\b(?:curl|libcurl|version|v)[\s/:-]*([1-9]\d?\.\d+\.\d+)(?![.\d])", re.I)
 # functions the reporter defines in their own code (PoC harnesses, servers) are not claims
@@ -63,6 +68,25 @@ def _add(claims: list[Claim], **kw) -> None:
     claims.append(Claim(id=f"c{len(claims) + 1}", **kw))
 
 
+def reporter_names(text: str, blocks) -> set[str]:
+    """Names that belong to the reporter's own code: defined in the report, or used only inside
+    the reporter's PoC / scripts / logs (never inside a quote of project source)."""
+    quoted = " ".join(b.text for b in blocks if b.role == "quoted-source")
+    for b in blocks:  # definitions inside a claimed quote of project code are claims, not helpers
+        if b.role == "quoted-source":
+            text = text.replace(b.text, " ")
+    own = {m.group(1) for m in _DEFINED.finditer(text)}
+    own |= {m.group(1) or m.group(2) for m in _SCRIPT_DEF.finditer(text)}
+    for block in blocks:
+        if block.role in ("poc", "shell", "other", "output"):
+            own |= {m.group(1) for m in _DEFINED.finditer(block.text)}
+            own |= {m.group(1) or m.group(2) for m in _SCRIPT_DEF.finditer(block.text)}
+            own |= {n for n in _CALLED.findall(block.text)
+                    if n not in quoted and not n.startswith(("curl_", "Curl_"))}
+    own.discard(None)
+    return own
+
+
 def extract_rules(text: str, blocks) -> list[Claim]:
     claims: list[Claim] = []
     prose = re.sub(r"```.*?```", " ", text, flags=re.S)
@@ -78,10 +102,7 @@ def extract_rules(text: str, blocks) -> list[Claim]:
             _add(claims, kind="file", text=name, file=name)
     for match in _LINE_WORD.finditer(prose):
         _add(claims, kind="line", text=match.group(0), line=int(match.group(1)))
-    own = {m.group(1) for m in _DEFINED.finditer(text)}
-    for block in blocks:
-        if block.role in ("poc", "shell", "other"):
-            own |= {m.group(1) for m in _DEFINED.finditer(block.text)}
+    own = reporter_names(text, blocks)
     seen_funcs = set(own)
     for match in list(_FUNC.finditer(prose)) + list(_TICKED.finditer(prose)):
         name = match.group(1)
@@ -140,7 +161,7 @@ async def run(ctx: Context) -> None:
             ctx.run.notes["summary"] = data.get("summary")
             ctx.run.notes["bug_class"] = data.get("bug_class")
             before = len(claims)
-            own = {m.group(1) for m in _DEFINED.finditer(text)}
+            own = reporter_names(text, ctx.run.code_blocks)
             for item in data.get("claims", [])[:40]:
                 kind = item.get("kind")
                 if kind not in ("file", "function", "line", "version", "cve", "symbol",
