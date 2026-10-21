@@ -55,7 +55,7 @@ def rule_table(ctx: Context) -> Decision:
                         reasons=[repro_hit.detail])
 
     strong = [p for p in ctx.run.prior_art if p.source == "curl-advisory" and p.score >= 0.9]
-    similar = [p for p in ctx.run.prior_art if p.source == "curl-advisory" and 0.6 <= p.score < 0.9]
+    similar = [p for p in ctx.run.prior_art if p.source == "curl-advisory" and 0.75 <= p.score < 0.9]
     if strong or (similar and s["contra"] < 3):
         match = (strong or similar)[0]
         return Decision(

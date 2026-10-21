@@ -6,6 +6,8 @@ across disclosed HackerOne reports, curl.se, GitHub issues and mailing lists.
 
 from __future__ import annotations
 
+import json
+
 from .. import advisories, tavily
 from ..schema import Evidence, PriorArt
 from .base import Context
@@ -29,9 +31,9 @@ def _identifiers(ctx: Context) -> set[str]:
 
 async def check_cited_cves(ctx: Context) -> None:
     for claim in [c for c in ctx.run.claims if c.kind == "cve" and c.cve]:
+        if _excluded(ctx, claim.cve):
+            continue  # benchmark leakage control: this is the report's own CVE
         adv = advisories.by_cve(claim.cve)
-        if adv and _excluded(ctx, adv.cve, adv.www or ""):
-            adv = None
         if adv:
             affected = adv.affects(ctx.run.resolved_version)
             note = ""
@@ -62,13 +64,22 @@ async def check_cited_cves(ctx: Context) -> None:
                 detail=f"Could not reach OSV.dev to check {claim.cve}", deterministic=False,
             ))
         else:
-            pkgs = sorted({a.get("package", {}).get("name", "?") for a in record.get("affected", [])})
-            ctx.run.evidence.append(Evidence(
-                claim_id=claim.id, status="contradicted", method="osv",
-                detail=f"{claim.cve} is not a curl vulnerability (OSV lists it for "
-                       f"{', '.join(pkgs[:4]) or 'another project'})",
-                url=f"https://osv.dev/vulnerability/{claim.cve}",
-            ))
+            pkgs = sorted({(a.get("package") or {}).get("name", "") for a in record.get("affected", [])} - {""})
+            mentions_curl = "curl" in json.dumps(record).lower()
+            if pkgs and not any("curl" in p.lower() for p in pkgs) and not mentions_curl:
+                ctx.run.evidence.append(Evidence(
+                    claim_id=claim.id, status="contradicted", method="osv",
+                    detail=f"{claim.cve} is not a curl vulnerability (OSV lists it for "
+                           f"{', '.join(pkgs[:4])})",
+                    url=f"https://osv.dev/vulnerability/{claim.cve}",
+                ))
+            else:
+                ctx.run.evidence.append(Evidence(
+                    claim_id=claim.id, status="unverifiable" if not mentions_curl else "verified",
+                    method="osv", deterministic=True,
+                    detail=f"{claim.cve} exists in OSV" + (" and refers to curl" if mentions_curl else ""),
+                    url=f"https://osv.dev/vulnerability/{claim.cve}",
+                ))
 
 
 async def run(ctx: Context) -> None:
