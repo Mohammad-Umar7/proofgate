@@ -1,0 +1,18 @@
+# Copy to .github/workflows/proofgate.yml in your repository.
+# Runs when an issue gets the "security-report" label and comments an evidence card.
+name: ProofGate
+on:
+  issues:
+    types: [labeled]
+permissions:
+  contents: read
+  issues: write
+jobs:
+  triage:
+    if: github.event.label.name == 'security-report'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: Mohammad-Umar7/proofgate/action@main
+        with:
+          nebius-api-key: ${{ secrets.NEBIUS_API_KEY }}
+          tavily-api-key: ${{ secrets.TAVILY_API_KEY }}
