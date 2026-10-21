@@ -149,7 +149,13 @@ function Stars() {
   );
 }
 
-function Scene({ graph, focus, autoRotate }: { graph: GraphData; focus: GalaxyFocus; autoRotate: boolean }) {
+function Scene({ graph, focus, autoRotate, compact }: {
+  graph: GraphData; focus: GalaxyFocus; autoRotate: boolean; compact: boolean;
+}) {
+  const zoom = compact ? 1.9 : 1;
+  const home: [number, number, number, number, number, number] = compact
+    ? [0, 80, 360, 0, 0, 0]
+    : [-48, 70, 285, -48, 0, 0];
   const controls = useRef<CameraControls>(null!);
   const [hover, setHover] = useState<number | null>(null);
   const byName = useMemo(() => {
@@ -175,19 +181,28 @@ function Scene({ graph, focus, autoRotate }: { graph: GraphData; focus: GalaxyFo
     const anchor = near !== undefined ? new THREE.Vector3(...graph.nodes[near].pos) : new THREE.Vector3(0, 0, 0);
     const dir = anchor.clone().normalize();
     if (dir.lengthSq() < 0.1) dir.set(1, 0.3, 0.2).normalize();
-    const pos = dir.multiplyScalar(118 + k * 14).add(new THREE.Vector3(0, 10 + k * 8, 0));
+    // compact (tall) panels stack the ghost above the galaxy; wide views float it beside
+    const pos = compact
+      ? dir.multiplyScalar(40 + k * 10).add(new THREE.Vector3(0, 120 + k * 18, 0))
+      : dir.multiplyScalar(118 + k * 14).add(new THREE.Vector3(0, 10 + k * 8, 0));
     return { ...g, pos, anchor: near !== undefined ? anchor : null };
   });
 
   useEffect(() => {
     const c = controls.current;
     if (!c) return;
+    if (ghostAnchors.length && !pathIdx.length && compact) {
+      const g = ghostAnchors[0].pos;
+      const mid = g.clone().multiplyScalar(0.45);
+      c.setLookAt(mid.x, mid.y + 10, mid.z + 360, mid.x, mid.y, mid.z, true);
+      return;
+    }
     if (ghostAnchors.length && !pathIdx.length) {
       // side view: galaxy on one side, the ghost adrift on the other, tether between them
       const g = ghostAnchors[0].pos;
       const mid = g.clone().multiplyScalar(0.5);
       const perp = new THREE.Vector3().crossVectors(g, new THREE.Vector3(0, 1, 0)).normalize();
-      const eye = mid.clone().add(perp.multiplyScalar(g.length() * 1.55)).add(new THREE.Vector3(0, 30, 0));
+      const eye = mid.clone().add(perp.multiplyScalar(g.length() * 1.55 * zoom)).add(new THREE.Vector3(0, 30, 0));
       c.setLookAt(eye.x, eye.y, eye.z, mid.x, mid.y, mid.z, true);
       return;
     }
@@ -195,7 +210,7 @@ function Scene({ graph, focus, autoRotate }: { graph: GraphData; focus: GalaxyFo
     ghostAnchors.forEach((g) => pts.push(g.pos.clone()));
     if (focus.target && byName.has(focus.target)) pts.push(new THREE.Vector3(...graph.nodes[byName.get(focus.target)!].pos));
     if (!pts.length) {
-      c.setLookAt(-48, 70, 285, -48, 0, 0, true);
+      c.setLookAt(...home, true);
       return;
     }
     const box = new THREE.Box3().setFromPoints(pts);
@@ -203,7 +218,7 @@ function Scene({ graph, focus, autoRotate }: { graph: GraphData; focus: GalaxyFo
     const size = Math.max(95, box.getSize(new THREE.Vector3()).length());
     const dir = center.clone().normalize();
     if (dir.lengthSq() < 0.1) dir.set(0, 0.3, 1);
-    const eye = center.clone().add(dir.multiplyScalar(size * 1.25)).add(new THREE.Vector3(0, size * 0.25, 0));
+    const eye = center.clone().add(dir.multiplyScalar(size * 1.25 * zoom)).add(new THREE.Vector3(0, size * 0.25, 0));
     c.setLookAt(eye.x, eye.y, eye.z, center.x, center.y, center.z, true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathIdx.join(","), ghosts.map((g) => g.name).join(","), focus.target]);
@@ -244,17 +259,17 @@ function Scene({ graph, focus, autoRotate }: { graph: GraphData; focus: GalaxyFo
   );
 }
 
-export default function Galaxy({ graph, focus = {}, autoRotate = true }: {
-  graph: GraphData; focus?: GalaxyFocus; autoRotate?: boolean;
+export default function Galaxy({ graph, focus = {}, autoRotate = true, compact = false }: {
+  graph: GraphData; focus?: GalaxyFocus; autoRotate?: boolean; compact?: boolean;
 }) {
   return (
     <Canvas
       dpr={[1, 1.75]}
       gl={{ antialias: false, powerPreference: "high-performance" }}
-      camera={{ position: [-48, 70, 285], fov: 45, near: 0.5, far: 2000 }}
+      camera={{ position: compact ? [0, 80, 360] : [-48, 70, 285], fov: 45, near: 0.5, far: 2400 }}
       onCreated={({ gl }) => gl.setClearColor("#05060a")}
     >
-      <Scene graph={graph} focus={focus} autoRotate={autoRotate} />
+      <Scene graph={graph} focus={focus} autoRotate={autoRotate} compact={compact} />
     </Canvas>
   );
 }
