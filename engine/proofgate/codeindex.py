@@ -326,6 +326,7 @@ class CodeIndex:
                     "loc": fn.end - fn.start + 1,
                     "pos": pos,
                     "entry": fn.name in ENTRY_POINTS,
+                    "table": self.table_refs.get(fn.name),
                 }
             )
         first_by_name = {}

@@ -88,6 +88,6 @@ export interface GraphData {
   rev: string;
   version: string;
   files: { path: string; center: [number, number, number]; functions: number }[];
-  nodes: { id: number; name: string; file: string; line: number; loc: number; pos: [number, number, number]; entry: boolean }[];
+  nodes: { id: number; name: string; file: string; line: number; loc: number; pos: [number, number, number]; entry: boolean; table?: string | null }[];
   edges: [number, number][];
 }
