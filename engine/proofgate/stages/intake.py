@@ -23,9 +23,15 @@ OMNI_PROMPT = (
 )
 
 
+_DIFF_LINE = re.compile(r"^(@@ |\+\+\+ |--- |[-+](?![-+]))", re.M)
+
+
 def classify_block(lang: str, text: str) -> str:
     if _OUTPUT_HINTS.search(text):
         return "output"
+    lines = [ln for ln in text.splitlines() if ln.strip()]
+    if lang in ("diff", "patch") or (lines and len(_DIFF_LINE.findall(text)) > 0.3 * len(lines)):
+        return "other"  # a proposed patch, not a quote of the current code
     if _POC_HINTS.search(text):
         return "poc"
     if lang in ("sh", "bash", "shell", "console", "zsh") or _SHELL_HINTS.search(text):
