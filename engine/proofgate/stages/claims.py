@@ -1,0 +1,137 @@
+"""Stage 2 - claim extraction: every checkable statement in the report, as structured claims.
+
+A deterministic extractor always runs (paths, functions, lines, versions, CVEs, quoted code).
+Nemotron Nano then adds claims the patterns miss and ties them together (this function is in
+that file at that line). Both sets are merged; nothing the patterns found is ever dropped.
+"""
+
+from __future__ import annotations
+
+import re
+
+from ..schema import Claim
+from ..security import fence, guard, new_tag
+from .base import Context
+from .intake import full_text
+
+_PATH = re.compile(r"\b((?:lib|src|include|tests|docs)/[\w/.+-]+\.(?:c|h))\b")
+_BARE_FILE = re.compile(r"(?<![/\w])([\w+-]+\.(?:c|h))\b")
+_FILE_LINE = re.compile(r"\b([\w/.+-]+\.(?:c|h)):(\d{1,5})\b")
+_LINE_WORD = re.compile(r"\blines?\s+(\d{1,5})(?:\s*[-–]\s*(\d{1,5}))?", re.I)
+_FUNC = re.compile(r"`?\b((?:Curl_|curl_|Curl|ossl_|cf_|http2?_|ws_|ftp_|smtp_|imap_|pop3_|"
+                   r"tool_|cookie_|socks_|telnet_|mqtt_|parse_|do_)\w+)\s*\(")
+_TICKED = re.compile(r"`([A-Za-z_]\w{3,})(?:\(\))?`")
+_VERSION = re.compile(r"\b(?:curl|libcurl|version|v)[\s/:-]*(\d+\.\d+\.\d+)\b", re.I)
+_CVE = re.compile(r"\bCVE-\d{4}-\d{4,7}\b", re.I)
+_OPTION = re.compile(r"\b(CURL(?:OPT|INFO|MOPT|E|M)_[A-Z0-9_]+)\b")
+
+EXTRACT_SYSTEM = """You extract checkable factual claims from a security report about the
+{project} source code. Return one JSON object:
+{{"claims": [{{"kind": "file|function|line|code|version|cve|symbol|crash|behavior",
+  "text": "<the claim in the reporter's words, max 25 words>",
+  "file": "<path or null>", "function": "<name or null>", "line": <int or null>,
+  "version": "<x.y.z or null>", "cve": "<CVE id or null>", "symbol": "<identifier or null>"}}],
+ "summary": "<one sentence: what bug the reporter says exists>",
+ "bug_class": "<e.g. heap overflow, use-after-free, injection, DoS, info leak, logic>"}}
+Only include claims that can be checked against the code or public records. Never invent
+details that are not in the report. {guard}"""
+
+
+def _add(claims: list[Claim], **kw) -> None:
+    key = (kw.get("kind"), kw.get("file"), kw.get("function"), kw.get("line"),
+           kw.get("version"), kw.get("cve"), kw.get("symbol"), (kw.get("code") or "")[:80])
+    for c in claims:
+        if (c.kind, c.file, c.function, c.line, c.version, c.cve, c.symbol,
+                (c.code or "")[:80]) == key:
+            return
+    claims.append(Claim(id=f"c{len(claims) + 1}", **kw))
+
+
+def extract_rules(text: str, blocks) -> list[Claim]:
+    claims: list[Claim] = []
+    prose = re.sub(r"```.*?```", " ", text, flags=re.S)
+    for match in _FILE_LINE.finditer(text):
+        _add(claims, kind="line", text=match.group(0), file=match.group(1), line=int(match.group(2)))
+    for match in _PATH.finditer(prose):
+        _add(claims, kind="file", text=match.group(1), file=match.group(1))
+    known = {c.file.rsplit("/", 1)[-1] for c in claims if c.file}
+    for match in _BARE_FILE.finditer(prose):
+        name = match.group(1)
+        if name not in known and name not in ("curl.h",):
+            known.add(name)
+            _add(claims, kind="file", text=name, file=name)
+    for match in _LINE_WORD.finditer(prose):
+        _add(claims, kind="line", text=match.group(0), line=int(match.group(1)))
+    seen_funcs = set()
+    for match in list(_FUNC.finditer(prose)) + list(_TICKED.finditer(prose)):
+        name = match.group(1)
+        if name in seen_funcs or name.isupper():
+            continue
+        seen_funcs.add(name)
+        _add(claims, kind="function", text=f"{name}()", function=name)
+    for match in _VERSION.finditer(text):
+        _add(claims, kind="version", text=match.group(0), version=match.group(1))
+    for match in _CVE.finditer(text):
+        _add(claims, kind="cve", text=match.group(0), cve=match.group(0).upper())
+    for match in _OPTION.finditer(prose):
+        _add(claims, kind="symbol", text=match.group(1), symbol=match.group(1))
+    for block in blocks:
+        if block.role == "quoted-source":
+            _add(claims, kind="code", text=f"quoted code block #{block.index + 1}", code=block.text)
+    return claims
+
+
+async def run(ctx: Context) -> None:
+    await ctx.event("claims", "start", "Extracting checkable claims")
+    text = full_text(ctx)
+    claims = extract_rules(text, ctx.run.code_blocks)
+    await ctx.event("claims", "progress", f"{len(claims)} claims from deterministic patterns")
+
+    if ctx.llm_on:
+        tag = new_tag()
+        try:
+            data, calls = await ctx.llm.chat_json(
+                stage="claims",
+                role=ctx.role("nano"),
+                system=EXTRACT_SYSTEM.format(project=ctx.run.report.project, guard=guard(tag)),
+                user=fence(text[:24000], tag),
+                max_tokens=1800,
+                budget=ctx.budget,
+            )
+            ctx.record(calls)
+            ctx.run.notes["summary"] = data.get("summary")
+            ctx.run.notes["bug_class"] = data.get("bug_class")
+            before = len(claims)
+            for item in data.get("claims", [])[:40]:
+                kind = item.get("kind")
+                if kind not in ("file", "function", "line", "version", "cve", "symbol",
+                                "crash", "behavior"):
+                    continue
+                line = item.get("line")
+                _add(
+                    claims,
+                    kind=kind,
+                    text=str(item.get("text") or "")[:300],
+                    file=item.get("file") or None,
+                    function=(item.get("function") or "").strip("()") or None,
+                    line=int(line) if isinstance(line, (int, float)) else None,
+                    version=item.get("version") or None,
+                    cve=(item.get("cve") or "").upper() or None,
+                    symbol=item.get("symbol") or None,
+                    extracted_by="llm",
+                )
+            await ctx.event(
+                "claims", "progress",
+                f"Nemotron Nano added {len(claims) - before} claims", model=calls[-1].model,
+            )
+        except Exception as exc:  # noqa: BLE001 - deterministic claims still stand
+            await ctx.event("claims", "progress", f"LLM extraction skipped: {exc}")
+
+    ctx.run.claims = claims
+    counts: dict[str, int] = {}
+    for c in claims:
+        counts[c.kind] = counts.get(c.kind, 0) + 1
+    await ctx.event(
+        "claims", "done", f"{len(claims)} checkable claims",
+        counts=counts, claims=[c.model_dump(exclude_none=True) for c in claims],
+    )
