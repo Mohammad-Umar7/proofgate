@@ -150,7 +150,8 @@ async def run_bench(config: str, limit: int | None = None, concurrency: int = 4,
     combined = json.loads(combined_path.read_text(encoding="utf-8")) if combined_path.exists() else {}
     combined.setdefault("configs", {})[config] = summary["metrics"]
     combined["generated"] = summary["generated"]
-    if config == "full" or "rows" not in combined:
+    # rows shown on the dashboard: the full pipeline when it exists, else the latest run of this config
+    if config == "full" or combined.get("rows_config") in (None, config) or "full" not in combined["configs"]:
         combined["rows"] = results
         combined["rows_config"] = config
     combined_path.write_text(json.dumps(combined, indent=1), encoding="utf-8")
