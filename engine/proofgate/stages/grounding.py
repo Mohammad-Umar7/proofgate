@@ -21,6 +21,16 @@ LIBC = {
     "malloc", "calloc", "realloc", "free", "printf", "fprintf", "snprintf", "strlen", "strdup",
     "sscanf", "atoi", "strtok", "system", "popen", "fopen", "read", "write", "recv", "send",
 }
+UNSAFE_LIBC = {"strcpy", "strcat", "sprintf", "vsprintf", "gets", "strncpy", "strncat"}
+# public API prefixes of libraries curl links against (functions reports cite from them)
+DEPENDENCY_APIS = (
+    ("ssh_", "libssh"), ("libssh2_", "libssh2"), ("SSL_", "OpenSSL"), ("X509_", "OpenSSL"),
+    ("EVP_", "OpenSSL"), ("BIO_", "OpenSSL"), ("OPENSSL_", "OpenSSL"), ("ERR_", "OpenSSL"),
+    ("wolfSSL_", "wolfSSL"), ("gnutls_", "GnuTLS"), ("mbedtls_", "mbedTLS"), ("nghttp2_", "nghttp2"),
+    ("nghttp3_", "nghttp3"), ("ngtcp2_", "ngtcp2"), ("quiche_", "quiche"), ("inflate", "zlib"),
+    ("deflate", "zlib"), ("BrotliDecoder", "brotli"), ("ZSTD_", "zstd"), ("ares_", "c-ares"),
+    ("idn2_", "libidn2"), ("psl_", "libpsl"), ("ldap_", "OpenLDAP"), ("rustls_", "rustls"),
+)
 # libraries curl builds against; their source trees are often quoted in real reports
 DEPENDENCIES = ("libssh2", "libssh", "openssl", "boringssl", "wolfssl", "gnutls", "mbedtls",
                 "rustls", "schannel", "nghttp2", "nghttp3", "ngtcp2", "quiche", "zlib", "brotli",
@@ -151,7 +161,15 @@ class Grounder:
     def check_function(self, claim: Claim) -> None:
         name = claim.function or ""
         if name in LIBC:
-            self.check_libc_use(claim, name)
+            if name in UNSAFE_LIBC:
+                self.check_libc_use(claim, name)
+            else:  # malloc/free/memcpy are mentioned in passing; curl wraps them anyway
+                self.ev(claim, "unverifiable", "git-grep", f"{name}() is a C library function")
+            return
+        dep = next((d for p, d in DEPENDENCY_APIS if name.startswith(p)), None)
+        if dep and not self.index.lookup(name):
+            self.ev(claim, "unverifiable", "git-grep",
+                    f"{name}() is {dep} API, defined outside curl")
             return
         defs = self.index.lookup(name)
         if defs:

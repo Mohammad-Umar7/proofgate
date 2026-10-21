@@ -159,7 +159,8 @@ class Repo:
 
     def identifier_exists(self, rev: str, name: str) -> GrepHit | None:
         """Any whole-word use of `name` (function, macro, variable, external API) at `rev`."""
-        hits = self.grep(rev, name, word=True, limit=1)
+        hits = self.grep(rev, name, word=True, limit=1) or \
+            self.grep(rev, name, word=True, limit=1, paths=(".",))  # tests/, docs/, scripts too
         return hits[0] if hits else None
 
     def resolve(self, version: str | None, as_of: str | None = None) -> tuple[str, str]:
