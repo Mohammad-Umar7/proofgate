@@ -17,6 +17,7 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = ["pytest>=8", "pytest-asyncio>=0.24", "ruff>=0.6"]
+openshell = ["openshell"]
 
 [project.scripts]
 proofgate = "proofgate.cli:main"
