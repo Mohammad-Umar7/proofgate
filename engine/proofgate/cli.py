@@ -90,6 +90,13 @@ def main(argv: list[str] | None = None) -> int:
     arena.add_argument("--offline", action="store_true")
     arena.add_argument("--seed", type=int, default=7)
 
+    sub.add_parser("bench", help="SlopBench: build | fetch | run --config ...", add_help=False)
+
+    argv = sys.argv[1:] if argv is None else argv
+    if argv and argv[0] == "bench":
+        from .bench.run import main as bench_main
+
+        return bench_main(argv[1:])
     args = parser.parse_args(argv)
     if args.cmd == "check":
         return asyncio.run(_check(args))
