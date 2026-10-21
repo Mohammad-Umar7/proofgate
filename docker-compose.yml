@@ -1,0 +1,32 @@
+# One command: docker compose up --build
+#   web    -> http://localhost:3000  (3D demo, console, arena, SlopBench)
+#   engine -> http://localhost:8000  (API; live mode when engine/.env has NEBIUS_API_KEY)
+services:
+  engine:
+    build:
+      context: .
+      dockerfile: engine/Dockerfile
+    env_file:
+      - path: engine/.env
+        required: false
+    environment:
+      PG_CORS_ORIGINS: http://localhost:3000
+    ports:
+      - "8000:8000"
+    volumes:
+      - proofgate-data:/data
+    restart: unless-stopped
+
+  web:
+    build:
+      context: .
+      dockerfile: web/Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: http://localhost:8000
+    ports:
+      - "3000:80"
+    depends_on:
+      - engine
+
+volumes:
+  proofgate-data: {}
