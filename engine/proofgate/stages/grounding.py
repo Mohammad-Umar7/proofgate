@@ -182,6 +182,18 @@ class Grounder:
         actual = "\n".join(lines[lo - 1 : hi])
         owner = next((f for f in self.index.functions
                       if f.file == path and f.start <= claim.line <= f.end), None)
+        if claim.function:
+            named = [f for f in self.index.lookup(claim.function) if f.file == path]
+            if named and (owner is None or owner.name != claim.function):
+                fn = named[0]
+                self.ev(claim, "contradicted", "tree-sitter",
+                        f"Line {claim.line} is not in {claim.function}(), which spans "
+                        f"{path}:{fn.start}-{fn.end}"
+                        + (f"; that line is in {owner.name}()" if owner else ""),
+                        file=path, line_start=fn.start, line_end=fn.end,
+                        actual_code=actual,
+                        url=self.repo.blob_url(self.rev, path, fn.start, fn.end))
+                return
         detail = f"{path}:{claim.line} is inside {owner.name}()" if owner else \
             f"{path}:{claim.line} is outside any function"
         self.ev(claim, "verified", "git-show", detail, file=path, line_start=lo, line_end=hi,

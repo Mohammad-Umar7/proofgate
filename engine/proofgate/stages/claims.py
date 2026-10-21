@@ -78,6 +78,14 @@ def extract_rules(text: str, blocks) -> list[Claim]:
     for block in blocks:
         if block.role == "quoted-source":
             _add(claims, kind="code", text=f"quoted code block #{block.index + 1}", code=block.text)
+    # A bare "line N" belongs to the file (and function) the report is about, when unambiguous.
+    files = {c.file for c in claims if c.kind == "file" and c.file}
+    funcs = [c.function for c in claims if c.kind == "function" and c.function]
+    for claim in claims:
+        if claim.kind == "line" and not claim.file and len(files) == 1:
+            claim.file = next(iter(files))
+        if claim.kind == "line" and not claim.function and len(funcs) == 1:
+            claim.function = funcs[0]
     return claims
 
 
