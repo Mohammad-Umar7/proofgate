@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 import styles from "./Nav.module.css";
 
 const LINKS = [
@@ -13,8 +14,19 @@ const LINKS = [
 
 export function Nav() {
   const path = usePathname();
+  const [scrolled, setScrolled] = useState(false);
+  useEffect(() => {
+    // on the landing page the hero is pinned for a while; go solid once past it
+    const onScroll = () => {
+      const limit = path === "/" ? window.innerHeight * 2.6 : 40;
+      setScrolled(window.scrollY > limit);
+    };
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, [path]);
   return (
-    <header className={styles.nav}>
+    <header className={styles.nav} data-scrolled={scrolled}>
       <div className={styles.inner}>
         <Link href="/" className={styles.brand} aria-label="ProofGate home">
           <svg width="22" height="22" viewBox="0 0 32 32" aria-hidden>
