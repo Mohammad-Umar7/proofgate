@@ -9,7 +9,7 @@ at the exact version, before a volunteer maintainer spends an hour on it.
 
 Built on **NVIDIA Nemotron 3** via **Nebius Token Factory** · **Tavily** · **NVIDIA OpenShell**
 
-[Live demo](#hosted-demo) · [Video](#video) · [SlopBench](#slopbench-measured-on-curls-own-record) · [Architecture](docs/ARCHITECTURE.md)
+**[▶ Live demo: proofgate-ten.vercel.app](https://proofgate-ten.vercel.app)** · [Video](#video) · [SlopBench](#slopbench-measured-on-curls-own-record) · [Architecture](docs/ARCHITECTURE.md)
 
 ![ProofGate: reports stream through the gate; slop dissolves, duplicates merge, real bugs pass](docs/img/hero.jpg)
 
@@ -169,9 +169,10 @@ evidence card. It works on any C repository with release tags (`tag-prefix`, `so
 
 ## Hosted demo
 
-The demo is a static export (recorded real runs, the code galaxy, the arena, SlopBench): no login,
-no backend required, so it stays up through judging. Deployed with
-[`.github/workflows/pages.yml`](.github/workflows/pages.yml).
+**https://proofgate-ten.vercel.app**: no login, no backend required, so it stays up through
+judging. It is a static export of `web/` on Vercel (root directory `web`, redeployed on every push
+to `main`): recorded runs of real curl reports in the console, the code galaxy, the arena and
+SlopBench. Set `NEXT_PUBLIC_API_URL` to a running engine to switch the console into live mode.
 
 ## Video
 
