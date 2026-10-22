@@ -1,20 +1,18 @@
 "use client";
 
-import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { HelixSection } from "@/components/HelixSection";
+import { HeroScroll } from "@/components/HeroScroll";
 import { loadBench } from "@/lib/api";
 import { STAGES } from "@/lib/types";
 import styles from "./page.module.css";
 
-const GateScene = dynamic(() => import("@/three/gate/GateScene"), { ssr: false });
-
 const FACTS = [
   { k: "40,188", v: "curl commits searched per claim, in about 4 seconds" },
-  { k: "215", v: "release tags resolved, so claims are checked at the version the reporter named" },
+  { k: "215", v: "release tags: claims are checked at the version, and the date, of the report" },
   { k: "239", v: "official curl advisories checked for duplicates" },
-  { k: "0", v: "verdicts of UNGROUNDED without a deterministic contradiction" },
+  { k: "0 / 148", v: "real curl CVEs wrongly dismissed on SlopBench" },
 ];
 
 export default function Home() {
@@ -24,32 +22,7 @@ export default function Home() {
 
   return (
     <main>
-      <section className={styles.hero}>
-        <div className={styles.canvas}><GateScene /></div>
-        <div className={styles.heroShade} />
-        <div className={`container ${styles.heroInner}`}>
-          <p className="eyebrow">Open-source security triage · NVIDIA Nemotron on Nebius Token Factory</p>
-          <h1 className={styles.title}>
-            AI made fake security reports <em>free to produce.</em>
-            <br />
-            ProofGate makes proving them <span>cheap.</span>
-          </h1>
-          <p className={styles.sub}>
-            Every incoming vulnerability report is checked claim by claim against the real source code, at the exact
-            version it names, before a volunteer maintainer spends an hour on it. Confirmed bugs go all the way to a
-            tested patch. A human always makes the final call.
-          </p>
-          <div className={styles.ctas}>
-            <Link href="/console/" className="btn btn-primary">Watch it triage a real report →</Link>
-            <Link href="/arena/" className="btn">Try to fool it</Link>
-          </div>
-          <div className={styles.legend}>
-            <span><i style={{ background: "var(--red)" }} /> slop dissolves on the gate</span>
-            <span><i style={{ background: "var(--blue)" }} /> duplicates merge</span>
-            <span><i style={{ background: "var(--green)" }} /> real bugs pass through</span>
-          </div>
-        </div>
-      </section>
+      <HeroScroll />
 
       <section className={`container ${styles.section}`}>
         <p className="eyebrow">The problem</p>

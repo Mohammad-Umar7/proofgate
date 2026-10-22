@@ -1,0 +1,59 @@
+/* Tall scroll track; the scene stays pinned while the camera flies through the gate. */
+.wrap { position: relative; height: 340vh; }
+.sticky { position: sticky; top: 0; height: 100vh; min-height: 620px; overflow: hidden; }
+.canvas { position: absolute; inset: 0; }
+.shade {
+  position: absolute; inset: 0; pointer-events: none;
+  background:
+    linear-gradient(90deg, rgba(5, 6, 10, 0.9) 0%, rgba(5, 6, 10, 0.5) 36%, rgba(5, 6, 10, 0) 60%),
+    linear-gradient(0deg, rgba(5, 6, 10, 0.9) 0%, rgba(5, 6, 10, 0) 18%);
+}
+.inner {
+  position: relative; height: 100%; display: flex; flex-direction: column; justify-content: center;
+  padding-top: 88px; padding-bottom: 40px; will-change: opacity, transform;
+}
+.inner > * { max-width: 640px; }
+.title {
+  font-size: clamp(36px, 5.2vw, 70px); line-height: 1.02; letter-spacing: -0.035em;
+  margin: 16px 0 20px; font-weight: 680;
+}
+.title em { font-style: normal; color: var(--muted); }
+.title span {
+  background: linear-gradient(90deg, #ffffff, #3ddc97 70%);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.sub { color: #b6bccb; font-size: 17px; max-width: 560px; margin: 0 0 28px; }
+.ctas { display: flex; gap: 12px; flex-wrap: wrap; }
+.legend {
+  display: flex; gap: 18px; flex-wrap: wrap; margin-top: 30px;
+  font-family: var(--font-mono); font-size: 12px; color: var(--muted);
+}
+.legend span { display: inline-flex; align-items: center; gap: 8px; }
+.legend i { width: 8px; height: 8px; border-radius: 50%; display: inline-block; box-shadow: 0 0 12px currentColor; }
+
+.caption {
+  position: absolute; left: max(16px, calc((100vw - 1240px) / 2)); bottom: 12vh; max-width: 460px;
+  padding: 22px 24px; border-radius: 16px; pointer-events: none;
+  background: rgba(8, 10, 16, 0.62); border: 1px solid var(--line-2);
+  opacity: 0; transform: translateY(-12px); transition: opacity 0.18s ease, transform 0.18s ease;
+}
+/* the outgoing caption leaves quickly; the incoming one waits for it, so they never overlap */
+.caption.on { opacity: 1; transform: none; transition: opacity 0.45s ease 0.2s, transform 0.45s ease 0.2s; }
+.caption h2 { font-size: clamp(24px, 2.6vw, 34px); letter-spacing: -0.02em; line-height: 1.12; margin: 8px 0 8px; }
+.caption p:last-child { color: #b6bccb; margin: 0; font-size: 15px; }
+
+.hint {
+  position: absolute; left: 50%; bottom: 26px; transform: translateX(-50%);
+  display: flex; flex-direction: column; align-items: center; gap: 10px; pointer-events: none;
+  font-family: var(--font-mono); font-size: 11.5px; color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase;
+}
+.hint i { width: 1px; height: 34px; background: linear-gradient(var(--muted), transparent); animation: drip 1.8s ease-in-out infinite; }
+@keyframes drip { 0% { transform: scaleY(0); transform-origin: top; } 50% { transform: scaleY(1); transform-origin: top; } 51% { transform-origin: bottom; } 100% { transform: scaleY(0); transform-origin: bottom; } }
+
+@media (max-width: 960px) {
+  .shade { background: linear-gradient(0deg, rgba(5, 6, 10, 0.95) 12%, rgba(5, 6, 10, 0.4) 70%); }
+  .caption { left: 16px; right: 16px; max-width: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .wrap { height: 100vh; }
+}
