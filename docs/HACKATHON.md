@@ -176,7 +176,7 @@ Token Factory (several Nemotron sizes, each with a job), real Tavily calls, and 
 - [ ] Runtime Tavily call (prior-art search) — tick "Yes" on the form
 - [ ] Public repo, Apache-2.0 visible in About, no secrets committed
 - [ ] README: one-command setup, "Built on Nebius + NVIDIA" section, cost table, SlopBench results
-- [ ] Hosted demo, no login, sample reports preloaded, live until Dec 15
+- [x] Hosted demo, no login, sample reports preloaded, live until Dec 15 → https://proofgate-ten.vercel.app (Vercel, auto-deploys from `main`)
 - [ ] Video < 3:00 on YouTube, public, no copyrighted music, says "Nebius Token Factory" and "Nemotron" out loud
 - [ ] All Devpost fields, including every feedback question and the AI-tools question
 - [ ] Submit well before Oct 30, 10:00 AM PT

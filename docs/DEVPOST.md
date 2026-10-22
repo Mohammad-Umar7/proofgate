@@ -15,7 +15,7 @@ Thumbnail: crop `docs/img/hero.jpg` to 3:2.
 `nvidia-openshell`, `python`, `fastapi`, `tree-sitter`, `git`, `sqlite`, `next.js`, `react`,
 `three.js`, `react-three-fiber`, `glsl`, `typescript`, `docker`, `github-actions`, `osv`
 
-**Try it out links**: hosted demo URL · https://github.com/Mohammad-Umar7/proofgate
+**Try it out links**: https://proofgate-ten.vercel.app · https://github.com/Mohammad-Umar7/proofgate
 
 **Image gallery**: `docs/img/hero.jpg`, `console.jpg`, `evidence.jpg`, `galaxy.jpg`, `arena.jpg`
 
@@ -73,7 +73,7 @@ service maintainers can point their security inbox at.
 ## Step 3: Additional info
 
 - Track: **Coding and agentic engineering** · New project: **New**
-- Repo: https://github.com/Mohammad-Umar7/proofgate · Demo: hosted demo URL
+- Repo: https://github.com/Mohammad-Umar7/proofgate · Demo: https://proofgate-ten.vercel.app
 - Tavily used: **Yes** (runtime prior-art search, `engine/proofgate/tavily.py`)
 - Feedback answers: see `docs/FEEDBACK.md` (personalize the ✍️ items)
 - AI tools used: list the AI coding tools the team used (for example Claude Code)
