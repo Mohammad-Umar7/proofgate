@@ -93,8 +93,9 @@ export function EvidenceCard({ card }: { card: Card }) {
             <div className={styles.challenge}>
               <h4>Adversarial pass · Nemotron Ultra argued the reporter&apos;s side</h4>
               <p>{card.challenge}</p>
-              <span className={`chip ${card.challenge_upheld ? "green" : "amber"}`}>
-                {card.challenge_upheld ? "verdict stands" : "objection holds: verdict downgraded"}
+              <span className={`chip ${card.challenge_changed ? "amber" : card.challenge_upheld ? "green" : ""}`}>
+                {card.challenge_changed ? "objection holds: dismissal downgraded to needs info"
+                  : card.challenge_upheld ? "verdict stands" : "objection noted for the maintainer"}
               </span>
             </div>
           )}

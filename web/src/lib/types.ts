@@ -57,6 +57,7 @@ export interface Card {
   reasons: string[];
   challenge?: string | null;
   challenge_upheld?: boolean | null;
+  challenge_changed?: boolean;
   reply_draft?: string | null;
   version?: string;
   rev?: string;
