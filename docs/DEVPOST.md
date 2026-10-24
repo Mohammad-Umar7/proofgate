@@ -30,7 +30,7 @@ We wanted the proof to be as cheap as the fake.
 
 ## What it does
 ProofGate checks every claim in a vulnerability report against the real repository, at the exact
-version, before a maintainer reads it. Nine stages, cheapest first: intake (Nemotron Nano Omni reads
+version, before a maintainer reads it. Nine stages, cheapest first: intake (Nemotron 3.5 Super VL reads
 screenshots), claim extraction (Nemotron Nano), grounding (git + tree-sitter over the full history,
 then Nemotron Super over the real functions), prior art (curl's advisories, OSV and Tavily), the
 project's own security policy, a network-less sandbox for the reporter's reproduction (NVIDIA

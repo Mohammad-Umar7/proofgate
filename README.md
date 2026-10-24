@@ -35,7 +35,7 @@ and ProofGate never writes exploit code.**
 
 | | Stage | How | Model / tool |
 |---|---|---|---|
-| 1 | **Intake** | Splits prose, quoted code, the reporter's own PoC and logs; reads screenshots | Nemotron 3 Nano Omni |
+| 1 | **Intake** | Splits prose, quoted code, the reporter's own PoC and logs; reads screenshots | Nemotron 3.5 Super VL |
 | 2 | **Claims** | Every checkable claim as JSON: file, function, line, version, code, CVE | regex + Nemotron 3 Nano |
 | 3 | **Grounding** | `git show/grep/ls-tree` at the claimed version, full-history pickaxe, tree-sitter call graph; then reasoning over the real functions | git, tree-sitter, Nemotron 3 Super |
 | 4 | **Prior art** | curl's 239 official advisories, OSV.dev, and a live web search of disclosures and issues | Tavily, OSV |
@@ -104,12 +104,16 @@ Reproduce: `proofgate bench build && proofgate bench fetch && proofgate bench ru
 (`base_url=https://api.tokenfactory.nebius.com/v1/`). Model ids are resolved at startup from
 `GET /v1/models`, so the app keeps working as ids evolve. Each Nemotron size has exactly one job:
 
-| Role | Model | Job | Why this size |
-|---|---|---|---|
-| omni | Nemotron 3 Nano Omni | screenshots, terminal captures | multimodal at Nano cost |
-| nano | Nemotron 3 Nano | claims as JSON | high volume, latency-sensitive |
-| super | Nemotron 3 Super | real-source reasoning, policy, patches | long context over real code |
-| ultra | Nemotron 3 Ultra | verdict explanation + adversarial challenge | strongest reasoning, two calls per report |
+| Role | Token Factory model id | Job | Why this size | $ / 1M tokens (in / out) |
+|---|---|---|---|---|
+| nano | `nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B` | claims as JSON | high volume, latency-sensitive | 0.06 / 0.24 |
+| super | `nvidia/nemotron-3-super-120b-a12b` | real-source reasoning, policy, patches, red team | long context over real code | 0.30 / 0.90 |
+| ultra | `nvidia/Nemotron-3-Ultra-550b-a55b` | verdict explanation + adversarial challenge | strongest reasoning, two calls per report | 1.00 / 3.00 |
+| omni | `nvidia/Nemotron-3.5-Super-VL` | screenshots, terminal captures | the vision model on Token Factory | 0.30 / 0.90 |
+
+Measured on a live run (one fabricated report, every stage on, Tavily included): **about $0.01 and
+40 seconds**, most of it the git history search. Prices are the Token Factory list prices used by
+the live cost counter.
 
 - **Cost is a product feature.** Every call records tokens, latency and USD; the console shows live
   spend; `PG_MAX_COST_PER_REPORT` (default $0.25) aborts a run over budget; the public server caps

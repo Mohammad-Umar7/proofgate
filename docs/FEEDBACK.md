@@ -6,7 +6,7 @@
 
 ## Which models, and why that size/variant
 - **Nemotron 3 Nano** for claim extraction: high-volume, short structured JSON, latency matters.
-- **Nemotron 3 Nano Omni** for screenshots and terminal captures attached to reports.
+- **Nemotron 3.5 Super VL** for screenshots and terminal captures attached to reports (the vision model on Token Factory).
 - **Nemotron 3 Super** for reading real source code (long context), reachability and guard
   analysis, applying the project's policy, and drafting patches in the fix loop.
 - **Nemotron 3 Ultra** for the final explanation and the adversarial challenge, called twice per

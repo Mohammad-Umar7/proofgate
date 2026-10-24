@@ -2,7 +2,7 @@
 
 ```mermaid
 flowchart LR
-  R[Report<br/>text, screenshots] --> I[1 Intake<br/>Nemotron Nano Omni]
+  R[Report<br/>text, screenshots] --> I[1 Intake<br/>Nemotron 3.5 Super VL]
   I --> C[2 Claims<br/>regex + Nemotron Nano]
   C --> G[3 Grounding<br/>git + tree-sitter<br/>+ Nemotron Super]
   G --> P[4 Prior art<br/>curl advisories, OSV, Tavily]
@@ -34,7 +34,7 @@ flowchart LR
 
 | Role | Model family | Job | Why this size |
 |---|---|---|---|
-| `omni` | Nemotron 3 Nano Omni | transcribe screenshots and terminal captures | multimodal, cheap |
+| `omni` | Nemotron 3.5 Super VL | transcribe screenshots and terminal captures | the vision model on Token Factory |
 | `nano` | Nemotron 3 Nano | extract claims as JSON | high volume, structured output |
 | `super` | Nemotron 3 Super | read real source, judge reachability and guards, apply policy, write patches | long context over real code |
 | `ultra` | Nemotron 3 Ultra | explain the verdict, then argue the reporter's side | strongest reasoning, called twice per report |
