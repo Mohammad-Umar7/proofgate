@@ -123,8 +123,12 @@ a file was renamed, the quoted code is paraphrased but the bug is real).
 Return one JSON object:
 {{"objection": "<strongest objection, max 60 words>",
   "credible": true|false,
+  "verdict_likely_wrong": true|false,
   "what_would_settle_it": "<one concrete check or artifact>"}}
-"credible" must be true only if the objection points at a specific gap in the evidence. {guard}"""
+"credible" is true only if the objection points at a specific gap in the evidence.
+"verdict_likely_wrong" is true only if, after weighing that gap against the evidence, you believe
+the verdict is more likely wrong than right. If your objection ends up supporting the verdict,
+set it to false. {guard}"""
 
 
 async def run(ctx: Context) -> None:
@@ -159,9 +163,10 @@ async def run(ctx: Context) -> None:
             )
             ctx.record(calls)
             credible = bool(data.get("credible"))
+            likely_wrong = bool(data.get("verdict_likely_wrong"))
             decision.challenge = str(data.get("objection") or "")[:500]
-            decision.challenge_upheld = not credible
-            if credible and decision.verdict == Verdict.UNGROUNDED:
+            decision.challenge_upheld = not (credible and likely_wrong)
+            if credible and likely_wrong and decision.verdict == Verdict.UNGROUNDED:
                 s = score(ctx)
                 # A credible objection only overturns a dismissal that is not overwhelming.
                 if s["contra"] < 6:
@@ -169,6 +174,7 @@ async def run(ctx: Context) -> None:
                     decision.headline = "Needs info: the challenger found a gap worth checking"
                     decision.reasons.insert(0, f"Challenge: {decision.challenge}")
                     decision.confidence = 0.55
+                    decision.challenge_changed = True
             await ctx.event("adjudicate", "progress",
                             f"Adversarial pass: {'objection holds' if credible else 'verdict stands'}",
                             objection=decision.challenge,

@@ -139,6 +139,7 @@ class Decision(BaseModel):
     reasons: list[str]
     challenge: str | None = None  # adversarial second pass
     challenge_upheld: bool | None = None
+    challenge_changed: bool = False  # the challenge overturned a dismissal
     reply_draft: str | None = None
 
 

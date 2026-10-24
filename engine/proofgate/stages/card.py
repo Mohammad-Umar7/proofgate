@@ -111,6 +111,7 @@ def build(ctx: Context) -> dict:
         "reasons": decision.reasons if decision else [],
         "challenge": decision.challenge if decision else None,
         "challenge_upheld": decision.challenge_upheld if decision else None,
+        "challenge_changed": decision.challenge_changed if decision else False,
         "reply_draft": decision.reply_draft if decision else None,
         "version": run.resolved_version,
         "rev": run.resolved_rev,
