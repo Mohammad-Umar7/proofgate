@@ -28,7 +28,8 @@ Role = str  # "nano" | "omni" | "super" | "ultra"
 
 # Substrings used to pick the right id out of GET /v1/models, most specific first.
 ROLE_HINTS: dict[Role, tuple[str, ...]] = {
-    "omni": ("nemotron-3-nano-omni", "nano-omni", "nemotron-nano-vl", "nano-vl"),
+    "omni": ("nemotron-3-nano-omni", "nano-omni", "nemotron-3.5-super-vl", "super-vl",
+             "nemotron-nano-vl", "nano-vl", "-vl"),
     "nano": ("nemotron-3-nano-30b", "nemotron-3-nano", "nemotron-nano"),
     "super": ("nemotron-3-super", "nemotron-super"),
     "ultra": ("nemotron-3-ultra", "nemotron-ultra"),
@@ -36,19 +37,19 @@ ROLE_HINTS: dict[Role, tuple[str, ...]] = {
 
 # Fallback ids if the model list is unreachable (as listed by public Token Factory catalogs).
 DEFAULT_IDS: dict[Role, str] = {
-    "omni": "nvidia/Nemotron-3-Nano-Omni",
+    "omni": "nvidia/Nemotron-3.5-Super-VL",
     "nano": "nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B",
     "super": "nvidia/nemotron-3-super-120b-a12b",
     "ultra": "nvidia/Nemotron-3-Ultra-550b-a55b",
 }
 
-# USD per 1M tokens (input, output) used for the live cost counter. These are estimates;
-# set PG_PRICES='{"nano": [0.06, 0.24], ...}' to match the current Token Factory price list.
+# USD per 1M tokens (input, output) for the live cost counter, from the Token Factory price list
+# (2026-10-24). Override with PG_PRICES='{"nano": [0.06, 0.24], ...}' if Nebius changes them.
 PRICES: dict[Role, tuple[float, float]] = {
-    "omni": (0.10, 0.40),
-    "nano": (0.06, 0.24),
-    "super": (0.30, 0.90),
-    "ultra": (1.00, 3.00),
+    "omni": (0.30, 0.90),   # Nemotron 3.5 Super VL
+    "nano": (0.06, 0.24),   # Nemotron 3 Nano 30B-A3B
+    "super": (0.30, 0.90),  # Nemotron 3 Super 120B-A12B
+    "ultra": (1.00, 3.00),  # Nemotron 3 Ultra 550B-A55B
 }
 if _override := os.environ.get("PG_PRICES"):
     PRICES.update({k: (float(v[0]), float(v[1])) for k, v in json.loads(_override).items()})
