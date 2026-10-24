@@ -1,4 +1,4 @@
-"""Stage 1 - intake: normalize the report, split code blocks, read screenshots (Nano Omni)."""
+"""Stage 1 - intake: normalize the report, split code blocks, read screenshots (Nemotron 3.5 Super VL)."""
 
 from __future__ import annotations
 
@@ -83,7 +83,7 @@ async def run(ctx: Context) -> None:
         )
         ctx.record(call)
         att.text = text
-        await ctx.event("intake", "progress", f"Transcribed {att.name} with Nemotron Nano Omni")
+        await ctx.event("intake", "progress", f"Transcribed {att.name} with Nemotron 3.5 Super VL")
 
     roles: dict[str, int] = {}
     for block in ctx.run.code_blocks:

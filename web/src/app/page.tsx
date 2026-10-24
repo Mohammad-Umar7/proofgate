@@ -81,7 +81,7 @@ export default function Home() {
           </div>
           <div className="panel">
             <b>NVIDIA Nemotron 3</b>
-            <p>Nano Omni reads screenshots, Nano extracts claims, Super reasons over real source and writes patches, Ultra decides and then argues the other side.</p>
+            <p>Super VL reads screenshots, Nano extracts claims, Super reasons over real source and writes patches, Ultra decides and then argues the other side.</p>
           </div>
           <div className="panel">
             <b>Tavily</b>

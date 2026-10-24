@@ -2,7 +2,7 @@
 
 Every model call in ProofGate goes through here. Each Nemotron size has one job:
 
-    omni  - Nemotron 3 Nano Omni: reads screenshots and terminal captures attached to a report
+    omni  - Nemotron 3.5 Super VL: reads screenshots and terminal captures attached to a report
     nano  - Nemotron 3 Nano: fast, cheap structured extraction (claims as JSON)
     super - Nemotron 3 Super: long-context reasoning over the real source code
     ultra - Nemotron 3 Ultra: final adjudication and the adversarial challenge

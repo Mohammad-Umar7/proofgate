@@ -4,7 +4,7 @@ export type Stage =
   | "repro" | "adjudicate" | "fix" | "card";
 
 export const STAGES: { id: Stage; label: string; model?: string; what: string }[] = [
-  { id: "intake", label: "Intake", model: "Nemotron Nano Omni", what: "Reads text, screenshots and terminal captures" },
+  { id: "intake", label: "Intake", model: "Nemotron Super VL", what: "Reads text, screenshots and terminal captures" },
   { id: "claims", label: "Claims", model: "Nemotron Nano", what: "Every checkable claim as JSON" },
   { id: "grounding", label: "Grounding", model: "Nemotron Super", what: "git + tree-sitter at the claimed version" },
   { id: "prior_art", label: "Prior art", model: "Tavily + OSV", what: "Advisories, disclosures, duplicates" },
