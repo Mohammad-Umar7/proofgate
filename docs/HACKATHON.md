@@ -172,8 +172,9 @@ Token Factory (several Nemotron sizes, each with a job), real Tavily calls, and 
 
 ## Pre-submission checklist
 
-- [ ] Runtime Token Factory calls with Nemotron models, visible in code, README, UI, and video
-- [ ] Runtime Tavily call (prior-art search) — tick "Yes" on the form
+- [x] Runtime Token Factory calls with Nemotron models (Nano, Super, Ultra, 3.5 Super VL), in code,
+  README and UI; demo replays recorded from live calls (2026-10-24). Still say it in the video.
+- [x] Runtime Tavily call (prior-art search), live-tested — tick "Yes" on the form
 - [ ] Public repo, Apache-2.0 visible in About, no secrets committed
 - [ ] README: one-command setup, "Built on Nebius + NVIDIA" section, cost table, SlopBench results
 - [x] Hosted demo, no login, sample reports preloaded, live until Dec 15 → https://proofgate-ten.vercel.app (Vercel, auto-deploys from `main`)

@@ -13,13 +13,18 @@
 - **Shipping**: docker-compose one-command setup, engine/web Dockerfiles, CI workflow, Pages workflow
   (manual trigger), GitHub Action (`action/`), README, architecture, video script, feedback draft.
 
+## Status (2026-10-24)
+- Keys are in `engine/.env` (git-ignored). Live Nemotron + Tavily verified; replays and arena are
+  recorded from live calls (~$0.007 per report). Demo: https://proofgate-ten.vercel.app (Vercel,
+  auto-deploys from main).
+- Token Factory account is on the $1 trial; the $25 promo code (NEBIUS-DEVPOST-GLOBAL26 form) is
+  pending by email. Redeem it under Billing, then run the full benchmark (~$2):
+  `proofgate bench run --config full` (+ `single-model`, `no-grounding`), then `proofgate bench table`
+  and `proofgate export-web --only bench`.
+
 ## Waiting on the team
-1. `engine/.env` with `NEBIUS_API_KEY` and `TAVILY_API_KEY` → then run
-   `proofgate bench run --config full`, `--config single-model`, `--config no-grounding`, and
-   `proofgate export-web` (re-records replays/arena with real Nemotron calls and costs).
-2. Approve enabling GitHub Pages (Settings → Pages → Source: GitHub Actions), then run the
-   "Deploy demo" workflow.
-3. Record the video (`docs/VIDEO.md`), personalize `docs/FEEDBACK.md`, fill the Devpost form.
+1. Promo code email → redeem in Token Factory Billing.
+2. Record the video (`docs/VIDEO.md`), personalize `docs/FEEDBACK.md`, fill the Devpost form.
 
 ## Known gaps / next
 - REPRODUCED path: engine + sandbox image are built, but no recorded demo run yet.
