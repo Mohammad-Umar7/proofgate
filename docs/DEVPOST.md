@@ -68,7 +68,7 @@ every regression and nearby test.
 
 Results: **Nemotron 3 Super fixed 8 of 27 ($0.62 per fix), Nemotron 3 Ultra 9 of 27 ($1.98 per fix),
 and no fix broke a nearby test.** The two sizes fix different CVEs, so ProofGate routes by job: Super
-first, Ultra only on Super's failures, which fixes **11 of 27 (41%) at $1.63 per verified fix**. Of
+first, Ultra only on Super's failures, which fixes **11 of 27 (41%) at $1.62 per verified fix**. Of
 Ultra's 9 fixes, all 9 are CVEs fixed upstream after February 2026, past Nemotron 3 Super's documented
 training data. Every transcript and patch is on the FixBench page, next to the patch curl actually
 shipped.

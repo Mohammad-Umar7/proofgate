@@ -14,7 +14,7 @@
 - SlopBench, 197 curl reports: full pipeline 0/148 CVEs wrongly dismissed, $0.007/report, $1.39 total.
   Ablation without grounding: 0/49 slop closed, ranking AUC 0.53 (vs 0.67 with grounding).
 - FixBench, 27 validated curl CVEs (2 dropped, listed): Super 8/27 ($0.62/fix), Ultra 9/27
-  ($1.98/fix), Super-then-Ultra cascade 11/27 (41%, $1.63/fix), 0 fixes broke a nearby test.
+  ($1.98/fix), Super-then-Ultra cascade 11/27 (41%, $1.62/fix), 0 fixes broke a nearby test.
 - Nano run in progress (2026-10-25); add it with `proofgate fixbench table` +
   `proofgate export-web --only fixbench`.
 
