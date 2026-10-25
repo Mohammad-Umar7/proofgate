@@ -4,6 +4,7 @@
   history.json   commits per month across curl's whole history, for the history helix
   replays.json   recorded pipeline runs: synthetic samples + selected SlopBench reports
   bench.json     SlopBench metrics
+  fixbench.json  FixBench: the agent's transcripts, diffs and grades on real curl CVEs
 
 Real HackerOne reports are exported as title, link and the extracted claims only; their full
 text is not redistributed.
@@ -118,13 +119,32 @@ async def export_arena(options: Options, seeds: tuple[int, ...] = (7, 11)) -> li
     return rounds
 
 
+def export_fixbench() -> dict:
+    """FixBench results per agent model, plus the instance list (validated or dropped, and why)."""
+    from .fixbench.dataset import load_index as fixbench_index
+
+    results = ROOT / "bench" / "results"
+    models = {}
+    for role in ("nano", "super", "ultra"):
+        path = results / f"fixbench-{role}.json"
+        if path.exists():
+            models[role] = json.loads(path.read_text(encoding="utf-8"))
+    instances = [{k: r.get(k) for k in ("id", "summary", "severity", "published", "fix_commit",
+                                        "base", "advisory_url", "source_files", "validated", "why",
+                                        "fail_to_pass_valid", "pass_to_pass")}
+                 for r in fixbench_index()]
+    for r in instances:
+        r["pass_to_pass"] = len(r["pass_to_pass"] or [])
+    return {"models": models, "instances": instances}
+
+
 def main(argv: list[str] | None = None) -> int:
     import argparse
 
     parser = argparse.ArgumentParser(prog="proofgate export-web")
     parser.add_argument("--offline", action="store_true", help="deterministic stages only")
-    parser.add_argument("--only", choices=["graph", "history", "replays", "bench", "arena"],
-                        default=None)
+    parser.add_argument("--only", choices=["graph", "history", "replays", "bench", "arena",
+                                           "fixbench"], default=None)
     args = parser.parse_args(argv)
     OUT.mkdir(parents=True, exist_ok=True)
 
@@ -142,6 +162,8 @@ def main(argv: list[str] | None = None) -> int:
         if src.exists():
             bench = json.loads(src.read_text(encoding="utf-8"))
             write("bench.json", bench)
+    if args.only in (None, "fixbench"):
+        write("fixbench.json", export_fixbench())
     options = Options(use_llm=not args.offline, sandbox=False, fix=False,
                       prior_art_web=not args.offline)
     if args.only in (None, "replays"):
