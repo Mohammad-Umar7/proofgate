@@ -141,7 +141,8 @@ an indentation slip is never counted as a broken build.
 <!-- FIXBENCH:END -->
 
 Every transcript, the agent's diff and the maintainers' diff are on the
-[FixBench page](https://proofgate-ten.vercel.app/fixbench/). Reproduce (Docker required):
+[FixBench page](https://proofgate-ten.vercel.app/fixbench/). Methodology, dropped instances and threats
+to validity: [docs/FIXBENCH.md](docs/FIXBENCH.md). Reproduce (Docker required):
 `proofgate fixbench validate && proofgate fixbench run --model super && proofgate fixbench table`.
 
 ## Built on Nebius + NVIDIA
