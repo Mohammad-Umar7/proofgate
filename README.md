@@ -84,10 +84,11 @@ list itself are excluded from prior art, so ProofGate cannot look up the answer.
 |---|---|---|---|---|---|---|
 | Deterministic only (git + tree-sitter + advisories) | 12% (6/49) | **0** / 148 | 2 | 77% | $0.0000 | 8.0s |
 | Full pipeline (routed Nemotron + Tavily) | 8% (4/49) | **0** / 148 | 2 | 76% | $0.0071 | 56.9s |
+| Ablation: no grounding | 0% (0/49) | **0** / 148 | 2 | 74% | $0.0071 | 42.1s |
 
-_Not yet run: Ablation: Nemotron Ultra for every role, Ablation: no grounding._
+_Not yet run: Ablation: Nemotron Ultra for every role._
 
-_Generated 2026-10-25T03:55:58Z by `proofgate bench table`._
+_Generated 2026-10-25T05:01:18Z by `proofgate bench table`._
 <!-- BENCH:END -->
 
 **How to read this.** "Slop closed with proof" counts reports ProofGate would close with a
@@ -95,6 +96,13 @@ deterministic contradiction or a matching published advisory. Everything else ge
 real code is cited but nothing proves the bug, so the maintainer receives the evidence ledger and
 a reply draft asking for a reproduction instead of an hour of investigation. "Real CVEs wrongly
 dismissed" is the number that must stay at or near zero: those were genuine vulnerabilities.
+
+**What the ablation shows.** With the same Nemotron models and Tavily but without git grounding,
+ProofGate closes **no** slop at all, and its credibility ranking of the NEEDS INFO queue drops to
+chance (AUC 0.53, vs 0.67 with grounding). The models alone cannot tell a fabricated report from a
+real one; the evidence comes from checking the claims against the code. In the full pipeline
+Nemotron Ultra's adversarial pass is deliberately conservative: it handed 2 of the 6 deterministic
+dismissals back to a human, which is why the full run closes 4 rather than 6.
 
 Reproduce: `proofgate bench build && proofgate bench fetch && proofgate bench run --config deterministic`
 (or `--config full` with Token Factory and Tavily keys).
