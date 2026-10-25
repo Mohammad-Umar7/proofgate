@@ -1,21 +1,35 @@
-# Demo video script (under 3:00)
+# Demo video
 
-Rules: public YouTube, under 3 minutes, no copyrighted music, say "Nebius Token Factory" and
-"NVIDIA Nemotron" out loud. Record at 1920x1080 on the hosted demo (https://proofgate-ten.vercel.app).
-Good CVE to replay on FixBench: CVE-2026-92390 (Ultra, 24 replies, first test run passes, checksrc clean).
+The submission video is produced from this repository, not recorded by hand:
 
-| Time | Screen | Voice-over |
-|---|---|---|
-| 0:00–0:12 | Landing hero, slow push toward the gate | "In January 2026, curl ended its bug bounty. AI made fake vulnerability reports free to produce, and every one costs a volunteer an hour to disprove." |
-| 0:12–0:22 | Scroll: problem section, facts | "ProofGate makes proving them cheap, and for the real bugs it goes all the way to a tested patch." |
-| 0:22–0:55 | Console: invented-function sample plays; stages light up | "Claims are extracted by NVIDIA Nemotron Nano on Nebius Token Factory. Then grounding: this function has never existed, not in this release, not in any of forty thousand commits. Line 3987? The file has 3,086 lines." |
-| 0:55–1:08 | Evidence card: ledger, diff, Ultra's challenge | "The maintainer gets line-linked proof and a reply draft. Nemotron Ultra writes it, then argues the reporter's side, so we never dismiss a real bug on a model's word." |
-| 1:08–1:22 | SlopBench page | "On curl's own public record, 197 real reports, ProofGate wrongly dismissed zero of 148 real CVEs, for under a cent per report." |
-| 1:22–1:35 | FixBench hero: KPIs and the flow strip | "Triage is half the job. FixBench asks: can an open model fix real curl security bugs? 27 published CVEs, each with the regression test curl's maintainers wrote." |
-| 1:35–2:15 | FixBench: open a fixed CVE, press Replay; transcript streams (reproduce in red, edits, build + test in green) | "The agent gets only the public advisory and the vulnerable code. It reproduces the failure in a sandbox with no network, reads the code, edits C, then compiles curl and runs curl's own tests, and when they fail, it reads the output and tries again. Every step is a real Nemotron tool call on Token Factory." |
-| 2:15–2:32 | The agent's diff next to the maintainers' diff | "Here is its patch next to the one curl actually shipped. A fix only counts if a fresh build passes the regression test and every nearby test." |
-| 2:32–2:47 | Cascade panel and the model table | "Super and Ultra fix different bugs, so we route by job: Super first, Ultra only when Super fails. Eleven of twenty-seven real CVEs fixed, a dollar sixty-two per verified fix, and not one fix broke another test." |
-| 2:47–3:00 | Repo URL, "Built on" strip | "Nemotron on Nebius Token Factory, Tavily, NVIDIA OpenShell. Open source. A human always makes the final call." |
+- **Footage** is the live site (https://proofgate-ten.vercel.app), filmed by
+  [`video/tools/record.mjs`](../video/tools/record.mjs): its own Chrome profile at 1920x1080, scripted
+  steps (navigate, scroll, click Replay), DevTools screencast frames, encoded to constant-frame-rate MP4.
+- **Narration** is [`video/SCRIPT.md`](../video/SCRIPT.md), spoken by Kokoro (`af_heart`, on device,
+  free) through `npx hyperframes tts`, one clip per scene. It says "NVIDIA Nemotron" and
+  "Nebius Token Factory" out loud in scenes 3 and 12, and names Nemotron Ultra and Super in 5 and 11.
+- **Edit** is a HyperFrames project, [`video/film`](../video/film): twelve scenes timed to the narration,
+  punch-ins on the panel the voice names, two number payoffs ("0 / 148", "11 / 27"), the end card.
+  `SPEC.md`, `STORYLINES.md` and `REVIEW.md` there record the decisions.
+- **Sound**: narration plus bundled effects (credits in `video/film/SFX-CREDITS.md`). No music, so no
+  copyright question.
 
-Shot list to capture beforehand: hero (10 s loop), console replay at 1x, evidence card scroll,
-SlopBench page, FixBench page (KPIs, a Replay of a fixed CVE, the two diffs, the model table).
+Length: 1:56 (rules: under 3:00). Output: 1920x1080, 30 fps, H.264 MP4.
+
+## Rebuild
+
+```
+node video/tools/record.mjs                      # re-film the site (needs Chrome)
+cd video/film && npx hyperframes check            # lint, layout, timing
+npx hyperframes render --quality delivery -o renders/proofgate-demo.mp4
+```
+
+On Windows, run the HyperFrames commands from a short path (copy `video/film` to e.g. `%USERPROFILE%\pgfilm`
+with its `assets/`): deep paths exceed MAX_PATH inside the renderer's temp folders.
+
+## Upload checklist
+
+- YouTube, **Public** (or Unlisted), title "ProofGate: proving AI-generated security reports, then fixing
+  the real ones (Nemotron on Nebius Token Factory)".
+- Description: the Devpost elevator pitch, the demo URL, the repo URL.
+- Paste the link into Devpost (Demo video) and into README.md (Video section).
