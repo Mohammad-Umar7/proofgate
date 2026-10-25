@@ -128,12 +128,14 @@ and the vulnerable checkout:
    Edits to tests or build files are refused.
 4. **Build and test.** `run_tests` compiles curl (debug build, ccache) and runs curl's own `runtests.pl`
    in a Docker sandbox with `--network none`, a read-only root, no capabilities and hard limits. The
-   regression test runs under valgrind, as in curl's CI, so memory errors fail it too. Failures
-   (compiler errors, protocol diffs, valgrind reports) go back to the model, and it iterates, up to
-   4 test runs and 30 replies.
+   regression test runs under valgrind, as in curl's CI, so memory errors fail it too. curl's own
+   `checksrc.pl` style checker runs on the changed files. Failures (compiler errors, protocol diffs,
+   valgrind reports, style warnings) go back to the model, and it iterates, up to 4 test runs and
+   40 replies. If a later edit breaks a passing patch, the agent falls back to its last green one.
 
 **Grading is strict.** A CVE counts as fixed only if a fresh build of the agent's final diff passes every
-fail-to-pass test **and** every pass-to-pass test.
+fail-to-pass test **and** every pass-to-pass test. Style is reported separately ("style-clean"), so
+an indentation slip is never counted as a broken build.
 
 <!-- FIXBENCH:START -->
 <!-- FIXBENCH:END -->
