@@ -1,8 +1,8 @@
 """Pre-render every speed-changed clip at its exact speed, and point the scenes at the result.
 
-The renderer's frame extraction failed for every <video> with data-playback-rate != 1 on this
-machine, so each such clip is cut and retimed here with ffmpeg (setpts) into assets/clips/<id>.mp4,
-and the scene plays it at 1x from 0. The footage and the timing are the same.
+Each clip with a data-playback-rate is cut and retimed once here with ffmpeg (setpts) into
+assets/clips/<id>.mp4, and the scene plays it at 1x from 0: the renderer then only extracts short
+normal-speed clips instead of long sources at 5-8x. The footage and the timing are the same.
 """
 
 import re
