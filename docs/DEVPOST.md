@@ -40,6 +40,14 @@ loop for reproduced bugs, and a line-linked evidence card with a reply draft.
 Two guarantees: only deterministic proof can dismiss a report, and every report is checked against
 the code as it was on the day it was filed, so renamed or removed code is never called invented.
 
+## Live, not a replay
+The public site plays recorded real runs so it stays up for free. With the engine running, the same
+pages go live: paste a link to a disclosed HackerOne report and the engine fetches it and runs every
+stage; on FixBench, **Run live now** sends a CVE to the agent, which builds curl and runs its tests
+while the page streams every step with a live clock and spend. Filmed for the video: HackerOne
+#3418528 judged UNGROUNDED in 21.6 s for $0.0084 (the cited function never existed in 40,192
+commits), and CVE-2026-6276 fixed live by Nemotron 3 Super in 61 s for $0.034, all 30 tests passing.
+
 ## How we built it
 Python 3.11 engine (FastAPI, tree-sitter, git plumbing, SQLite), every model call through Nebius
 Token Factory with the OpenAI SDK and four Nemotron sizes routed by job, with live cost accounting
@@ -81,6 +89,11 @@ Our first benchmark run dismissed 39 real CVEs. The causes were instructive: we 
 reports against 2026 code, reading reporters' own PoC helpers as claims about curl, and treating
 removed files as invented. Time-travel grounding and reporter-code detection brought that down to
 a handful, which taught us that "don't dismiss real bugs" has to be measured, not assumed.
+
+Logging every Token Factory call (stage, model, tokens, cost) turned up a quieter problem: Nemotron 3
+ignores a `/no_think` line in the prompt, so a JSON stage could spend its whole token budget reasoning
+and return nothing. Switching reasoning with `chat_template_kwargs.enable_thinking` cut a full live
+triage from 38-60 s to 17-22 s, with every call parsing on the first try.
 
 ## What we learned
 Most slop can be disproved without asking a model anything. Models are most valuable where we put
