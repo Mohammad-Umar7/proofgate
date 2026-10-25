@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import logging
+
 import httpx
 
 from .config import get_settings
@@ -45,4 +47,6 @@ async def search(
         )
         if resp.status_code >= 400:
             raise TavilyError(f"Tavily {resp.status_code}: {resp.text[:200]}")
-        return resp.json().get("results", [])
+        results = resp.json().get("results", [])
+        logging.getLogger("proofgate.tavily").info("tavily search %d results: %s", len(results), query[:90])
+        return results

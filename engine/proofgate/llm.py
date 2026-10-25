@@ -13,6 +13,7 @@ from __future__ import annotations
 import asyncio
 import hashlib
 import json
+import logging
 import os
 import re
 import time
@@ -25,6 +26,7 @@ from .config import get_settings
 from .schema import ModelCall
 
 Role = str  # "nano" | "omni" | "super" | "ultra"
+log = logging.getLogger("proofgate.llm")
 
 # Substrings used to pick the right id out of GET /v1/models, most specific first.
 ROLE_HINTS: dict[Role, tuple[str, ...]] = {
@@ -240,6 +242,8 @@ class TokenFactory:
             cost_usd=round(cost, 6),
             ms=ms,
         )
+        log.info("token-factory %s %s in=%d out=%d $%.5f %d ms", stage, model, prompt_tokens,
+                 completion_tokens, cost, ms)
         if budget:
             budget.charge(cost)
         return message, call
