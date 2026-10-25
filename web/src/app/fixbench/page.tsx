@@ -101,6 +101,12 @@ function Detail({ row }: { row: FbRow }) {
         <div>
           <div className={styles.dMeta}>
             <span className={`chip ${row.resolved ? "green" : "red"}`}><span className="dot" />{row.resolved ? "fixed: curl's tests pass" : "not fixed"}</span>
+            {row.resolved && row.style_problems && (
+              <span className={`chip ${row.style_problems.length ? "amber" : "green"}`}
+                title={row.style_problems.slice(0, 5).join("\n")}>
+                {row.style_problems.length ? `checksrc: ${row.style_problems.length} style notes` : "checksrc clean"}
+              </span>
+            )}
             <span className="mono">{row.id}</span>
             {row.severity && <span className={styles.dim}>{row.severity} severity</span>}
             <span className={styles.dim}>published {row.published}</span>
@@ -194,12 +200,13 @@ export default function FixBenchPage() {
         <section className={`panel ${styles.section}`}>
           <h2>Same agent, three Nemotron sizes</h2>
           <table className={styles.table}>
-            <thead><tr><th>Model</th><th>Fixed</th><th>Right file</th><th>Passed on 1st test run</th><th>$ / CVE</th><th>$ / fix</th><th>Replies</th><th>Test runs</th></tr></thead>
+            <thead><tr><th>Model</th><th>Fixed</th><th>Style-clean fixes</th><th>Right file</th><th>Passed on 1st test run</th><th>$ / CVE</th><th>$ / fix</th><th>Replies</th><th>Test runs</th></tr></thead>
             <tbody>
               {Object.entries(fb.models).map(([r, d]) => (
                 <tr key={r}>
                   <td>{ROLE_LABEL[r] ?? r}<div className={styles.mid}>{d.model}</div></td>
                   <td><b>{d.metrics.resolved}</b> / {d.metrics.n}</td>
+                  <td>{d.metrics.style_clean ?? "n/a"}</td>
                   <td>{Math.round(d.metrics.localized * 100)}%</td>
                   <td>{d.metrics.first_try}</td>
                   <td>${d.metrics.cost_mean_usd.toFixed(3)}</td>

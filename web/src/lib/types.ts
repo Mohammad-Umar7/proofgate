@@ -110,6 +110,7 @@ export interface FbRow {
   f2p_passed: boolean;
   p2p_broken: string[];
   build_ok: boolean;
+  style_problems?: string[];
   first_test_passed: boolean | null;
   tests_run: number;
   turns: number;
@@ -136,6 +137,7 @@ export interface FbMetrics {
   localized: number;
   build_ok: number;
   broke_other_tests: number;
+  style_clean?: number;
   cost_total_usd: number;
   cost_mean_usd: number;
   cost_per_resolved_usd: number | null;

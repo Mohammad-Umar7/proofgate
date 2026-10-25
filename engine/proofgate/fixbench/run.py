@@ -184,9 +184,9 @@ async def run_bench(role: str, limit: int | None, concurrency: int, budget: floa
 
 
 def table() -> str:
-    lines = ["| Agent model (Token Factory) | Resolved | Fixed on 1st test run | Edited the right file | "
-             "Broke other tests | Cost / CVE | Cost / fix | Time / CVE |",
-             "|---|---|---|---|---|---|---|---|"]
+    lines = ["| Agent model (Token Factory) | Resolved | Style-clean (checksrc) | Fixed on 1st test run | "
+             "Edited the right file | Broke other tests | Cost / CVE | Cost / fix | Time / CVE |",
+             "|---|---|---|---|---|---|---|---|---|"]
     for role in ("nano", "super", "ultra"):
         path = RESULTS / f"fixbench-{role}.json"
         if not path.exists():
@@ -196,7 +196,8 @@ def table() -> str:
         per_fix = f"${m['cost_per_resolved_usd']:.3f}" if m["cost_per_resolved_usd"] else "n/a"
         lines.append(
             f"| `{data['model']}` | **{m['resolved']} / {m['n']}** ({m['resolved_rate'] * 100:.0f}%) "
-            f"| {m['first_try']} | {m['localized'] * 100:.0f}% | {m['broke_other_tests']} "
+            f"| {m.get('style_clean', 'n/a')} | {m['first_try']} | {m['localized'] * 100:.0f}% "
+            f"| {m['broke_other_tests']} "
             f"| ${m['cost_mean_usd']:.3f} | {per_fix} | {m['seconds_mean'] / 60:.1f} min |")
     index = load_index()
     valid = sum(1 for r in index if r.get("validated"))
