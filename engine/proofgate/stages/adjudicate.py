@@ -141,7 +141,7 @@ async def run(ctx: Context) -> None:
         tag = new_tag()
         report = fence(f"{ctx.run.report.title}\n\n{ctx.run.report.body}"[:8000], tag)
         try:
-            data, calls = await ctx.llm.chat_json(
+            data, calls = await ctx.ask_json(
                 stage="adjudicate", role=ctx.role("ultra"),
                 system=EXPLAIN_SYSTEM.format(verdict=decision.verdict.value, guard=guard(tag)),
                 user=f"EVIDENCE LEDGER:\n{ledger(ctx)}\n\nREPORT:\n{report}",
@@ -155,11 +155,13 @@ async def run(ctx: Context) -> None:
             await ctx.event("adjudicate", "progress", f"Explanation skipped: {exc}")
 
         try:
-            data, calls = await ctx.llm.chat_json(
+            data, calls = await ctx.ask_json(
                 stage="adjudicate", role=ctx.role("ultra"),
                 system=CHALLENGE_SYSTEM.format(verdict=decision.verdict.value, guard=guard(tag)),
                 user=f"EVIDENCE LEDGER:\n{ledger(ctx)}\n\nREPORT:\n{report}",
-                max_tokens=600, reasoning=True, budget=ctx.budget,
+                # With reasoning on, Ultra spent 1,600+ tokens thinking and never reached the
+                # JSON, so the challenge was skipped; without it, it answers in ~300 tokens.
+                max_tokens=900, reasoning=False, budget=ctx.budget,
             )
             ctx.record(calls)
             credible = bool(data.get("credible"))

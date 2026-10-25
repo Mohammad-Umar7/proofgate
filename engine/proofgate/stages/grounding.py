@@ -393,7 +393,7 @@ async def reason_over_code(ctx: Context, grounder: Grounder) -> None:
     if not excerpts:
         return
     tag = new_tag()
-    data, calls = await ctx.llm.chat_json(
+    data, calls = await ctx.ask_json(
         stage="grounding",
         role=ctx.role("super"),
         system=SUPER_SYSTEM.format(project=ctx.run.report.project, version=grounder.version,

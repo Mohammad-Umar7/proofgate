@@ -111,7 +111,7 @@ async def run(ctx: Context) -> None:
     path, source = _function_source(ctx)
     feedback = ""
     for iteration in range(1, MAX_ITERATIONS + 1):
-        data, calls = await ctx.llm.chat_json(
+        data, calls = await ctx.ask_json(
             stage="fix", role=ctx.role("super"),
             system=FIX_SYSTEM.format(project=ctx.run.report.project),
             user=(f"SANITIZER REPORT:\n{ctx.run.sandbox.log[-4000:]}\n\n"

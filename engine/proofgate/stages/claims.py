@@ -155,7 +155,7 @@ async def run(ctx: Context) -> None:
     if ctx.llm_on:
         tag = new_tag()
         try:
-            data, calls = await ctx.llm.chat_json(
+            data, calls = await ctx.ask_json(
                 stage="claims",
                 role=ctx.role("nano"),
                 system=EXTRACT_SYSTEM.format(project=ctx.run.report.project, guard=guard(tag)),

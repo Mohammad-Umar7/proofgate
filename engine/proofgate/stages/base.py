@@ -7,7 +7,7 @@ from collections.abc import Awaitable, Callable
 from dataclasses import dataclass, field
 
 from ..config import get_settings
-from ..llm import Budget, TokenFactory, get_llm
+from ..llm import Budget, JSONReplyError, TokenFactory, get_llm
 from ..repo import Repo, get_repo
 from ..schema import ModelCall, Run, StageEvent, StageName
 
@@ -52,6 +52,15 @@ class Context:
     def record(self, calls: list[ModelCall] | ModelCall) -> None:
         for call in calls if isinstance(calls, list) else [calls]:
             self.run.calls.append(call)
+
+    async def ask_json(self, **kwargs: object) -> tuple[object, list[ModelCall]]:
+        """llm.chat_json, but attempts that never parsed are recorded before the error goes up,
+        so the run's cost includes them. The caller records the calls of a success."""
+        try:
+            return await self.llm.chat_json(**kwargs)  # type: ignore[arg-type]
+        except JSONReplyError as exc:
+            self.record(exc.calls)
+            raise
 
     async def event(
         self, stage: StageName, status: str, message: str, **data: object

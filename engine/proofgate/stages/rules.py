@@ -108,7 +108,7 @@ async def run(ctx: Context) -> None:
         tag = new_tag()
         policy = "\n".join(f"- {r['id']}: {r['title']} — {r['text'][:400]}" for r in book)
         try:
-            data, calls = await ctx.llm.chat_json(
+            data, calls = await ctx.ask_json(
                 stage="rules",
                 role=ctx.role("super"),
                 system=RULES_SYSTEM.format(rules=policy, guard=guard(tag)),
