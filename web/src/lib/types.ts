@@ -86,6 +86,74 @@ export interface Replay {
   card: Card;
 }
 
+export interface FbStep {
+  turn: number;
+  thought: string;
+  tool: string;
+  args: Record<string, string>;
+  observation: string;
+  t: number;
+  cost_usd: number;
+}
+
+export interface FbRow {
+  id: string;
+  summary: string;
+  severity?: string | null;
+  published?: string | null;
+  fix_commit: string;
+  base: string;
+  advisory_url?: string | null;
+  model: string;
+  role: string;
+  resolved: boolean;
+  f2p_passed: boolean;
+  p2p_broken: string[];
+  build_ok: boolean;
+  first_test_passed: boolean | null;
+  tests_run: number;
+  turns: number;
+  stop: string;
+  cost_usd: number;
+  tokens: number;
+  seconds: number;
+  localized: boolean;
+  files_edited: string[];
+  gold_files: string[];
+  diff: string;
+  gold_diff: string;
+  summary_agent: string;
+  fail_to_pass: string[];
+  pass_to_pass: number;
+  steps: FbStep[];
+}
+
+export interface FbMetrics {
+  n: number;
+  resolved: number;
+  resolved_rate: number;
+  first_try: number;
+  localized: number;
+  build_ok: number;
+  broke_other_tests: number;
+  cost_total_usd: number;
+  cost_mean_usd: number;
+  cost_per_resolved_usd: number | null;
+  turns_mean: number;
+  tests_mean: number;
+  seconds_mean: number;
+  post_cutoff: { n: number; resolved: number };
+}
+
+export interface FixBench {
+  models: Record<string, { role: string; model: string; generated: string; metrics: FbMetrics; rows: FbRow[] }>;
+  instances: {
+    id: string; summary: string; severity?: string | null; published?: string | null; fix_commit: string;
+    advisory_url?: string | null; source_files: string[]; validated?: boolean; why?: string;
+    fail_to_pass_valid?: string[]; pass_to_pass: number;
+  }[];
+}
+
 export interface GraphData {
   project: string;
   rev: string;

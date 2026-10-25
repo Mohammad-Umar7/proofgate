@@ -1,4 +1,4 @@
-import type { Card, GraphData, Replay, StageEvent } from "./types";
+import type { Card, FixBench, GraphData, Replay, StageEvent } from "./types";
 
 /** Live mode talks to a running engine; replay mode plays recorded real runs from /data. */
 export const API = (process.env.NEXT_PUBLIC_API_URL || "").replace(/\/$/, "");
@@ -27,6 +27,11 @@ export async function loadGraph(): Promise<GraphData> {
 
 export async function loadBench(): Promise<any> {
   const res = await fetch(data("bench.json"));
+  return res.ok ? res.json() : null;
+}
+
+export async function loadFixBench(): Promise<FixBench | null> {
+  const res = await fetch(data("fixbench.json"));
   return res.ok ? res.json() : null;
 }
 

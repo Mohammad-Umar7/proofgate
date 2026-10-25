@@ -10,6 +10,7 @@ const LINKS = [
   { href: "/galaxy/", label: "Code galaxy" },
   { href: "/arena/", label: "Arena" },
   { href: "/bench/", label: "SlopBench" },
+  { href: "/fixbench/", label: "FixBench" },
 ];
 
 export function Nav() {
