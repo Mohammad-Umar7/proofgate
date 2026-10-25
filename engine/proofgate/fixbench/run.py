@@ -159,15 +159,23 @@ async def run_bench(role: str, limit: int | None, concurrency: int, budget: floa
         rows = rows[:limit]
     sem = asyncio.Semaphore(concurrency)
     results: list[dict] = []
+    partial = RESULTS / f"fixbench-{role}.partial.jsonl"
+    RESULTS.mkdir(parents=True, exist_ok=True)
+    partial.write_text("", encoding="utf-8")
 
     async def worker(row: dict) -> None:
         async with sem:
             try:
-                results.append(await run_one(row, role, budget, log))
+                out = await run_one(row, role, budget, log)
             except Exception as exc:  # noqa: BLE001 - record and keep going
                 log(f"  {row['id']}: error {exc}")
+                return
+            results.append(out)
+            with partial.open("a", encoding="utf-8") as fh:  # survive an interrupted run
+                fh.write(json.dumps(out) + "\n")
 
     await asyncio.gather(*(worker(r) for r in rows))
+    partial.unlink(missing_ok=True)
     results.sort(key=lambda r: r["published"] or "", reverse=True)
     summary = {"role": role, "model": results[0]["model"] if results else None,
                "generated": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
