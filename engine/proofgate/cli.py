@@ -91,12 +91,18 @@ def main(argv: list[str] | None = None) -> int:
     arena.add_argument("--seed", type=int, default=7)
 
     sub.add_parser("bench", help="SlopBench: build | fetch | run --config ...", add_help=False)
+    sub.add_parser("fixbench", help="FixBench: build | validate | run --model ... | table",
+                   add_help=False)
 
     argv = sys.argv[1:] if argv is None else argv
     if argv and argv[0] == "bench":
         from .bench.run import main as bench_main
 
         return bench_main(argv[1:])
+    if argv and argv[0] == "fixbench":
+        from .fixbench.run import main as fixbench_main
+
+        return fixbench_main(argv[1:])
     if argv and argv[0] == "export-web":
         from .export import main as export_main
 
