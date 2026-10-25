@@ -30,6 +30,32 @@ jobs:
           PG_SANDBOX: "off"
         run: python -m pytest -q
 
+  fixbench:
+    # Reproduce one FixBench instance end to end: build curl at the vulnerable commit in the
+    # network-less sandbox, check curl's regression test fails, apply curl's fix, check it passes.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install
+        run: pip install -e "./engine[dev]"
+      - name: Cache curl history
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/proofgate/repos
+          key: curl-history-${{ github.run_id }}
+          restore-keys: curl-history-
+      - name: Build the sandbox toolchain image
+        run: docker build -q -t proofgate/curl-test:3 -f engine/proofgate/sandbox/Dockerfile.curl-test engine/proofgate/sandbox
+      - name: Validate CVE-2026-8924 (trailing dot domain super cookie)
+        working-directory: engine
+        run: |
+          docker volume create proofgate-ccache
+          python -m proofgate.cli fixbench validate --concurrency 1 --only CVE-2026-8924 | tee validate.log
+          grep -q "CVE-2026-8924 *valid" validate.log
+
   web:
     runs-on: ubuntu-latest
     steps:
