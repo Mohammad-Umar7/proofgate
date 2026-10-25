@@ -190,20 +190,42 @@ class TokenFactory:
         reasoning: bool = False,
         budget: Budget | None = None,
     ) -> tuple[str, ModelCall]:
-        """One completion over a multi-turn conversation (used by the FixBench agent loop)."""
-        await self.resolve_models()
-        model = self.model_for(role)
+        """One completion over a multi-turn conversation."""
         # Nemotron reasoning toggle: '/think' or '/no_think' in the system prompt.
         sys_prompt = f"{'/think' if reasoning else '/no_think'}\n{system}"
+        message, call = await self.complete(
+            stage=stage, role=role, messages=[{"role": "system", "content": sys_prompt}, *messages],
+            max_tokens=max_tokens, temperature=temperature, budget=budget)
+        return message.content or "", call
+
+    async def complete(
+        self,
+        *,
+        stage: str,
+        role: Role,
+        messages: list[dict[str, Any]],
+        tools: list[dict[str, Any]] | None = None,
+        max_tokens: int = 1200,
+        temperature: float = 0.1,
+        budget: Budget | None = None,
+    ) -> tuple[Any, ModelCall]:
+        """Raw chat completion, optionally with native tool calling (the FixBench agent loop).
+
+        Returns the provider's message object (content, tool_calls, reasoning_content) and the
+        cost record."""
+        await self.resolve_models()
+        model = self.model_for(role)
         started = time.perf_counter()
+        extra: dict[str, Any] = {"tools": tools, "tool_choice": "auto"} if tools else {}
         response = await self.client.chat.completions.create(
             model=model,
-            messages=[{"role": "system", "content": sys_prompt}, *messages],
+            messages=messages,
             max_tokens=max_tokens,
             temperature=temperature,
+            **extra,
         )
         ms = int((time.perf_counter() - started) * 1000)
-        text = response.choices[0].message.content or ""
+        message = response.choices[0].message
         usage = response.usage
         p_in, p_out = PRICES.get(role, (0.0, 0.0))
         prompt_tokens = getattr(usage, "prompt_tokens", 0) or 0
@@ -220,7 +242,7 @@ class TokenFactory:
         )
         if budget:
             budget.charge(cost)
-        return text, call
+        return message, call
 
     async def chat_json(self, *, retries: int = 1, **kwargs: Any) -> tuple[Any, list[ModelCall]]:
         """Ask for a JSON object; on a parse failure, retry once with the error fed back."""
