@@ -1,0 +1,17 @@
+# Toolchain for building curl from any commit and running its own test suite (FixBench).
+# Source trees are never baked in: every run copies a `git archive` of one commit into a tmpfs,
+# builds with ccache (shared volume), runs the tests, and is thrown away. Containers started
+# from this image always run with `--network none`; the test servers bind to loopback only.
+FROM debian:bookworm-slim
+
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends \
+      build-essential autoconf automake libtool pkg-config perl python3 ccache \
+      libssl-dev zlib1g-dev libpsl-dev libidn2-dev libssh2-1-dev libnghttp2-dev \
+      ca-certificates \
+ && rm -rf /var/lib/apt/lists/*
+
+RUN useradd --create-home --uid 10001 runner && mkdir /ccache && chown runner /ccache
+ENV CCACHE_DIR=/ccache CCACHE_MAXSIZE=3G PATH="/usr/lib/ccache:${PATH}"
+USER runner
+WORKDIR /work
