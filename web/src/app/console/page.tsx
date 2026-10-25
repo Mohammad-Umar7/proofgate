@@ -14,7 +14,9 @@ const Galaxy = dynamic(() => import("@/three/galaxy/Galaxy"), { ssr: false });
 
 function focusFrom(card: Card | null): GalaxyFocus {
   if (!card) return {};
-  if (card.ghosts?.length) return { ghosts: card.ghosts.slice(0, 2).map((g) => ({ ...g, note: "never existed in curl" })) };
+  // a report can cite the same invented function several times: one ghost per name
+  const ghosts = (card.ghosts ?? []).filter((g, i, all) => all.findIndex((x) => x.name === g.name) === i);
+  if (ghosts.length) return { ghosts: ghosts.slice(0, 2).map((g) => ({ ...g, note: "never existed in curl" })) };
   const p = card.paths?.find((x) => x.chain?.length);
   if (p) return { path: p.chain.filter((n) => !n.startsWith("table:")), target: p.function };
   return {};

@@ -330,8 +330,8 @@ function Scene({ graph, focus, autoRotate, compact }: {
         <Edges graph={graph} dim={lit.size > 0 || ghosts.length > 0} />
         <Nodes graph={graph} lit={lit} dim={lit.size > 0 || ghosts.length > 0} onHover={setHover} />
         {pathIdx.length > 1 && <PathBeam points={pathIdx.map((i) => graph.nodes[i].pos)} />}
-        {ghostAnchors.map((g) => (
-          <Ghost key={g.name} name={g.name} position={g.pos} anchor={g.anchor} near={g.near} note={g.note} />
+        {ghostAnchors.map((g, k) => (
+          <Ghost key={`${g.name}:${k}`} name={g.name} position={g.pos} anchor={g.anchor} near={g.near} note={g.note} />
         ))}
         {hovered && (
           <Html position={hovered.pos} center style={{ pointerEvents: "none" }}>
