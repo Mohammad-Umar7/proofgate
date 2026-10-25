@@ -1,0 +1,45 @@
+14:02:14.848 httpx2 HTTP Request: GET https://api.tokenfactory.nebius.com/v1/models "HTTP/1.1 200 OK"
+14:02:16.590 httpx HTTP Request: GET https://hackerone.com/reports/3418528.json "HTTP/1.1 200 OK"
+14:02:22.016 httpx2 HTTP Request: POST https://api.tokenfactory.nebius.com/v1/chat/completions "HTTP/1.1 200 OK"
+14:02:22.023 proofgate.llm token-factory claims nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B in=1912 out=574 $0.00025 5423 ms
+14:02:29.479 httpx HTTP Request: POST https://api.tavily.com/search "HTTP/1.1 200 OK"
+14:02:29.480 proofgate.tavily tavily search 6 results: curl Unsafe use of strcpy in Curl_ldap_err2string (packages/OS400/os400sys.c) — stack-buff
+14:02:31.274 httpx2 HTTP Request: POST https://api.tokenfactory.nebius.com/v1/chat/completions "HTTP/1.1 200 OK"
+14:02:31.275 proofgate.llm token-factory rules nvidia/nemotron-3-super-120b-a12b in=3330 out=58 $0.00105 1494 ms
+14:02:32.848 httpx2 HTTP Request: POST https://api.tokenfactory.nebius.com/v1/chat/completions "HTTP/1.1 200 OK"
+14:02:32.848 proofgate.llm token-factory adjudicate nvidia/Nemotron-3-Ultra-550b-a55b in=2861 out=259 $0.00364 1571 ms
+14:02:34.062 httpx2 HTTP Request: POST https://api.tokenfactory.nebius.com/v1/chat/completions "HTTP/1.1 200 OK"
+14:02:34.063 proofgate.llm token-factory adjudicate nvidia/Nemotron-3-Ultra-550b-a55b in=2930 out=124 $0.00330 1215 ms
+14:03:24.799 httpx HTTP Request: GET https://hackerone.com/reports/3418528.json "HTTP/1.1 200 OK"
+14:03:35.980 httpx2 HTTP Request: POST https://api.tokenfactory.nebius.com/v1/chat/completions "HTTP/1.1 200 OK"
+14:03:35.980 proofgate.llm token-factory claims nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B in=1921 out=598 $0.00026 11178 ms
+14:03:41.388 httpx HTTP Request: POST https://api.tavily.com/search "HTTP/1.1 200 OK"
+14:03:41.389 proofgate.tavily tavily search 6 results: curl Unsafe use of strcpy in Curl_ldap_err2string (packages/OS400/os400sys.c) — stack-buff
+14:03:43.829 httpx2 HTTP Request: POST https://api.tokenfactory.nebius.com/v1/chat/completions "HTTP/1.1 200 OK"
+14:03:43.830 proofgate.llm token-factory rules nvidia/nemotron-3-super-120b-a12b in=3324 out=93 $0.00108 2103 ms
+14:03:45.198 httpx2 HTTP Request: POST https://api.tokenfactory.nebius.com/v1/chat/completions "HTTP/1.1 200 OK"
+14:03:45.199 proofgate.llm token-factory adjudicate nvidia/Nemotron-3-Ultra-550b-a55b in=2836 out=290 $0.00371 1368 ms
+14:03:46.403 httpx2 HTTP Request: POST https://api.tokenfactory.nebius.com/v1/chat/completions "HTTP/1.1 200 OK"
+14:03:46.405 proofgate.llm token-factory adjudicate nvidia/Nemotron-3-Ultra-550b-a55b in=2905 out=135 $0.00331 1204 ms
+14:12:19.307 httpx2 HTTP Request: POST https://api.tokenfactory.nebius.com/v1/chat/completions "HTTP/1.1 200 OK"
+14:12:19.312 proofgate.llm token-factory fixbench nvidia/nemotron-3-super-120b-a12b in=2856 out=85 $0.00093 2065 ms
+14:12:20.556 httpx2 HTTP Request: POST https://api.tokenfactory.nebius.com/v1/chat/completions "HTTP/1.1 200 OK"
+14:12:20.556 proofgate.llm token-factory fixbench nvidia/nemotron-3-super-120b-a12b in=3695 out=97 $0.00120 1146 ms
+14:12:21.594 httpx2 HTTP Request: POST https://api.tokenfactory.nebius.com/v1/chat/completions "HTTP/1.1 200 OK"
+14:12:21.595 proofgate.llm token-factory fixbench nvidia/nemotron-3-super-120b-a12b in=3758 out=80 $0.00120 958 ms
+14:12:22.799 httpx2 HTTP Request: POST https://api.tokenfactory.nebius.com/v1/chat/completions "HTTP/1.1 200 OK"
+14:12:22.800 proofgate.llm token-factory fixbench nvidia/nemotron-3-super-120b-a12b in=5612 out=83 $0.00176 1097 ms
+14:12:23.893 httpx2 HTTP Request: POST https://api.tokenfactory.nebius.com/v1/chat/completions "HTTP/1.1 200 OK"
+14:12:23.894 proofgate.llm token-factory fixbench nvidia/nemotron-3-super-120b-a12b in=7436 out=93 $0.00231 1092 ms
+14:12:26.225 httpx2 HTTP Request: POST https://api.tokenfactory.nebius.com/v1/chat/completions "HTTP/1.1 200 OK"
+14:12:26.226 proofgate.llm token-factory fixbench nvidia/nemotron-3-super-120b-a12b in=9307 out=366 $0.00312 2332 ms
+14:12:28.829 httpx2 HTTP Request: POST https://api.tokenfactory.nebius.com/v1/chat/completions "HTTP/1.1 200 OK"
+14:12:28.830 proofgate.llm token-factory fixbench nvidia/nemotron-3-super-120b-a12b in=11102 out=486 $0.00377 2602 ms
+14:12:32.468 httpx2 HTTP Request: POST https://api.tokenfactory.nebius.com/v1/chat/completions "HTTP/1.1 200 OK"
+14:12:32.469 proofgate.llm token-factory fixbench nvidia/nemotron-3-super-120b-a12b in=12899 out=715 $0.00451 3638 ms
+14:12:37.575 httpx2 HTTP Request: POST https://api.tokenfactory.nebius.com/v1/chat/completions "HTTP/1.1 200 OK"
+14:12:37.578 proofgate.llm token-factory fixbench nvidia/nemotron-3-super-120b-a12b in=14790 out=892 $0.00524 5107 ms
+14:12:38.694 httpx2 HTTP Request: POST https://api.tokenfactory.nebius.com/v1/chat/completions "HTTP/1.1 200 OK"
+14:12:38.696 proofgate.llm token-factory fixbench nvidia/nemotron-3-super-120b-a12b in=15459 out=45 $0.00468 1086 ms
+14:13:06.277 httpx2 HTTP Request: POST https://api.tokenfactory.nebius.com/v1/chat/completions "HTTP/1.1 200 OK"
+14:13:06.278 proofgate.llm token-factory fixbench nvidia/nemotron-3-super-120b-a12b in=17223 out=86 $0.00524 1852 ms
