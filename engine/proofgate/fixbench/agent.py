@@ -276,6 +276,10 @@ def _fuzzy_replace(text: str, search: str, replace: str) -> str | None:
     if len(hits) != 1:
         return None
     i = hits[0]
+    # lines the model kept unchanged keep the file's own indentation (no whitespace-only churn)
+    original = {line.strip(): line.rstrip("\n") for line in lines[i:i + len(want)] if line.strip()}
+    kept = [original.get(r.strip(), r) if r.strip() else r for r in replace.split("\n")]
+    replace = "\n".join(kept)
     tail = "\n" if replace and not replace.endswith("\n") else ""
     return "".join(lines[:i]) + replace + tail + "".join(lines[i + len(want):])
 
@@ -329,7 +333,7 @@ def starting_points(ws: Workspace, limit: int = 6) -> str:
     return ("Starting points (automatic search, no model involved):\n" + "\n".join(out)) if out else ""
 
 
-def _trim(messages: list[dict], keep: int = 16) -> list[dict]:
+def _trim(messages: list[dict], keep: int = 10) -> list[dict]:
     """Keep the conversation affordable: only old tool output shrinks."""
     tools = [i for i, m in enumerate(messages) if m["role"] == "tool"]
     old = set(tools[:-keep]) if len(tools) > keep else set()
@@ -359,6 +363,17 @@ async def solve(row: dict, tests: list[str], *, role: str = "super", budget_usd:
         names.append(f"  tests/data/test{t}: {name.group(1).strip() if name else ''}")
     system = SYSTEM.format(base=row["base"][:12], tests=", ".join(f"test{t}" for t in f2p),
                            turns=MAX_TURNS, max_tests=MAX_TESTS)
+
+    async def note(step: Step) -> None:
+        result.steps.append(step)
+        if emit:
+            await emit(step)
+
+    # Reproduce first: run the regression test on the untouched vulnerable build, so the agent
+    # starts from the real failure (expected vs actual protocol/output), not just prose.
+    baseline = await run_tests(row, "", f2p)
+    repro = baseline.feedback(3000) if baseline.build_ok else "(the baseline build failed)"
+    await note(Step(0, "", "reproduce", {}, repro[:6000], round(time.perf_counter() - started, 1)))
     messages: list[dict] = [
         {"role": "system", "content": system},
         {"role": "user", "content": (
@@ -367,13 +382,9 @@ async def solve(row: dict, tests: list[str], *, role: str = "super", budget_usd:
             f"<advisory>\n{row['issue'].strip()}\n</advisory>\n\n"
             "Regression test(s) that currently fail:\n" + "\n".join(names) +
             f"\nNearby tests that must keep passing: {len(tests) - len(f2p)}.\n\n"
+            f"The regression test on the unmodified code, run in the sandbox just now:\n{repro}\n\n"
             + starting_points(ws))},
     ]
-
-    async def note(step: Step) -> None:
-        result.steps.append(step)
-        if emit:
-            await emit(step)
 
     nudged = False
     for turn in range(1, MAX_TURNS + 1):
@@ -423,7 +434,7 @@ async def solve(row: dict, tests: list[str], *, role: str = "super", budget_usd:
             await note(Step(turn, thought if i == 0 else "", tool,
                             {k: str(v)[:4000] for k, v in args.items()}, obs[:6000],
                             round(time.perf_counter() - started, 1), call.cost_usd if i == 0 else 0.0))
-            messages.append({"role": "tool", "tool_call_id": tc.id, "content": obs[:9000]})
+            messages.append({"role": "tool", "tool_call_id": tc.id, "content": obs[:7000]})
             if finished:
                 break
         if finished:
