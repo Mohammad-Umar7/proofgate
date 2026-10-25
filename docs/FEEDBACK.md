@@ -12,6 +12,31 @@
 - **Nemotron 3 Ultra** for the final explanation and the adversarial challenge, called twice per
   report: the only place we pay for the largest model.
 
+## First-hand observations from building ProofGate (facts, use them in the answers)
+
+- **Native tool calling works and matters.** Through Token Factory's OpenAI-compatible `tools`
+  parameter, Nemotron 3 Super returns `finish_reason: "tool_calls"` with clean JSON arguments, and
+  its reasoning separately in `reasoning_content` (also `reasoning`), with `reasoning_tokens` in usage.
+  Our first FixBench agent used a text protocol (tags in the reply) instead: Super wrote one tool call
+  and then **invented the tool's output** (fake file contents, fake grep hits) for 4,000 tokens.
+  Switching to native tool calling removed that failure mode completely. Worth a line in the docs.
+- **Super as a coding agent.** It localizes well from a real test failure (it read the protocol
+  diff in the reproduction log and went straight to the right function), but it explores in small
+  slices (20–40 lines per read) and can circle without editing; a "commit to an edit and run the
+  tests" nudge after 12 replies made the difference. A full agent run on a real curl CVE (reproduce,
+  explore, edit, build curl, run 31 tests, iterate, pass) cost about **$0.08 and 3 minutes**.
+- **Ultra** reads larger chunks and commits sooner, at roughly 5x the tokens of Super on the same
+  CVE (about $0.50 vs $0.08 in our first comparison).
+- **Triage at scale.** The full SlopBench run (197 real curl reports, four Nemotron sizes routed
+  by job plus Tavily) cost **$1.39 in total**, $0.007 per report.
+- **Billing UX.** The promo code lives in "Top up balance", where the default tab is "By card" with
+  the saved card preselected, so one wrong click charges the card. A separate "Redeem code" entry
+  would be safer. After about $2 of usage the account balance had not changed yet; real-time usage
+  would help when running benchmarks against a fixed credit.
+- **Model ids** mix casing styles (`nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B`,
+  `nvidia/nemotron-3-super-120b-a12b`, `nvidia/Nemotron-3-Ultra-550b-a55b`); we resolve them at
+  runtime from `GET /v1/models` to stay robust.
+
 ## Output quality (1–10) ✍️
 What to cover: JSON reliability (how often the retry-with-error path was needed), whether Super
 cited real line numbers from the excerpts, whether Ultra's challenge found real gaps or invented
