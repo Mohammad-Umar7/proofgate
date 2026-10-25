@@ -32,6 +32,14 @@ def test_testrun_grading_requires_every_test():
     assert not TestRun(False).passed([])
 
 
+def test_checksrc_warnings_are_parsed():
+    log = ("PG_BUILD_OK\nPG_CHECKSRC\n./lib/cookie.c:781:7: warning: not indented 2 steps (INDENTATION)\n"
+           "checksrc: 0 errors and 1 warning\nPG_CHECKSRC_END\ntest 1629 [x]\n")
+    run = TestRun(True, {}, log=log)
+    assert run.style == ["./lib/cookie.c:781:7: warning: not indented 2 steps (INDENTATION)"]
+    assert TestRun(True, {}, log="PG_BUILD_OK\n").style == []
+
+
 def test_fuzzy_edit_keeps_original_indentation_of_unchanged_lines():
     text = "static bool f(int a,\n                   int b)\n{\n  return a;\n}\n"
     out = _fuzzy_replace(text, "static bool f(int a,\n  int b)\n{\n  return a;",
