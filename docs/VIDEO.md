@@ -44,8 +44,8 @@ cd video/film                                                # copy to a short p
 npx hyperframes tts ... (one clip per line of narration.json into assets/vo)
 python tools/build_vo.py && npx hyperframes transcribe assets/vo/narration.wav --engine parakeet
 python tools/build_root.py && python tools/make_clips.py
-npx hyperframes check && npx hyperframes render --quality delivery -o renders/proofgate-demo.mp4
-# master to -15 LUFS: two-pass ffmpeg loudnorm, video stream copied
+npx hyperframes check && npx hyperframes render --quality delivery -o renders/film-raw.mp4
+python tools/master.py renders/film-raw.mp4 renders/film-master.mp4   # -15 LUFS, video copied
 ```
 
 On Windows, run the HyperFrames commands from a short path (e.g. `%USERPROFILE%\pgfilm2`): deep
