@@ -1,9 +1,9 @@
 "use client";
 
-import { CameraControls, Html } from "@react-three/drei";
-import { Canvas, type ThreeEvent, useFrame } from "@react-three/fiber";
+import { CameraControls, CameraControlsImpl, Html } from "@react-three/drei";
+import { Canvas, type ThreeEvent, useFrame, useThree } from "@react-three/fiber";
 import { Bloom, EffectComposer, Vignette } from "@react-three/postprocessing";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { type RefObject, useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 import type { GraphData } from "@/lib/types";
 import { Ghost } from "./Ghost";
@@ -149,6 +149,95 @@ function Stars() {
   );
 }
 
+/** Free rotation for the galaxy. camera-controls orbits on a sphere and clamps the polar angle to
+ *  [0, pi], so a vertical drag stops dead at the top and bottom views. Left drag (one finger on
+ *  touch) turns the world group itself instead, about the orbit target and around the camera's own
+ *  axes, so it rolls over in any direction and coasts after release. Zoom, pan (right drag, two
+ *  fingers) and the animated fly-tos stay with camera-controls. */
+function useSpin(world: RefObject<THREE.Group>, controls: RefObject<CameraControls>) {
+  const { gl, camera } = useThree();
+  const s = useRef({ drag: false, x: 0, y: 0, t: 0, vx: 0, vy: 0, reset: false, pointers: new Set<number>() });
+
+  const turn = (dx: number, dy: number) => {
+    const w = world.current, c = controls.current;
+    if (!w || !c) return;
+    const k = Math.PI / Math.max(300, gl.domElement.clientHeight);
+    const up = new THREE.Vector3(0, 1, 0).applyQuaternion(camera.quaternion);
+    const right = new THREE.Vector3(1, 0, 0).applyQuaternion(camera.quaternion);
+    const q = new THREE.Quaternion().setFromAxisAngle(up, dx * k)
+      .multiply(new THREE.Quaternion().setFromAxisAngle(right, dy * k));
+    const pivot = c.getTarget(new THREE.Vector3());
+    w.quaternion.premultiply(q);
+    w.position.sub(pivot).applyQuaternion(q).add(pivot);
+  };
+
+  useEffect(() => {
+    const c = controls.current;
+    if (!c) return;
+    c.mouseButtons.left = CameraControlsImpl.ACTION.NONE;
+    c.touches.one = CameraControlsImpl.ACTION.NONE;
+    const el = gl.domElement, st = s.current;
+    const down = (e: PointerEvent) => {
+      st.pointers.add(e.pointerId);
+      st.drag = e.button === 0 && st.pointers.size === 1;
+      Object.assign(st, { x: e.clientX, y: e.clientY, t: performance.now(), vx: 0, vy: 0 });
+      if (st.drag) st.reset = false;
+    };
+    const move = (e: PointerEvent) => {
+      if (!st.drag) return;
+      const now = performance.now(), dt = Math.max(1, now - st.t) / 1000;
+      const dx = e.clientX - st.x, dy = e.clientY - st.y;
+      turn(dx, dy);
+      st.vx = st.vx * 0.6 + (dx / dt) * 0.4;
+      st.vy = st.vy * 0.6 + (dy / dt) * 0.4;
+      Object.assign(st, { x: e.clientX, y: e.clientY, t: now });
+    };
+    const up = (e: PointerEvent) => {
+      st.pointers.delete(e.pointerId);
+      if (st.drag && performance.now() - st.t > 80) st.vx = st.vy = 0; // held still before letting go
+      st.drag = false;
+    };
+    el.addEventListener("pointerdown", down);
+    window.addEventListener("pointermove", move);
+    window.addEventListener("pointerup", up);
+    window.addEventListener("pointercancel", up);
+    return () => {
+      el.removeEventListener("pointerdown", down);
+      window.removeEventListener("pointermove", move);
+      window.removeEventListener("pointerup", up);
+      window.removeEventListener("pointercancel", up);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [gl]);
+
+  useFrame((_, dt) => {
+    const st = s.current, w = world.current;
+    if (!w) return;
+    if (st.reset) {
+      // a new focus flies the camera to coordinates in the galaxy's own frame: ease back to it
+      const a = 1 - Math.exp(-dt * 4);
+      w.quaternion.slerp(new THREE.Quaternion(), a);
+      w.position.lerp(new THREE.Vector3(), a);
+      if (w.quaternion.angleTo(new THREE.Quaternion()) < 1e-3 && w.position.lengthSq() < 1e-4) {
+        w.quaternion.identity(); w.position.set(0, 0, 0); st.reset = false;
+      }
+    } else if (!st.drag && (Math.abs(st.vx) > 1 || Math.abs(st.vy) > 1)) {
+      turn(st.vx * dt, st.vy * dt);
+      const f = Math.exp(-dt * 3);
+      st.vx *= f; st.vy *= f;
+    }
+  });
+
+  return {
+    dragging: () => s.current.drag,
+    recenter: () => {
+      const w = world.current;
+      s.current.vx = s.current.vy = 0;
+      if (w && (w.position.lengthSq() > 1e-4 || w.quaternion.angleTo(new THREE.Quaternion()) > 1e-3)) s.current.reset = true;
+    },
+  };
+}
+
 function Scene({ graph, focus, autoRotate, compact }: {
   graph: GraphData; focus: GalaxyFocus; autoRotate: boolean; compact: boolean;
 }) {
@@ -157,6 +246,8 @@ function Scene({ graph, focus, autoRotate, compact }: {
     ? [0, 80, 360, 0, 0, 0]
     : [-48, 70, 285, -48, 0, 0];
   const controls = useRef<CameraControls>(null!);
+  const world = useRef<THREE.Group>(null!);
+  const spin = useSpin(world, controls);
   const [hover, setHover] = useState<number | null>(null);
   const byName = useMemo(() => {
     const m = new Map<string, number>();
@@ -191,6 +282,7 @@ function Scene({ graph, focus, autoRotate, compact }: {
   useEffect(() => {
     const c = controls.current;
     if (!c) return;
+    spin.recenter();
     if (ghostAnchors.length && !pathIdx.length && compact) {
       const g = ghostAnchors[0].pos;
       const mid = g.clone().multiplyScalar(0.45);
@@ -224,7 +316,9 @@ function Scene({ graph, focus, autoRotate, compact }: {
   }, [pathIdx.join(","), ghosts.map((g) => g.name).join(","), focus.target]);
 
   useFrame((_, dt) => {
-    if (autoRotate && controls.current && !lit.size && !ghosts.length) controls.current.azimuthAngle += dt * 0.04;
+    if (autoRotate && controls.current && !lit.size && !ghosts.length && !spin.dragging()) {
+      controls.current.azimuthAngle += dt * 0.04;
+    }
   });
 
   const hovered = hover !== null ? graph.nodes[hover] : null;
@@ -232,25 +326,27 @@ function Scene({ graph, focus, autoRotate, compact }: {
     <>
       <CameraControls ref={controls} minDistance={20} maxDistance={420} smoothTime={0.9} />
       <Stars />
-      <Edges graph={graph} dim={lit.size > 0 || ghosts.length > 0} />
-      <Nodes graph={graph} lit={lit} dim={lit.size > 0 || ghosts.length > 0} onHover={setHover} />
-      {pathIdx.length > 1 && <PathBeam points={pathIdx.map((i) => graph.nodes[i].pos)} />}
-      {ghostAnchors.map((g) => (
-        <Ghost key={g.name} name={g.name} position={g.pos} anchor={g.anchor} near={g.near} note={g.note} />
-      ))}
-      {hovered && (
-        <Html position={hovered.pos} center style={{ pointerEvents: "none" }}>
-          <div className="galaxy-tip">
-            <b>{hovered.name}()</b>
-            <span>{hovered.file}:{hovered.line}</span>
-          </div>
-        </Html>
-      )}
-      {pathIdx.length > 0 && pathIdx.map((i, k) => (
-        <Html key={`lbl-${i}`} position={graph.nodes[i].pos} style={{ pointerEvents: "none" }}>
-          <div className={`galaxy-label ${k === pathIdx.length - 1 ? "target" : ""}`}>{graph.nodes[i].name}</div>
-        </Html>
-      ))}
+      <group ref={world}>
+        <Edges graph={graph} dim={lit.size > 0 || ghosts.length > 0} />
+        <Nodes graph={graph} lit={lit} dim={lit.size > 0 || ghosts.length > 0} onHover={setHover} />
+        {pathIdx.length > 1 && <PathBeam points={pathIdx.map((i) => graph.nodes[i].pos)} />}
+        {ghostAnchors.map((g) => (
+          <Ghost key={g.name} name={g.name} position={g.pos} anchor={g.anchor} near={g.near} note={g.note} />
+        ))}
+        {hovered && (
+          <Html position={hovered.pos} center style={{ pointerEvents: "none" }}>
+            <div className="galaxy-tip">
+              <b>{hovered.name}()</b>
+              <span>{hovered.file}:{hovered.line}</span>
+            </div>
+          </Html>
+        )}
+        {pathIdx.length > 0 && pathIdx.map((i, k) => (
+          <Html key={`lbl-${i}`} position={graph.nodes[i].pos} style={{ pointerEvents: "none" }}>
+            <div className={`galaxy-label ${k === pathIdx.length - 1 ? "target" : ""}`}>{graph.nodes[i].name}</div>
+          </Html>
+        ))}
+      </group>
       <EffectComposer multisampling={0}>
         <Bloom mipmapBlur intensity={1.1} luminanceThreshold={0.2} radius={0.7} />
         <Vignette offset={0.2} darkness={0.8} />
