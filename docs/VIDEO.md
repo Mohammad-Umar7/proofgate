@@ -22,6 +22,8 @@ Length: 1:56 (rules: under 3:00). Output: 1920x1080, 30 fps, H.264 MP4.
 node video/tools/record.mjs                      # re-film the site (needs Chrome)
 cd video/film && npx hyperframes check            # lint, layout, timing
 npx hyperframes render --quality delivery -o renders/proofgate-demo.mp4
+# master the audio to -15 LUFS (the renderer mixes with headroom, about -19.6 LUFS): two-pass
+# ffmpeg loudnorm, video stream copied -> renders/ProofGate-demo.mp4 (-15.0 LUFS, -1.4 dB peak)
 ```
 
 On Windows, run the HyperFrames commands from a short path (copy `video/film` to e.g. `%USERPROFILE%\pgfilm`
