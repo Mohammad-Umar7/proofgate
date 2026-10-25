@@ -83,10 +83,11 @@ list itself are excluded from prior art, so ProofGate cannot look up the answer.
 | Configuration | Slop closed with proof | Real CVEs wrongly dismissed | Real CVEs closed as duplicate | Agreement with curl | Cost / report | Time / report |
 |---|---|---|---|---|---|---|
 | Deterministic only (git + tree-sitter + advisories) | 12% (6/49) | **0** / 148 | 2 | 77% | $0.0000 | 8.0s |
+| Full pipeline (routed Nemotron + Tavily) | 8% (4/49) | **0** / 148 | 2 | 76% | $0.0071 | 56.9s |
 
-_Not yet run (needs Token Factory + Tavily keys): Full pipeline (routed Nemotron + Tavily), Ablation: Nemotron Ultra for every role, Ablation: no grounding._
+_Not yet run (needs Token Factory + Tavily keys): Ablation: Nemotron Ultra for every role, Ablation: no grounding._
 
-_Generated 2026-10-21T20:08:47Z by `proofgate bench table`._
+_Generated 2026-10-25T03:55:58Z by `proofgate bench table`._
 <!-- BENCH:END -->
 
 **How to read this.** "Slop closed with proof" counts reports ProofGate would close with a
