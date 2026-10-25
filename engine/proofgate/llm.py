@@ -171,15 +171,34 @@ class TokenFactory:
             text, call = self._cache[key]
             return text, call.model_copy(update={"cached": True, "cost_usd": 0.0, "ms": 0})
 
+        text, call = await self.converse(
+            stage=stage, role=role, system=system, messages=[{"role": "user", "content": user}],
+            max_tokens=max_tokens, temperature=temperature, reasoning=reasoning, budget=budget,
+        )
+        self._cache[key] = (text, call)
+        return text, call
+
+    async def converse(
+        self,
+        *,
+        stage: str,
+        role: Role,
+        system: str,
+        messages: list[dict[str, Any]],
+        max_tokens: int = 1200,
+        temperature: float = 0.1,
+        reasoning: bool = False,
+        budget: Budget | None = None,
+    ) -> tuple[str, ModelCall]:
+        """One completion over a multi-turn conversation (used by the FixBench agent loop)."""
+        await self.resolve_models()
+        model = self.model_for(role)
         # Nemotron reasoning toggle: '/think' or '/no_think' in the system prompt.
         sys_prompt = f"{'/think' if reasoning else '/no_think'}\n{system}"
         started = time.perf_counter()
         response = await self.client.chat.completions.create(
             model=model,
-            messages=[
-                {"role": "system", "content": sys_prompt},
-                {"role": "user", "content": user},
-            ],
+            messages=[{"role": "system", "content": sys_prompt}, *messages],
             max_tokens=max_tokens,
             temperature=temperature,
         )
@@ -201,7 +220,6 @@ class TokenFactory:
         )
         if budget:
             budget.charge(cost)
-        self._cache[key] = (text, call)
         return text, call
 
     async def chat_json(self, *, retries: int = 1, **kwargs: Any) -> tuple[Any, list[ModelCall]]:
