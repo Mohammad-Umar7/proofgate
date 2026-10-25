@@ -25,8 +25,10 @@ from .harness import prepare, run_tests
 RESULTS = ENGINE_DIR.parent / "bench" / "results"
 
 
-async def validate(rows: list[dict], concurrency: int = 3, log=print) -> list[dict]:
+async def validate(rows: list[dict], concurrency: int = 3, only: list[str] | None = None,
+                   log=print) -> list[dict]:
     sem = asyncio.Semaphore(concurrency)
+    todo = [r for r in rows if not only or r["id"] in only]
 
     async def one(row: dict) -> None:
         async with sem:
@@ -56,7 +58,7 @@ async def validate(rows: list[dict], concurrency: int = 3, log=print) -> list[di
                 f"f2p={row.get('fail_to_pass_valid')} p2p={len(row.get('pass_to_pass') or [])} "
                 f"{row.get('why', '')} {time.perf_counter() - started:.0f}s")
 
-    await asyncio.gather(*(one(r) for r in rows))
+    await asyncio.gather(*(one(r) for r in todo))
     save_index(rows)
     return rows
 
@@ -193,6 +195,7 @@ def main(argv: list[str]) -> int:
     sub.add_parser("build")
     val = sub.add_parser("validate")
     val.add_argument("--concurrency", type=int, default=3)
+    val.add_argument("--only", nargs="*", default=None, help="instance ids (CVE-...)")
     run = sub.add_parser("run")
     run.add_argument("--model", choices=("nano", "super", "ultra"), default="super")
     run.add_argument("--limit", type=int, default=None)
@@ -206,7 +209,7 @@ def main(argv: list[str]) -> int:
         rows = build_index()
         print(f"{len(rows)} candidate instances")
     elif args.cmd == "validate":
-        rows = asyncio.run(validate(load_index(), args.concurrency))
+        rows = asyncio.run(validate(load_index(), args.concurrency, args.only))
         print(f"{sum(bool(r.get('validated')) for r in rows)} / {len(rows)} instances validated")
     elif args.cmd == "run":
         summary = asyncio.run(run_bench(args.model, args.limit, args.concurrency, args.budget,
