@@ -2,14 +2,15 @@
 # Source trees are never baked in: every run copies a `git archive` of one commit into a tmpfs,
 # builds with ccache (shared volume), runs the tests, and is thrown away. Containers started
 # from this image always run with `--network none`; the test servers bind to loopback only.
-# stunnel and sshd are the test suite's own HTTPS/FTPS and SFTP servers.
+# stunnel and sshd are the test suite's own HTTPS/FTPS and SFTP servers; runtests.pl runs the
+# regression tests under valgrind, as curl's CI does, so memory errors fail the test.
 FROM debian:bookworm-slim
 
 RUN apt-get update \
  && apt-get install -y --no-install-recommends \
       build-essential autoconf automake libtool pkg-config perl python3 ccache \
       libssl-dev zlib1g-dev libpsl-dev libidn2-dev libssh2-1-dev libnghttp2-dev \
-      stunnel4 openssh-server openssh-client ca-certificates \
+      stunnel4 openssh-server openssh-client valgrind ca-certificates \
  && rm -rf /var/lib/apt/lists/*
 
 RUN useradd --create-home --uid 10001 runner && mkdir /ccache && chown runner /ccache

@@ -24,16 +24,16 @@ from ..config import get_settings
 from ..repo import get_repo
 from .dataset import test_patch
 
-IMAGE = "proofgate/curl-test:2"
+IMAGE = "proofgate/curl-test:3"
 CCACHE_VOLUME = "proofgate-ccache"
 JOBS = 6
-# AddressSanitizer turns silent memory corruption into a failing test, so memory-safety CVEs
-# are graded on the same terms as logic bugs. NTLM is opt-in in recent curl; its tests need it.
-SAN = "-fsanitize=address -fno-omit-frame-pointer"
+# NTLM is opt-in in recent curl and its tests need it. Memory errors are caught by running the
+# regression tests under valgrind (curl's own CI approach); AddressSanitizer is not usable here,
+# it crash-loops on kernels with high ASLR entropy such as Docker Desktop's WSL2 kernel.
 CONFIGURE = ("--enable-debug --disable-shared --with-openssl --with-libssh2 --with-nghttp2 "
              "--with-libpsl --with-libidn2 --without-brotli --without-zstd --disable-docs "
-             f"--disable-manual --enable-ntlm CFLAGS='{SAN}' LDFLAGS='-fsanitize=address'")
-SAN_ENV = {"ASAN_OPTIONS": "detect_leaks=0:abort_on_error=0:symbolize=1"}
+             "--disable-manual --enable-ntlm")
+SAN_ENV: dict[str, str] = {}
 _AUTOTOOLS = re.compile(r"^\+\+\+ b/.*(Makefile\.(am|inc)|configure\.ac|\.m4)$", re.M)
 
 PREPARE = r"""
@@ -66,7 +66,10 @@ make -j{jobs} > /work/build.log 2>&1 \
 make -C tests -j{jobs} > /work/tbuild.log 2>&1 \
   || { grep -E -B2 -A6 "error:|Error [0-9]" /work/tbuild.log | head -n 120; echo PG_BUILD_FAILED; exit 0; }
 echo PG_BUILD_OK
-cd tests && perl runtests.pl -a -n -p {tests} > /work/tests.log 2>&1
+cd tests
+: > /work/tests.log
+if [ -n "{memcheck}" ]; then perl runtests.pl -a -p {memcheck} >> /work/tests.log 2>&1; fi
+if [ -n "{tests}" ]; then perl runtests.pl -a -n -p {tests} >> /work/tests.log 2>&1; fi
 grep -E "^test [0-9]+|OK \(|FAILED|SKIPPED|^TEST(DONE|FAIL|INFO)" /work/tests.log | head -n 400
 echo PG_LOG_TAIL
 tail -c 12000 /work/tests.log
@@ -76,6 +79,8 @@ echo PG_DONE
 
 @dataclass
 class TestRun:
+    __test__ = False  # not a pytest test class
+
     build_ok: bool
     status: dict[str, str] = field(default_factory=dict)  # test -> ok | fail | skip | missing
     log: str = ""
@@ -112,8 +117,8 @@ def parse_runtests(log: str, tests: list[str]) -> dict[str, str]:
         if current and re.search(r"\bOK \(", line):
             status[current] = "ok"
             current = None
-    if m := re.search(r"TESTFAIL: These test cases failed: ([\d ]+)", log):
-        for t in m.group(1).split():
+    for failed in re.findall(r"TESTFAIL: These test cases failed: ([\d ]+)", log):
+        for t in failed.split():
             status[t.lstrip("0") or "0"] = "fail"
     for t, s in status.items():
         if s == "missing" and re.search(rf"\b0*{t}: \w+ FAILED", log):
@@ -182,10 +187,15 @@ async def prepare(row: dict) -> Path:
 
 
 async def run_tests(row: dict, fix: str, tests: list[str], timeout: int = 1500) -> TestRun:
+    """Build base + regression test + `fix` and run `tests`. The instance's own regression
+    tests run under valgrind; the nearby tests run without it, for speed."""
     gen = await prepare(row)
     started = time.perf_counter()
+    own = set(row.get("fail_to_pass_valid") or row["fail_to_pass"])
+    memcheck = [t for t in tests if t in own]
+    rest = [t for t in tests if t not in own]
     script = (RUN.replace("{configure}", CONFIGURE).replace("{jobs}", str(JOBS))
-              .replace("{tests}", " ".join(tests)))
+              .replace("{memcheck}", " ".join(memcheck)).replace("{tests}", " ".join(rest)))
     with tempfile.TemporaryDirectory(prefix="pg-fb-") as tmp:
         _stage_inputs(Path(tmp), row, fix)
         (Path(tmp) / "gen.tar.gz").write_bytes(gen.read_bytes())
