@@ -151,6 +151,7 @@ an indentation slip is never counted as a broken build.
 <!-- FIXBENCH:START -->
 | Agent model (Token Factory) | Resolved | Style-clean (checksrc) | Fixed on 1st test run | Edited the right file | Broke other tests | Cost / CVE | Cost / fix | Time / CVE |
 |---|---|---|---|---|---|---|---|---|
+| `nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B` | **2 / 27** (7%) | 1 | 2 | 30% | 0 | $0.048 | $0.644 | 11.5 min |
 | `nvidia/nemotron-3-super-120b-a12b` | **8 / 27** (30%) | 4 | 7 | 85% | 0 | $0.185 | $0.623 | 3.9 min |
 | `nvidia/Nemotron-3-Ultra-550b-a55b` | **9 / 27** (33%) | 6 | 9 | 67% | 0 | $0.661 | $1.982 | 2.7 min |
 | Cascade: Super on every CVE, Ultra only on Super's 19 failures (computed from the two runs) | **11 / 27** (41%) | | | | | $0.662 | $1.625 | |
@@ -163,7 +164,9 @@ only by Super, 3 only by Ultra. Ultra passes on its first test run every time it
 faster in wall time, but costs about 3.5x more per CVE. So ProofGate routes by job here too: Super
 first, Ultra only on Super's failures, which fixes the most CVEs (11 of 27) at a lower cost per fix than
 Ultra alone. No fix broke a nearby test. All 9 of Ultra's fixes and 7 of Super's 8 are for CVEs fixed
-upstream after February 2026, past Nemotron 3 Super's documented training data.
+upstream after February 2026, past Nemotron 3 Super's documented training data. Nano (30B, 3B active)
+fixes 2 of 27 at $0.05 per CVE and reaches the right file only 30% of the time: fine for extracting
+claims, too small for multi-step C repair, which is why the triage pipeline gives it only that job.
 
 ![FixBench page: KPIs, the Super-then-Ultra cascade, the model table and all 27 CVEs](docs/img/fixbench.jpg)
 
