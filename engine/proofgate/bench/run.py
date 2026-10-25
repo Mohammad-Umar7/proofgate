@@ -180,7 +180,7 @@ def results_table() -> str:
             f"| **{m['valid_dismissed']}** / {m['n_valid']} | {dup} | {m['agreement'] * 100:.0f}% "
             f"| ${m['cost_mean_usd']:.4f} | {m['seconds_mean']:.1f}s |")
     missing = [LABELS[n] for n in ("full", "single-model", "no-grounding") if n not in combined.get("configs", {})]
-    note = f"\n\n_Not yet run (needs Token Factory + Tavily keys): {', '.join(missing)}._" if missing else ""
+    note = f"\n\n_Not yet run: {', '.join(missing)}._" if missing else ""
     return "\n".join(rows) + note + f"\n\n_Generated {combined.get('generated')} by `proofgate bench table`._"
 
 

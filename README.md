@@ -85,7 +85,7 @@ list itself are excluded from prior art, so ProofGate cannot look up the answer.
 | Deterministic only (git + tree-sitter + advisories) | 12% (6/49) | **0** / 148 | 2 | 77% | $0.0000 | 8.0s |
 | Full pipeline (routed Nemotron + Tavily) | 8% (4/49) | **0** / 148 | 2 | 76% | $0.0071 | 56.9s |
 
-_Not yet run (needs Token Factory + Tavily keys): Ablation: Nemotron Ultra for every role, Ablation: no grounding._
+_Not yet run: Ablation: Nemotron Ultra for every role, Ablation: no grounding._
 
 _Generated 2026-10-25T03:55:58Z by `proofgate bench table`._
 <!-- BENCH:END -->
