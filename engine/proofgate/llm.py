@@ -193,11 +193,9 @@ class TokenFactory:
         budget: Budget | None = None,
     ) -> tuple[str, ModelCall]:
         """One completion over a multi-turn conversation."""
-        # Nemotron reasoning toggle: '/think' or '/no_think' in the system prompt.
-        sys_prompt = f"{'/think' if reasoning else '/no_think'}\n{system}"
         message, call = await self.complete(
-            stage=stage, role=role, messages=[{"role": "system", "content": sys_prompt}, *messages],
-            max_tokens=max_tokens, temperature=temperature, budget=budget)
+            stage=stage, role=role, messages=[{"role": "system", "content": system}, *messages],
+            max_tokens=max_tokens, temperature=temperature, reasoning=reasoning, budget=budget)
         return message.content or "", call
 
     async def complete(
@@ -209,16 +207,22 @@ class TokenFactory:
         tools: list[dict[str, Any]] | None = None,
         max_tokens: int = 1200,
         temperature: float = 0.1,
+        reasoning: bool | None = None,
         budget: Budget | None = None,
     ) -> tuple[Any, ModelCall]:
         """Raw chat completion, optionally with native tool calling (the FixBench agent loop).
 
         Returns the provider's message object (content, tool_calls, reasoning_content) and the
-        cost record."""
+        cost record. `reasoning` None leaves the model's default (thinking on)."""
         await self.resolve_models()
         model = self.model_for(role)
         started = time.perf_counter()
         extra: dict[str, Any] = {"tools": tools, "tool_choice": "auto"} if tools else {}
+        if reasoning is not None:
+            # Nemotron 3 on Token Factory ignores a '/no_think' line in the system prompt and
+            # reasons anyway, which can spend all of max_tokens before any content. The chat
+            # template switch is what actually turns reasoning on or off.
+            extra["extra_body"] = {"chat_template_kwargs": {"enable_thinking": reasoning}}
         response = await self.client.chat.completions.create(
             model=model,
             messages=messages,
@@ -249,7 +253,8 @@ class TokenFactory:
         return message, call
 
     async def chat_json(self, *, retries: int = 1, **kwargs: Any) -> tuple[Any, list[ModelCall]]:
-        """Ask for a JSON object; on a parse failure, retry once with the error fed back."""
+        """Ask for a JSON object; on a parse failure, retry once with the error fed back.
+        If no attempt parses, JSONReplyError carries the calls so their cost is still counted."""
         calls: list[ModelCall] = []
         last_error = ""
         for attempt in range(retries + 1):
@@ -258,14 +263,27 @@ class TokenFactory:
                     kwargs["system"] + f"\nYour previous reply was not valid JSON ({last_error})."
                     " Reply with one JSON object only."
                 )
-            text, call = await self.chat(**kwargs)
+            try:
+                text, call = await self.chat(**kwargs)
+            except Exception as exc:
+                if calls:
+                    raise JSONReplyError(str(exc)[:200], calls) from exc
+                raise
             calls.append(call)
             try:
                 return _parse_json(text), calls
             except (json.JSONDecodeError, ValueError) as exc:
                 last_error = str(exc)[:120]
                 await asyncio.sleep(0)
-        raise ValueError(f"model did not return JSON: {last_error}")
+        raise JSONReplyError(f"model did not return JSON: {last_error}", calls)
+
+
+class JSONReplyError(ValueError):
+    """No attempt returned parseable JSON. The attempts were still billed: see `calls`."""
+
+    def __init__(self, message: str, calls: list[ModelCall]) -> None:
+        super().__init__(message)
+        self.calls = calls
 
 
 _factory: TokenFactory | None = None
