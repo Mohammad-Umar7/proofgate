@@ -107,6 +107,14 @@ real one; the evidence comes from checking the claims against the code. In the f
 Nemotron Ultra's adversarial pass is deliberately conservative: it handed 2 of the 6 deterministic
 dismissals back to a human, which is why the full run closes 4 rather than 6.
 
+**A caveat found after these runs.** On Oct 25 we measured that Nemotron 3 on Token Factory ignores
+the `/no_think` system-prompt switch these runs used: a JSON stage could spend its whole token
+budget reasoning and return no content, so on long reports claim extraction fell back to the regex
+extractor and some adversarial passes were skipped. The engine now switches reasoning with
+`chat_template_kwargs.enable_thinking` (the same real report went from 38-60 s to 17-22 s, every
+call parsing on the first try) and counts failed attempts in the run's cost. The table is what the
+engine did before that fix; it has not been rerun yet.
+
 Reproduce: `proofgate bench build && proofgate bench fetch && proofgate bench run --config deterministic`
 (or `--config full` with Token Factory and Tavily keys).
 
@@ -188,9 +196,17 @@ to validity: [docs/FIXBENCH.md](docs/FIXBENCH.md). Reproduce (Docker required):
 | ultra | `nvidia/Nemotron-3-Ultra-550b-a55b` | verdict explanation + adversarial challenge | strongest reasoning, two calls per report | 1.00 / 3.00 |
 | omni | `nvidia/Nemotron-3.5-Super-VL` | screenshots, terminal captures | the vision model on Token Factory | 0.30 / 0.90 |
 
-Measured on a live run (one fabricated report, every stage on, Tavily included): **about $0.01 and
-40 seconds**, most of it the git history search. Prices are the Token Factory list prices used by
-the live cost counter.
+Measured live on a real report, [HackerOne #3418528](https://hackerone.com/reports/3418528) from
+curl's public slop list, fetched at run time: **UNGROUNDED in 21.6 s for $0.0084**. Nano extracted
+10 claims, git searched 40,192 commits for the cited `Curl_ldap_err2string()` (never existed),
+Tavily searched for prior disclosures, Super applied curl's policy, Ultra explained the verdict and
+then argued the reporter's side (the verdict stood). The engine's log of that run, one line per call
+with model, tokens and cost, is in [`video/runs/`](video/runs/). Prices are the Token Factory list
+prices used by the live cost counter.
+
+- **Reasoning on and off.** Nemotron 3 reasons by default; ProofGate turns it off for its JSON stages
+  with `chat_template_kwargs: {"enable_thinking": false}`. A `/no_think` line in the system prompt is
+  ignored by all three sizes on Token Factory (measured: reasoning tokens still returned).
 
 - **Cost is a product feature.** Every call records tokens, latency and USD; the console shows live
   spend; `PG_MAX_COST_PER_REPORT` (default $0.25) aborts a run over budget; the public server caps
@@ -253,11 +269,28 @@ evidence card. It works on any C repository with release tags (`tag-prefix`, `so
 **https://proofgate-ten.vercel.app**: no login, no backend required, so it stays up through
 judging. It is a static export of `web/` on Vercel (root directory `web`, redeployed on every push
 to `main`): recorded runs of real curl reports in the console, the code galaxy, the arena and
-SlopBench. Set `NEXT_PUBLIC_API_URL` to a running engine to switch the console into live mode.
+SlopBench and FixBench. No model calls, so it costs nothing to keep up.
+
+## Live mode
+
+Run the engine with keys (`proofgate serve`) and build or run the site with
+`NEXT_PUBLIC_API_URL=http://127.0.0.1:8000`:
+
+- **Console:** paste a link to a disclosed HackerOne report (the engine fetches its public text at
+  run time) or paste a report, and watch the nine stages run against curl with live time and
+  Token Factory spend.
+- **FixBench:** every CVE gets **Run live now**: the agent reproduces the bug, explores, edits, builds
+  curl and runs its tests in the Docker sandbox while the page streams each step, the test lights and
+  a live clock and spend. Only accepted from the engine's own machine, since it builds curl locally.
+  Filmed on Oct 25: Nemotron 3 Super fixed CVE-2026-6276 live twice (61 s and $0.034, 68 s and $0.043;
+  all 30 tests pass, checksrc clean).
 
 ## Video
 
-See [`docs/VIDEO.md`](docs/VIDEO.md) for the script.
+A 2:46 film made from the live runs above: the HackerOne report triaged with the engine's real log
+beside the console, the code galaxy, the pipeline, SlopBench, the live CVE fix and FixBench, with
+subtitles and an on-screen highlight on whatever the narration names. How it is produced and rebuilt:
+[`docs/VIDEO.md`](docs/VIDEO.md); the narration: [`video/SCRIPT.md`](video/SCRIPT.md).
 
 ## Repository
 
