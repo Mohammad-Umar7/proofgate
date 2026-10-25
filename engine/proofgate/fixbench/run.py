@@ -75,12 +75,14 @@ def _step_dict(step) -> dict:
     return data
 
 
-async def run_one(row: dict, role: str, budget: float, log=print) -> dict:
+async def run_one(row: dict, role: str, budget: float, log=print, emit=None, status=None) -> dict:
     f2p, p2p = row["fail_to_pass_valid"], row["pass_to_pass"]
     tests = f2p + p2p
-    result = await solve(row, tests, role=role, budget_usd=budget)
+    result = await solve(row, tests, role=role, budget_usd=budget, emit=emit, status=status)
     grade = None
     if result.diff:
+        if status and not (result.last_test and result.last_test_diff == result.diff):
+            await status("Grading: fresh build of the final patch, every test")
         if result.last_test and result.last_test_diff == result.diff:
             grade = result.last_test  # the agent's last test run already built exactly this diff
         else:

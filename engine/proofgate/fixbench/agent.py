@@ -357,8 +357,9 @@ NUDGE = ("You have explored for {n} replies without editing. Commit to the most 
 
 
 async def solve(row: dict, tests: list[str], *, role: str = "super", budget_usd: float = 0.6,
-                emit=None) -> AgentResult:
-    """Run the agent on one instance. `tests` = fail-to-pass + pass-to-pass test numbers."""
+                emit=None, status=None) -> AgentResult:
+    """Run the agent on one instance. `tests` = fail-to-pass + pass-to-pass test numbers.
+    `emit(step)` gets every finished step; `status(text)` hears what is running right now."""
     llm = get_llm()
     await llm.resolve_models()
     ws = Workspace(row)
@@ -378,8 +379,14 @@ async def solve(row: dict, tests: list[str], *, role: str = "super", budget_usd:
         if emit:
             await emit(step)
 
+    async def say(text: str) -> None:
+        if status:
+            await status(text)
+
     # Reproduce first: run the regression test on the untouched vulnerable build, so the agent
     # starts from the real failure (expected vs actual protocol/output), not just prose.
+    await say(f"Building curl at the vulnerable commit {row['base'][:10]} and running "
+              + ", ".join(f"test{t}" for t in f2p))
     baseline = await run_tests(row, "", f2p)
     repro = baseline.feedback(3000) if baseline.build_ok else "(the baseline build failed)"
     await note(Step(0, "", "reproduce", {}, repro[:6000], round(time.perf_counter() - started, 1)))
@@ -398,6 +405,7 @@ async def solve(row: dict, tests: list[str], *, role: str = "super", budget_usd:
     nudged = False
     seen: dict[str, int] = {}  # read-only call -> turn it was first made, to break loops
     for turn in range(1, MAX_TURNS + 1):
+        await say(f"Waiting for {result.model}, reply {turn} of {MAX_TURNS}")
         try:
             message, call = await llm.complete(stage="fixbench", role=role, messages=_trim(messages),
                                                tools=TOOLS, max_tokens=6000, temperature=0.2,
@@ -440,6 +448,8 @@ async def solve(row: dict, tests: list[str], *, role: str = "super", budget_usd:
                 args = {}
                 obs = "Arguments were not valid JSON; call the tool again."
             else:
+                if tool == "run_tests" and ws.edited:
+                    await say(f"Building curl with the patch and running {len(tests)} tests in the sandbox")
                 obs, finished = await _execute(tool, args, ws, row, tests, result)
                 key = json.dumps([tool, args], sort_keys=True)
                 if tool in ("grep", "ls", "read", "outline", "function"):
