@@ -141,6 +141,37 @@ def metrics(rows: list[dict]) -> dict:
     }
 
 
+def cascade(first: dict, second: dict) -> dict:
+    """Route by job: run the cheaper model on every instance and escalate only its failures to
+    the larger one. Computed from two independent full runs, so no extra model calls."""
+    a = {r["id"]: r for r in first["rows"]}
+    b = {r["id"]: r for r in second["rows"]}
+    ids = [i for i in a if i in b]
+    escalated = [i for i in ids if not a[i]["resolved"]]
+    fixed = [i for i in ids if a[i]["resolved"] or b[i]["resolved"]]
+    cost = sum(a[i]["cost_usd"] for i in ids) + sum(b[i]["cost_usd"] for i in escalated)
+    return {
+        "models": [first["model"], second["model"]], "roles": [first["role"], second["role"]],
+        "n": len(ids), "resolved": len(fixed), "resolved_rate": round(len(fixed) / max(1, len(ids)), 3),
+        "escalated": len(escalated), "cost_total_usd": round(cost, 4),
+        "cost_per_resolved_usd": round(cost / len(fixed), 4) if fixed else None,
+        "post_cutoff": {"cutoff": TRAINING_CUTOFF,
+                        "n": sum(1 for i in ids if _after_cutoff(a[i])),
+                        "resolved": sum(1 for i in fixed if _after_cutoff(a[i]))},
+        "fixed_by": {i: ("both" if a[i]["resolved"] and b[i]["resolved"] else
+                         first["role"] if a[i]["resolved"] else second["role"]) for i in fixed},
+    }
+
+
+def load_results() -> dict[str, dict]:
+    out = {}
+    for role in ("nano", "super", "ultra"):
+        path = RESULTS / f"fixbench-{role}.json"
+        if path.exists():
+            out[role] = json.loads(path.read_text(encoding="utf-8"))
+    return out
+
+
 # Nemotron 3 Super model card (NVIDIA NIM reference, "Data Freshness"): pre-training data to
 # June 2025, post-training data to February 2026.
 TRAINING_CUTOFF = "2026-03-01"
@@ -207,6 +238,13 @@ def table() -> str:
             f"| {m.get('style_clean', 'n/a')} | {m['first_try']} | {m['localized'] * 100:.0f}% "
             f"| {m['broke_other_tests']} "
             f"| ${m['cost_mean_usd']:.3f} | {per_fix} | {m['seconds_mean'] / 60:.1f} min |")
+    results = load_results()
+    if "super" in results and "ultra" in results:
+        c = cascade(results["super"], results["ultra"])
+        lines.append(
+            f"| Cascade: Super on every CVE, Ultra only on Super's {c['escalated']} failures "
+            f"(computed from the two runs) | **{c['resolved']} / {c['n']}** ({c['resolved_rate'] * 100:.0f}%) "
+            f"| | | | | ${c['cost_total_usd'] / c['n']:.3f} | ${c['cost_per_resolved_usd']:.3f} | |")
     index = load_index()
     valid = sum(1 for r in index if r.get("validated"))
     lines.append(f"\n_{valid} of {len(index)} candidate CVEs validated (regression test fails on the "
