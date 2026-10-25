@@ -49,9 +49,33 @@
    },
    "credibility_auc": 0.669,
    "credibility_auc_needs_info": 0.636
+  },
+  "no-grounding": {
+   "n": 197,
+   "n_slop": 49,
+   "n_valid": 148,
+   "slop_closed": 0.0,
+   "slop_ungrounded": 0.0,
+   "valid_dismissed": 0,
+   "valid_dismissed_ids": [],
+   "valid_closed": 2,
+   "agreement": 0.741,
+   "cost_mean_usd": 0.00712,
+   "cost_total_usd": 1.4027,
+   "seconds_mean": 42.07,
+   "seconds_p90": 56.44,
+   "verdicts_slop": {
+    "NEEDS_INFO": 49
+   },
+   "verdicts_valid": {
+    "NEEDS_INFO": 146,
+    "DUPLICATE": 2
+   },
+   "credibility_auc": 0.526,
+   "credibility_auc_needs_info": 0.52
   }
  },
- "generated": "2026-10-25T03:55:58Z",
+ "generated": "2026-10-25T05:01:18Z",
  "rows": [
   {
    "id": "h1-1040166",
