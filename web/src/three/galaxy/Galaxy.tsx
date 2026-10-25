@@ -238,14 +238,39 @@ function useSpin(world: RefObject<THREE.Group>, controls: RefObject<CameraContro
   };
 }
 
-function Scene({ graph, focus, autoRotate, compact }: {
-  graph: GraphData; focus: GalaxyFocus; autoRotate: boolean; compact: boolean;
+function Scene({ graph, focus, autoRotate, compact, insetLeft }: {
+  graph: GraphData; focus: GalaxyFocus; autoRotate: boolean; compact: boolean; insetLeft: number;
 }) {
   const zoom = compact ? 1.9 : 1;
-  const home: [number, number, number, number, number, number] = compact
-    ? [0, 80, 360, 0, 0, 0]
-    : [-48, 70, 285, -48, 0, 0];
+  const { size, camera } = useThree();
   const controls = useRef<CameraControls>(null!);
+
+  // where the galaxy is and how big it is (95th percentile radius: a few outliers don't count)
+  const bounds = useMemo(() => {
+    const c = new THREE.Vector3();
+    graph.nodes.forEach((n) => { c.x += n.pos[0]; c.y += n.pos[1]; c.z += n.pos[2]; });
+    c.divideScalar(Math.max(1, graph.nodes.length));
+    const d = graph.nodes.map((n) => Math.hypot(n.pos[0] - c.x, n.pos[1] - c.y, n.pos[2] - c.z)).sort((a, b) => a - b);
+    return { c, r: d[Math.floor(d.length * 0.95)] ?? 90 };
+  }, [graph]);
+
+  // a panel floating over the left of the canvas: shift the projection so the galaxy is centred
+  // in the free space beside it, and fit it to that space rather than to the whole canvas
+  const free = Math.max(200, size.width - insetLeft);
+  useEffect(() => {
+    const cam = camera as THREE.PerspectiveCamera;
+    if (insetLeft > 0) cam.setViewOffset(size.width, size.height, -insetLeft / 2, 0, size.width, size.height);
+    else cam.clearViewOffset();
+    cam.updateProjectionMatrix();
+  }, [camera, insetLeft, size.width, size.height]);
+
+  /** Camera distance that shows halfW x halfH world units in the free part of the canvas. */
+  const fit = (halfW: number, halfH: number, margin: number) => {
+    const vfov = ((camera as THREE.PerspectiveCamera).fov * Math.PI) / 180;
+    const hfov = 2 * Math.atan(Math.tan(vfov / 2) * (free / size.height));
+    return Math.max(halfW / Math.tan(hfov / 2), halfH / Math.tan(vfov / 2)) * margin;
+  };
+  const homeDist = fit(bounds.r, bounds.r, compact ? 1.12 : 1.22);
   const world = useRef<THREE.Group>(null!);
   const spin = useSpin(world, controls);
   const [hover, setHover] = useState<number | null>(null);
@@ -272,9 +297,12 @@ function Scene({ graph, focus, autoRotate, compact }: {
     const anchor = near !== undefined ? new THREE.Vector3(...graph.nodes[near].pos) : new THREE.Vector3(0, 0, 0);
     const dir = anchor.clone().normalize();
     if (dir.lengthSq() < 0.1) dir.set(1, 0.3, 0.2).normalize();
-    // compact (tall) panels stack the ghost above the galaxy; wide views float it beside
+    // compact (tall) panels stack the ghost above the galaxy, near the middle so its label fits
+    // the narrow panel; wide views float it beside the galaxy
+    const side = new THREE.Vector3(dir.x, 0, dir.z);
+    if (side.lengthSq() < 1e-4) side.set(1, 0, 0);
     const pos = compact
-      ? dir.multiplyScalar(40 + k * 10).add(new THREE.Vector3(0, 120 + k * 18, 0))
+      ? side.normalize().multiplyScalar(10 + k * 24).add(new THREE.Vector3(0, 120 + k * 18, 0))
       : dir.multiplyScalar(118 + k * 14).add(new THREE.Vector3(0, 10 + k * 8, 0));
     return { ...g, pos, anchor: near !== undefined ? anchor : null };
   });
@@ -284,9 +312,13 @@ function Scene({ graph, focus, autoRotate, compact }: {
     if (!c) return;
     spin.recenter();
     if (ghostAnchors.length && !pathIdx.length && compact) {
-      const g = ghostAnchors[0].pos;
-      const mid = g.clone().multiplyScalar(0.45);
-      c.setLookAt(mid.x, mid.y + 10, mid.z + 360, mid.x, mid.y, mid.z, true);
+      // the ghost floats above the galaxy: frame both, stacked
+      const top = Math.max(...ghostAnchors.map((g) => g.pos.y)) + 12;
+      const bottom = bounds.c.y - bounds.r;
+      const mid = new THREE.Vector3(bounds.c.x, (top + bottom) / 2, bounds.c.z);
+      const eye = mid.clone().addScaledVector(new THREE.Vector3(0, 0.12, 1).normalize(),
+        fit(bounds.r, (top - bottom) / 2, 1.1));
+      c.setLookAt(eye.x, eye.y, eye.z, mid.x, mid.y, mid.z, true);
       return;
     }
     if (ghostAnchors.length && !pathIdx.length) {
@@ -302,7 +334,8 @@ function Scene({ graph, focus, autoRotate, compact }: {
     ghostAnchors.forEach((g) => pts.push(g.pos.clone()));
     if (focus.target && byName.has(focus.target)) pts.push(new THREE.Vector3(...graph.nodes[byName.get(focus.target)!].pos));
     if (!pts.length) {
-      c.setLookAt(...home, true);
+      const eye = bounds.c.clone().addScaledVector(new THREE.Vector3(0, 0.24, 1).normalize(), homeDist);
+      c.setLookAt(eye.x, eye.y, eye.z, bounds.c.x, bounds.c.y, bounds.c.z, true);
       return;
     }
     const box = new THREE.Box3().setFromPoints(pts);
@@ -313,7 +346,7 @@ function Scene({ graph, focus, autoRotate, compact }: {
     const eye = center.clone().add(dir.multiplyScalar(size * 1.25 * zoom)).add(new THREE.Vector3(0, size * 0.25, 0));
     c.setLookAt(eye.x, eye.y, eye.z, center.x, center.y, center.z, true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pathIdx.join(","), ghosts.map((g) => g.name).join(","), focus.target]);
+  }, [pathIdx.join(","), ghosts.map((g) => g.name).join(","), focus.target, free, size.height]);
 
   useFrame((_, dt) => {
     if (autoRotate && controls.current && !lit.size && !ghosts.length && !spin.dragging()) {
@@ -324,7 +357,7 @@ function Scene({ graph, focus, autoRotate, compact }: {
   const hovered = hover !== null ? graph.nodes[hover] : null;
   return (
     <>
-      <CameraControls ref={controls} minDistance={20} maxDistance={420} smoothTime={0.9} />
+      <CameraControls ref={controls} minDistance={20} maxDistance={Math.max(420, homeDist * 1.6)} smoothTime={0.9} />
       <Stars />
       <group ref={world}>
         <Edges graph={graph} dim={lit.size > 0 || ghosts.length > 0} />
@@ -355,17 +388,18 @@ function Scene({ graph, focus, autoRotate, compact }: {
   );
 }
 
-export default function Galaxy({ graph, focus = {}, autoRotate = true, compact = false }: {
-  graph: GraphData; focus?: GalaxyFocus; autoRotate?: boolean; compact?: boolean;
+/** `insetLeft`: pixels on the left of the canvas covered by an overlaid panel. */
+export default function Galaxy({ graph, focus = {}, autoRotate = true, compact = false, insetLeft = 0 }: {
+  graph: GraphData; focus?: GalaxyFocus; autoRotate?: boolean; compact?: boolean; insetLeft?: number;
 }) {
   return (
     <Canvas
       dpr={[1, 1.75]}
       gl={{ antialias: false, powerPreference: "high-performance" }}
-      camera={{ position: compact ? [0, 80, 360] : [-48, 70, 285], fov: 45, near: 0.5, far: 2400 }}
+      camera={{ position: compact ? [0, 90, 640] : [0, 80, 340], fov: 45, near: 0.5, far: 2400 }}
       onCreated={({ gl }) => gl.setClearColor("#05060a")}
     >
-      <Scene graph={graph} focus={focus} autoRotate={autoRotate} compact={compact} />
+      <Scene graph={graph} focus={focus} autoRotate={autoRotate} compact={compact} insetLeft={insetLeft} />
     </Canvas>
   );
 }

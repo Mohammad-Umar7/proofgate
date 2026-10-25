@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { loadGraph } from "@/lib/api";
 import { nearNames, pathFromEntry } from "@/lib/graph";
 import type { GraphData } from "@/lib/types";
@@ -26,6 +26,25 @@ export default function GalaxyPage() {
   const [result, setResult] = useState<{ kind: "real" | "ghost"; text: string } | null>(null);
 
   useEffect(() => { loadGraph().then(setGraph); }, []);
+
+  // on wide screens the panel floats over the canvas: tell the galaxy how much it covers, so it
+  // frames itself in the space beside the panel instead of underneath it
+  const side = useRef<HTMLElement>(null);
+  const canvas = useRef<HTMLDivElement>(null);
+  const [inset, setInset] = useState(0);
+  useEffect(() => {
+    const measure = () => {
+      const a = side.current?.getBoundingClientRect(), c = canvas.current?.getBoundingClientRect();
+      if (!a || !c) return;
+      const beside = a.right < c.left + c.width * 0.6 && a.bottom > c.top + c.height * 0.4;
+      setInset(beside ? Math.round(a.right - c.left + 24) : 0);
+    };
+    measure();
+    const ro = new ResizeObserver(measure);
+    if (side.current) ro.observe(side.current);
+    if (canvas.current) ro.observe(canvas.current);
+    return () => ro.disconnect();
+  }, []);
 
   const stats = useMemo(() => graph && {
     fns: graph.nodes.length, edges: graph.edges.length, files: graph.files.length, version: graph.version,
@@ -59,8 +78,8 @@ export default function GalaxyPage() {
 
   return (
     <main className={styles.page}>
-      <div className={styles.canvas}>{graph && <Galaxy graph={graph} focus={focus} />}</div>
-      <aside className={`panel ${styles.side}`}>
+      <div className={styles.canvas} ref={canvas}>{graph && <Galaxy graph={graph} focus={focus} insetLeft={inset} />}</div>
+      <aside className={`panel ${styles.side}`} ref={side}>
         <p className="eyebrow">Code galaxy · curl {stats?.version ?? "…"}</p>
         <h1 className={styles.h1}>Every function in curl, every call between them.</h1>
         <p className={styles.p}>
