@@ -1,0 +1,6 @@
+# footage, narration audio and renders are regenerated (tools/record.mjs, hyperframes tts), not committed
+assets/
+film/assets/
+film/renders/
+film/.hyperframes/
+node_modules/
