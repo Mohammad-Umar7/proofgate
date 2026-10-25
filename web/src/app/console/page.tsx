@@ -117,18 +117,18 @@ export default function ConsolePage() {
       </div>
 
       <div className={styles.picker}>
+        {API && (
+          <button className={`${styles.pick} ${active === "live" ? styles.pickOn : ""}`} onClick={() => setActive("live")}>
+            <span className={styles.pickLabel}>Live · your report</span>
+            <b>Paste a link or a report and run the real pipeline</b>
+          </button>
+        )}
         {replays.map((r) => (
           <button key={r.id} className={`${styles.pick} ${active === r.id ? styles.pickOn : ""}`} onClick={() => start(r)}>
             <span className={styles.pickLabel}>{r.label}</span>
             <b>{r.report.title}</b>
           </button>
         ))}
-        {API && (
-          <button className={`${styles.pick} ${active === "live" ? styles.pickOn : ""}`} onClick={() => setActive("live")}>
-            <span className={styles.pickLabel}>Live · your report</span>
-            <b>Paste a report and run the real pipeline</b>
-          </button>
-        )}
       </div>
 
       <div className={styles.work}>
