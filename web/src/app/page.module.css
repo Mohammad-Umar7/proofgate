@@ -12,6 +12,14 @@
 .benchLine { margin: 6px 0 0; font-size: 17px; }
 .benchLine b { font-family: var(--font-mono); }
 
+.fix { padding: 26px 28px; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr) auto; gap: 28px; align-items: center; }
+.fixK { display: flex; flex-direction: column; gap: 8px; }
+.fixK b { font-family: var(--font-mono); font-size: 56px; letter-spacing: -0.04em; line-height: 1; color: var(--green); }
+.fixK b small { font-size: 26px; color: var(--muted); }
+.fixK span { color: var(--muted); font-size: 14px; }
+.fixList { margin: 0; padding-left: 18px; color: #b6bccb; font-size: 14.5px; display: flex; flex-direction: column; gap: 8px; }
+@media (max-width: 960px) { .fix { grid-template-columns: 1fr; } }
+
 .stages { list-style: none; padding: 0; margin: 36px 0 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
 .stages li { padding: 18px 20px; display: grid; grid-template-columns: auto 1fr; grid-template-rows: auto auto auto; column-gap: 14px; row-gap: 6px; }
 .stageN { font-family: var(--font-mono); color: var(--dim); grid-row: span 3; font-size: 13px; padding-top: 2px; }

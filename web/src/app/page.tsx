@@ -4,8 +4,8 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { HelixSection } from "@/components/HelixSection";
 import { HeroScroll } from "@/components/HeroScroll";
-import { loadBench } from "@/lib/api";
-import { STAGES } from "@/lib/types";
+import { loadBench, loadFixBench } from "@/lib/api";
+import { STAGES, type FixBench } from "@/lib/types";
 import styles from "./page.module.css";
 
 const FACTS = [
@@ -15,10 +15,20 @@ const FACTS = [
   { k: "0 / 148", v: "real curl CVEs wrongly dismissed on SlopBench" },
 ];
 
+const FIX_MODEL: Record<string, string> = {
+  nano: "Nemotron 3 Nano", super: "Nemotron 3 Super", ultra: "Nemotron 3 Ultra",
+};
+
 export default function Home() {
   const [bench, setBench] = useState<any>(null);
-  useEffect(() => { loadBench().then(setBench).catch(() => {}); }, []);
+  const [fixbench, setFixbench] = useState<FixBench | null>(null);
+  useEffect(() => {
+    loadBench().then(setBench).catch(() => {});
+    loadFixBench().then(setFixbench).catch(() => {});
+  }, []);
   const full = bench?.configs?.full ?? bench?.configs?.deterministic;
+  // headline the model that fixed the most CVEs
+  const fixer = fixbench ? Object.values(fixbench.models).sort((a, b) => b.metrics.resolved - a.metrics.resolved)[0] : null;
 
   return (
     <main>
@@ -71,6 +81,27 @@ export default function Home() {
           ))}
         </ol>
       </section>
+
+      {fixer && (
+        <section className={`container ${styles.section}`}>
+          <p className="eyebrow">From triage to a tested fix</p>
+          <h2 className={styles.h2}>The agent writes the patch, builds curl, and runs curl&apos;s own tests.</h2>
+          <div className={`panel ${styles.fix}`}>
+            <div className={styles.fixK}>
+              <b>{fixer.metrics.resolved}<small>/{fixer.metrics.n}</small></b>
+              <span>real curl CVEs fixed by {FIX_MODEL[fixer.role] ?? fixer.model}, each verified by a fresh build passing the
+                regression test curl&apos;s maintainers wrote and every nearby test.</span>
+            </div>
+            <ul className={styles.fixList}>
+              <li>The agent gets the public advisory and the vulnerable checkout, never the maintainers&apos; fix.</li>
+              <li>It reproduces the failure, reads the code, edits C, then compiles and tests in a sandbox with no network, and iterates.</li>
+              <li>{fixer.metrics.cost_per_resolved_usd != null ? `$${fixer.metrics.cost_per_resolved_usd.toFixed(3)} of Token Factory per verified fix. ` : ""}
+                Every patch is shown next to the real one.</li>
+            </ul>
+            <Link className="btn" href="/fixbench/">Watch it fix them</Link>
+          </div>
+        </section>
+      )}
 
       <section className={`container ${styles.section}`}>
         <p className="eyebrow">Built on</p>
