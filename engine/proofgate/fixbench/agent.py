@@ -396,6 +396,7 @@ async def solve(row: dict, tests: list[str], *, role: str = "super", budget_usd:
     ]
 
     nudged = False
+    seen: dict[str, int] = {}  # read-only call -> turn it was first made, to break loops
     for turn in range(1, MAX_TURNS + 1):
         try:
             message, call = await llm.complete(stage="fixbench", role=role, messages=_trim(messages),
@@ -440,6 +441,12 @@ async def solve(row: dict, tests: list[str], *, role: str = "super", budget_usd:
                 obs = "Arguments were not valid JSON; call the tool again."
             else:
                 obs, finished = await _execute(tool, args, ws, row, tests, result)
+                key = json.dumps([tool, args], sort_keys=True)
+                if tool in ("grep", "ls", "read", "outline", "function"):
+                    if key in seen and not ws.edited:
+                        obs = (f"You already made this exact call at reply {seen[key]}; same result "
+                               f"below. Try a different approach.\n{obs}")
+                    seen.setdefault(key, turn)
             await note(Step(turn, thought if i == 0 else "", tool,
                             {k: str(v)[:4000] for k, v in args.items()}, obs[:6000],
                             round(time.perf_counter() - started, 1), call.cost_usd if i == 0 else 0.0))
