@@ -12,6 +12,7 @@ outputs are cached on the host and replayed, so a build-and-test cycle is ~30-60
 from __future__ import annotations
 
 import asyncio
+import hashlib
 import re
 import subprocess
 import tempfile
@@ -23,12 +24,16 @@ from ..config import get_settings
 from ..repo import get_repo
 from .dataset import test_patch
 
-IMAGE = "proofgate/curl-test:1"
+IMAGE = "proofgate/curl-test:2"
 CCACHE_VOLUME = "proofgate-ccache"
 JOBS = 6
+# AddressSanitizer turns silent memory corruption into a failing test, so memory-safety CVEs
+# are graded on the same terms as logic bugs. NTLM is opt-in in recent curl; its tests need it.
+SAN = "-fsanitize=address -fno-omit-frame-pointer"
 CONFIGURE = ("--enable-debug --disable-shared --with-openssl --with-libssh2 --with-nghttp2 "
              "--with-libpsl --with-libidn2 --without-brotli --without-zstd --disable-docs "
-             "--disable-manual")
+             f"--disable-manual --enable-ntlm CFLAGS='{SAN}' LDFLAGS='-fsanitize=address'")
+SAN_ENV = {"ASAN_OPTIONS": "detect_leaks=0:abort_on_error=0:symbolize=1"}
 _AUTOTOOLS = re.compile(r"^\+\+\+ b/.*(Makefile\.(am|inc)|configure\.ac|\.m4)$", re.M)
 
 PREPARE = r"""
@@ -117,7 +122,9 @@ def parse_runtests(log: str, tests: list[str]) -> dict[str, str]:
 
 
 def _cache(row: dict) -> Path:
-    path = get_settings().cache_dir / "fixbench" / row["id"]
+    # keyed by image + configure flags, so changing either re-runs configure
+    key = hashlib.sha256(f"{IMAGE} {CONFIGURE}".encode()).hexdigest()[:10]
+    path = get_settings().cache_dir / "fixbench" / row["id"] / key
     path.mkdir(parents=True, exist_ok=True)
     return path
 
@@ -141,7 +148,7 @@ def _docker(tmp: Path, script: str, *, out: Path | None = None, env: dict[str, s
     ]
     if out:
         argv += ["-v", f"{out}:/out"]
-    for key, value in (env or {}).items():
+    for key, value in {**SAN_ENV, **(env or {})}.items():
         argv += ["--env", f"{key}={value}"]
     return argv + [IMAGE, "sh", "-c", script]
 
