@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import asyncio
 import hashlib
+import os
 import re
 import subprocess
 import tempfile
@@ -26,7 +27,7 @@ from .dataset import test_patch
 
 IMAGE = "proofgate/curl-test:3"
 CCACHE_VOLUME = "proofgate-ccache"
-JOBS = 6
+JOBS = max(1, min(6, os.cpu_count() or 2))
 # NTLM is opt-in in recent curl and its tests need it. Memory errors are caught by running the
 # regression tests under valgrind (curl's own CI approach); AddressSanitizer is not usable here,
 # it crash-loops on kernels with high ASLR entropy such as Docker Desktop's WSL2 kernel.
@@ -151,6 +152,7 @@ def _cache(row: dict) -> Path:
 
 
 def _stage_inputs(tmp: Path, row: dict, fix: str = "") -> None:
+    tmp.chmod(0o755)  # on Linux the sandbox's unprivileged user must be able to read /in
     repo = get_repo()
     repo.git("archive", "--format=tar", "-o", str(tmp / "src.tar"), row["base"])
     (tmp / "tests.patch").write_text(test_patch(row["base"], row["fix_commit"]), encoding="utf-8",
@@ -192,6 +194,7 @@ async def prepare(row: dict) -> Path:
     gen = cache / "gen.tar.gz"
     if gen.exists():
         return gen
+    cache.chmod(0o777)  # ... and write the generated files to /out
     with tempfile.TemporaryDirectory(prefix="pg-fb-") as tmp:
         _stage_inputs(Path(tmp), row)
         code, log = await _exec(_docker(Path(tmp), PREPARE.replace("{configure}", CONFIGURE),
