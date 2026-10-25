@@ -36,6 +36,10 @@ CONFIGURE = ("--enable-debug --disable-shared --with-openssl --with-libssh2 --wi
              "--disable-manual --enable-ntlm")
 SAN_ENV: dict[str, str] = {}
 _AUTOTOOLS = re.compile(r"^\+\+\+ b/.*(Makefile\.(am|inc)|configure\.ac|\.m4)$", re.M)
+# Debug builds run checksrc.pl inside `make`, so a style slip would show up as a build failure.
+# Unhook it: style is reported separately (TestRun.style) and graded on its own.
+UNHOOK = (r"find . -name Makefile -exec sed -i -e 's/^all-local: checksrc$/all-local:/' "
+          r"-e 's/^CHECKSOURCES = checksrc$/CHECKSOURCES =/' {} +")
 
 PREPARE = r"""
 set -e
@@ -44,6 +48,7 @@ patch -p1 -s --no-backup-if-mismatch < /in/tests.patch
 touch /work/.stamp && sleep 1
 autoreconf -fi > /work/autoreconf.log 2>&1 || { tail -40 /work/autoreconf.log; exit 3; }
 ./configure {configure} > /work/configure.log 2>&1 || { tail -60 /work/configure.log; exit 4; }
+{unhook}
 find . -newer /work/.stamp -type f > /work/gen.list
 tar -czf /out/gen.tar.gz -T /work/gen.list
 echo PG_PREPARED
@@ -59,6 +64,7 @@ fi
 if [ "$PG_FULL" = 1 ]; then
   { autoreconf -fi && ./configure {configure}; } > /work/configure.log 2>&1 \
     || { tail -60 /work/configure.log; echo PG_BUILD_FAILED; exit 0; }
+  {unhook}
 else
   tar -xzf /in/gen.tar.gz && tar -tzf /in/gen.tar.gz | xargs touch
 fi
@@ -145,7 +151,7 @@ def parse_runtests(log: str, tests: list[str]) -> dict[str, str]:
 
 def _cache(row: dict) -> Path:
     # keyed by image + configure flags, so changing either re-runs configure
-    key = hashlib.sha256(f"{IMAGE} {CONFIGURE}".encode()).hexdigest()[:10]
+    key = hashlib.sha256(f"{IMAGE} {CONFIGURE} {PREPARE} {UNHOOK}".encode()).hexdigest()[:10]
     path = get_settings().cache_dir / "fixbench" / row["id"] / key
     path.mkdir(parents=True, exist_ok=True)
     return path
@@ -197,7 +203,8 @@ async def prepare(row: dict) -> Path:
     cache.chmod(0o777)  # ... and write the generated files to /out
     with tempfile.TemporaryDirectory(prefix="pg-fb-") as tmp:
         _stage_inputs(Path(tmp), row)
-        code, log = await _exec(_docker(Path(tmp), PREPARE.replace("{configure}", CONFIGURE),
+        script = PREPARE.replace("{configure}", CONFIGURE).replace("{unhook}", UNHOOK)
+        code, log = await _exec(_docker(Path(tmp), script,
                                         out=cache), timeout=900)
     if "PG_PREPARED" not in log or not gen.exists():
         (cache / "prepare.log").write_text(log, encoding="utf-8")
@@ -213,7 +220,8 @@ async def run_tests(row: dict, fix: str, tests: list[str], timeout: int = 1500) 
     own = set(row.get("fail_to_pass_valid") or row["fail_to_pass"])
     memcheck = [t for t in tests if t in own]
     rest = [t for t in tests if t not in own]
-    script = (RUN.replace("{configure}", CONFIGURE).replace("{jobs}", str(JOBS))
+    script = (RUN.replace("{configure}", CONFIGURE).replace("{unhook}", UNHOOK)
+              .replace("{jobs}", str(JOBS))
               .replace("{memcheck}", " ".join(memcheck)).replace("{tests}", " ".join(rest)))
     with tempfile.TemporaryDirectory(prefix="pg-fb-") as tmp:
         _stage_inputs(Path(tmp), row, fix)
