@@ -1,0 +1,49 @@
+<template>
+  <style>
+    #root { position: absolute; inset: 0; background: #05060a; overflow: hidden; font-family: "Inter", sans-serif; }
+    #s03-cam { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; transform-origin: 0 0; }
+    #s03-v { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; object-fit: cover; }
+    .hl { position: absolute; border: 3px solid #8bd3ff; border-radius: 12px; opacity: 0;
+      box-shadow: 0 0 0 3px rgba(139, 211, 255, 0.22), 0 0 26px rgba(139, 211, 255, 0.55); }
+    .spot { box-shadow: 0 0 0 3px rgba(139, 211, 255, 0.22), 0 0 26px rgba(139, 211, 255, 0.55), 0 0 0 3000px rgba(2, 3, 6, 0.5); }
+    .tag { position: absolute; padding: 6px 12px 7px; border-radius: 8px; background: #8bd3ff; color: #05060a;
+      font-size: 28px; font-weight: 700; letter-spacing: -0.01em; white-space: nowrap; opacity: 0; }
+    .badge { position: absolute; left: 1316px; top: 22px; display: flex; align-items: center; gap: 10px; padding: 8px 14px;
+      border-radius: 999px; background: rgba(255, 77, 94, 0.14); border: 1px solid rgba(255, 77, 94, 0.55);
+      color: #ffd9dd; font-family: "JetBrains Mono", monospace; font-size: 28px; letter-spacing: 0.02em; }
+    .badge i { width: 11px; height: 11px; border-radius: 50%; background: #ff4d5e; display: block; }
+  </style>
+  <div data-hf-id="hf-s03r" id="root" data-composition-id="s03" data-width="1920" data-height="1080">
+    <!-- the console on this laptop, wired to the live engine: a real HackerOne link, triaged now -->
+    <div data-hf-id="hf-s03c" id="s03-cam">
+      <video data-hf-id="hf-s03v" id="s03-v" class="clip" src="assets/rec/live.mp4" data-start="0" data-duration="14" data-media-start="0.4" data-playback-rate="1.62" muted playsinline></video>
+      <!-- positions are the recorder's element marks (assets/rec/live.marks.json) and frame reads -->
+      <div data-hf-id="hf-s03h1" id="s03-h1" class="hl" style="left: 1324px; top: 162px; width: 263px; height: 38px;"></div>
+      <div data-hf-id="hf-s03t1" id="s03-t1" class="tag" style="left: 1262px; top: 210px;">engine on this laptop</div>
+      <div data-hf-id="hf-s03h2" id="s03-h2" class="hl spot" style="left: 351px; top: 190px; width: 298px; height: 55px;"></div>
+      <div data-hf-id="hf-s03t2" id="s03-t2" class="tag" style="left: 351px; top: 253px;">real report · hackerone.com/reports/3418528</div>
+      <div data-hf-id="hf-s03h3" id="s03-h3" class="hl" style="left: 351px; top: 496px; width: 298px; height: 60px;"></div>
+      <div data-hf-id="hf-s03h4" id="s03-h4" class="hl spot" style="left: 687px; top: 348px; width: 468px; height: 62px;"></div>
+      <div data-hf-id="hf-s03t4" id="s03-t4" class="tag" style="left: 687px; top: 418px;">Nemotron 3 Nano · extracts the checkable claims</div>
+    </div>
+    <div data-hf-id="hf-s03b" id="s03-badge" class="badge"><i data-hf-id="hf-s03bi"></i>LIVE RECORDING · 1.6×</div>
+  </div>
+  <script>
+    const tl = gsap.timeline({ paused: true });
+    const hl = (id, a, b) => {
+      tl.fromTo(id, { opacity: 0, scale: 1.05 }, { opacity: 1, scale: 1, duration: 0.35, ease: "expo.out" }, a);
+      tl.to(id, { opacity: 0, duration: 0.25, ease: "power2.in" }, b);
+    };
+    // the content column sits left of the log panel
+    tl.fromTo("#s03-cam", { x: -300, y: 0 }, { x: -300, y: 0, duration: 0.01 }, 0);
+    // "This is live, not a replay"
+    hl("#s03-h1", 0.15, 1.6); hl("#s03-t1", 0.25, 1.6);
+    // "I paste a link to a real report from curl's HackerOne program"
+    hl("#s03-h2", 2.5, 5.9); hl("#s03-t2", 2.65, 5.9);
+    // "ProofGate fetches it"
+    hl("#s03-h3", 6.3, 8.0);
+    // "NVIDIA Nemotron, on Nebius Token Factory, pulls out every claim it can check"
+    hl("#s03-h4", 8.25, 13.85); hl("#s03-t4", 8.4, 13.85);
+    window.__timelines["s03"] = tl;
+  </script>
+</template>

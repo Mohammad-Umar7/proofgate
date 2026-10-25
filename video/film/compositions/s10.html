@@ -1,0 +1,47 @@
+<template>
+  <style>
+    #root { position: absolute; inset: 0; background: #05060a; overflow: hidden; font-family: "Inter", sans-serif; }
+    #s10-cam { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; transform-origin: 0 0; }
+    .vid { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; object-fit: cover; }
+    .hl { position: absolute; border: 3px solid #8bd3ff; border-radius: 12px; opacity: 0;
+      box-shadow: 0 0 0 3px rgba(139, 211, 255, 0.22), 0 0 26px rgba(139, 211, 255, 0.55); }
+    .spot { box-shadow: 0 0 0 3px rgba(139, 211, 255, 0.22), 0 0 26px rgba(139, 211, 255, 0.55), 0 0 0 3000px rgba(2, 3, 6, 0.5); }
+    .tag { position: absolute; padding: 5px 10px 6px; border-radius: 7px; background: #8bd3ff; color: #05060a;
+      font-size: 24px; font-weight: 700; letter-spacing: -0.01em; white-space: nowrap; opacity: 0; }
+    .badge { position: absolute; left: 24px; top: 150px; display: flex; align-items: center; gap: 9px; padding: 7px 12px;
+      border-radius: 999px; background: rgba(255, 77, 94, 0.14); border: 1px solid rgba(255, 77, 94, 0.55);
+      color: #ffd9dd; font-family: "JetBrains Mono", monospace; font-size: 28px; letter-spacing: 0.02em; }
+    .badge i { width: 10px; height: 10px; border-radius: 50%; background: #ff4d5e; display: block; }
+  </style>
+  <div data-hf-id="hf-s10r" id="root" data-composition-id="s10" data-width="1920" data-height="1080">
+    <!-- the same live run sped up: reads, one edit, then a sandboxed build of curl and 30 tests -->
+    <div data-hf-id="hf-s10c" id="s10-cam">
+      <video data-hf-id="hf-s10va" id="s10-va" class="clip vid" src="assets/rec/fixlive.mp4" data-start="0" data-duration="2.4" data-media-start="19.45" data-playback-rate="8" muted playsinline></video>
+      <video data-hf-id="hf-s10vb" id="s10-vb" class="clip vid" src="assets/rec/fixlive.mp4" data-start="2.4" data-duration="5" data-media-start="38.6" data-playback-rate="5.38" muted playsinline></video>
+      <video data-hf-id="hf-s10vc" id="s10-vc" class="clip vid" src="assets/rec/fixlive.mp4" data-start="7.4" data-duration="3.1" data-media-start="65.5" data-playback-rate="1.23" muted playsinline></video>
+      <div data-hf-id="hf-s10h1" id="s10-h1" class="hl spot" style="left: 357px; top: 470px; width: 599px; height: 470px;"></div>
+      <div data-hf-id="hf-s10t1" id="s10-t1" class="tag" style="left: 357px; top: 432px;">one edit to lib/http.c</div>
+      <div data-hf-id="hf-s10h2" id="s10-h2" class="hl spot" style="left: 1106px; top: 107px; width: 455px; height: 58px;"></div>
+      <div data-hf-id="hf-s10t2" id="s10-t2" class="tag" style="left: 1106px; top: 172px;">Docker · --network none · curl's own runtests.pl</div>
+      <div data-hf-id="hf-s10h3" id="s10-h3" class="hl spot" style="left: 365px; top: 107px; width: 660px; height: 58px;"></div>
+      <div data-hf-id="hf-s10t3" id="s10-t3" class="tag" style="left: 365px; top: 172px;">real elapsed time and real spend</div>
+    </div>
+    <div data-hf-id="hf-s10b" id="s10-badge" class="badge"><i data-hf-id="hf-s10bi"></i>LIVE · sped up 5-8×</div>
+  </div>
+  <script>
+    const tl = gsap.timeline({ paused: true });
+    const hl = (id, a, b) => {
+      tl.fromTo(id, { opacity: 0, scale: 1.05 }, { opacity: 1, scale: 1, duration: 0.35, ease: "expo.out" }, a);
+      tl.to(id, { opacity: 0, duration: 0.25, ease: "power2.in" }, b);
+    };
+    tl.fromTo("#s10-cam", { scale: 1.15, x: -91, y: -40 }, { scale: 1.15, x: -91, y: -40, duration: 0.01 }, 0);
+    // "It reads the code, writes a patch"
+    hl("#s10-h1", 0.15, 2.45); hl("#s10-t1", 0.3, 2.45);
+    // "then builds curl and runs curl's own tests, in a sandbox with no network"
+    hl("#s10-h2", 2.6, 7.0); hl("#s10-t2", 2.75, 7.0);
+    // "The whole run took about a minute, and three cents"
+    hl("#s10-h3", 7.35, 10.45); hl("#s10-t3", 7.5, 10.45);
+    tl.to("#s10-badge", { opacity: 0, duration: 0.2 }, 7.3);
+    window.__timelines["s10"] = tl;
+  </script>
+</template>

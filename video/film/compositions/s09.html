@@ -1,0 +1,56 @@
+<template>
+  <style>
+    #root { position: absolute; inset: 0; background: #05060a; overflow: hidden; font-family: "Inter", sans-serif; }
+    #s09-cam { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; transform-origin: 0 0; }
+    #s09-v { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; object-fit: cover; }
+    .hl { position: absolute; border: 3px solid #8bd3ff; border-radius: 12px; opacity: 0;
+      box-shadow: 0 0 0 3px rgba(139, 211, 255, 0.22), 0 0 26px rgba(139, 211, 255, 0.55); }
+    .spot { box-shadow: 0 0 0 3px rgba(139, 211, 255, 0.22), 0 0 26px rgba(139, 211, 255, 0.55), 0 0 0 3000px rgba(2, 3, 6, 0.5); }
+    .red { border-color: #ff7b88; box-shadow: 0 0 0 3px rgba(255, 77, 94, 0.22), 0 0 26px rgba(255, 77, 94, 0.55), 0 0 0 3000px rgba(2, 3, 6, 0.5); }
+    .tag { position: absolute; padding: 5px 10px 6px; border-radius: 7px; background: #8bd3ff; color: #05060a;
+      font-size: 24px; font-weight: 700; letter-spacing: -0.01em; white-space: nowrap; opacity: 0; }
+    .tag.redt { background: #ff7b88; }
+    .badge { position: absolute; left: 24px; top: 150px; display: flex; align-items: center; gap: 9px; padding: 7px 12px;
+      border-radius: 999px; background: rgba(255, 77, 94, 0.14); border: 1px solid rgba(255, 77, 94, 0.55);
+      color: #ffd9dd; font-family: "JetBrains Mono", monospace; font-size: 28px; letter-spacing: 0.02em; }
+    .badge i { width: 10px; height: 10px; border-radius: 50%; background: #ff4d5e; display: block; }
+  </style>
+  <div data-hf-id="hf-s09r" id="root" data-composition-id="s09" data-width="1920" data-height="1080">
+    <!-- FixBench page on this laptop: Run live on CVE-2026-6276, the agent reproduces the bug first -->
+    <div data-hf-id="hf-s09c" id="s09-cam">
+      <video data-hf-id="hf-s09v" id="s09-v" class="clip" src="assets/rec/fixlive.mp4" data-start="0" data-duration="14.3" data-media-start="0" data-playback-rate="1.36" muted playsinline></video>
+      <div data-hf-id="hf-s09h1" id="s09-h1" class="hl" style="left: 359px; top: 253px; width: 304px; height: 56px;"></div>
+      <div data-hf-id="hf-s09t1" id="s09-t1" class="tag" style="left: 359px; top: 316px;">Run live now · Nemotron 3 Super</div>
+      <div data-hf-id="hf-s09h2" id="s09-h2" class="hl spot" style="left: 359px; top: 107px; width: 1202px; height: 58px;"></div>
+      <div data-hf-id="hf-s09t2" id="s09-t2" class="tag" style="left: 359px; top: 172px;">the real clock and the real Token Factory spend</div>
+      <div data-hf-id="hf-s09h3" id="s09-h3" class="hl spot" style="left: 357px; top: 170px; width: 700px; height: 106px;"></div>
+      <div data-hf-id="hf-s09t3" id="s09-t3" class="tag" style="left: 357px; top: 284px;">a published curl CVE · the vulnerable commit 86f1e5b3f6</div>
+      <div data-hf-id="hf-s09h4" id="s09-h4" class="hl spot" style="left: 357px; top: 390px; width: 599px; height: 62px;"></div>
+      <div data-hf-id="hf-s09t4" id="s09-t4" class="tag" style="left: 357px; top: 460px;">first: reproduce the bug in the sandbox</div>
+      <div data-hf-id="hf-s09h5" id="s09-h5" class="hl red" style="left: 357px; top: 356px; width: 1206px; height: 101px;"></div>
+      <div data-hf-id="hf-s09t5" id="s09-t5" class="tag redt" style="left: 357px; top: 465px;">regression test fails</div>
+    </div>
+    <div data-hf-id="hf-s09b" id="s09-badge" class="badge"><i data-hf-id="hf-s09bi"></i>LIVE · 1.4×</div>
+  </div>
+  <script>
+    const tl = gsap.timeline({ paused: true });
+    const hl = (id, a, b) => {
+      tl.fromTo(id, { opacity: 0, scale: 1.05 }, { opacity: 1, scale: 1, duration: 0.35, ease: "expo.out" }, a);
+      tl.to(id, { opacity: 0, duration: 0.25, ease: "power2.in" }, b);
+    };
+    // the CVE grid at full width, then 1.2x on the detail once it opens
+    tl.fromTo("#s09-cam", { scale: 1, x: 0, y: 0 }, { scale: 1, x: 0, y: 0, duration: 0.01 }, 0);
+    tl.to("#s09-cam", { scale: 1.15, x: -91, y: -40, duration: 0.7, ease: "power2.inOut" }, 2.6);
+    // "Live again"
+    hl("#s09-h1", 2.9, 4.85); hl("#s09-t1", 3.0, 4.85);
+    // "Nemotron Super gets ..."
+    hl("#s09-h2", 5.0, 8.0); hl("#s09-t2", 5.15, 8.0);
+    // "... a published curl CVE and the vulnerable code"
+    hl("#s09-h3", 8.1, 10.3); hl("#s09-t3", 8.25, 10.3);
+    // "and first reproduces the bug"
+    hl("#s09-h4", 10.3, 12.75); hl("#s09-t4", 10.4, 12.75);
+    // "The regression test fails"
+    hl("#s09-h5", 12.85, 14.3); hl("#s09-t5", 12.95, 14.3);
+    window.__timelines["s09"] = tl;
+  </script>
+</template>

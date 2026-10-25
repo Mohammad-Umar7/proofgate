@@ -1,0 +1,50 @@
+<template>
+  <style>
+    #root { position: absolute; inset: 0; background: #05060a; overflow: hidden; font-family: "Inter", sans-serif; }
+    #s11-cam { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; transform-origin: 0 0; }
+    .vid { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; object-fit: cover; }
+    .hl { position: absolute; border: 3px solid #3ddc97; border-radius: 12px; opacity: 0;
+      box-shadow: 0 0 0 3px rgba(61, 220, 151, 0.22), 0 0 26px rgba(61, 220, 151, 0.55); }
+    .spot { box-shadow: 0 0 0 3px rgba(61, 220, 151, 0.22), 0 0 26px rgba(61, 220, 151, 0.55), 0 0 0 3000px rgba(2, 3, 6, 0.5); }
+    .blue { border-color: #8bd3ff; box-shadow: 0 0 0 3px rgba(139, 211, 255, 0.22), 0 0 26px rgba(139, 211, 255, 0.55); }
+    .tag { position: absolute; padding: 5px 10px 6px; border-radius: 7px; background: #3ddc97; color: #05060a;
+      font-size: 24px; font-weight: 700; letter-spacing: -0.01em; white-space: nowrap; opacity: 0; }
+    .tag.bluet { background: #8bd3ff; }
+    .badge { position: absolute; left: 24px; top: 150px; display: flex; align-items: center; gap: 9px; padding: 7px 12px;
+      border-radius: 999px; background: rgba(255, 77, 94, 0.14); border: 1px solid rgba(255, 77, 94, 0.55);
+      color: #ffd9dd; font-family: "JetBrains Mono", monospace; font-size: 28px; letter-spacing: 0.02em; }
+    .badge i { width: 10px; height: 10px; border-radius: 50%; background: #ff4d5e; display: block; }
+  </style>
+  <div data-hf-id="hf-s11r" id="root" data-composition-id="s11" data-width="1920" data-height="1080">
+    <!-- the live run's result: every light green, checksrc clean, then the two patches -->
+    <div data-hf-id="hf-s11c" id="s11-cam">
+      <video data-hf-id="hf-s11va" id="s11-va" class="clip vid" src="assets/rec/fixlive.mp4" data-start="0" data-duration="4.7" data-media-start="69.3" data-playback-rate="0.47" muted playsinline></video>
+      <video data-hf-id="hf-s11vb" id="s11-vb" class="clip vid" src="assets/rec/fixlive.mp4" data-start="4.7" data-duration="3.9" data-media-start="71.6" muted playsinline></video>
+      <div data-hf-id="hf-s11h1" id="s11-h1" class="hl spot" style="left: 357px; top: 388px; width: 1206px; height: 146px;"></div>
+      <div data-hf-id="hf-s11t1" id="s11-t1" class="tag" style="left: 357px; top: 542px;">30 of 30 pass, the CVE's regression test included</div>
+      <div data-hf-id="hf-s11h2" id="s11-h2" class="hl spot" style="left: 575px; top: 167px; width: 138px; height: 40px;"></div>
+      <div data-hf-id="hf-s11t2" id="s11-t2" class="tag" style="left: 575px; top: 214px;">checksrc: clean</div>
+      <div data-hf-id="hf-s11h3" id="s11-h3" class="hl" style="left: 964px; top: 64px; width: 599px; height: 262px;"></div>
+      <div data-hf-id="hf-s11t3" id="s11-t3" class="tag" style="left: 964px; top: 330px;">the agent's patch</div>
+      <div data-hf-id="hf-s11h4" id="s11-h4" class="hl blue" style="left: 964px; top: 397px; width: 599px; height: 428px;"></div>
+      <div data-hf-id="hf-s11t4" id="s11-t4" class="tag bluet" style="left: 1180px; top: 365px;">the maintainers' fix, never shown to the agent</div>
+    </div>
+    <div data-hf-id="hf-s11b" id="s11-badge" class="badge"><i data-hf-id="hf-s11bi"></i>LIVE RECORDING</div>
+  </div>
+  <script>
+    const tl = gsap.timeline({ paused: true });
+    const hl = (id, a, b) => {
+      tl.fromTo(id, { opacity: 0, scale: 1.05 }, { opacity: 1, scale: 1, duration: 0.35, ease: "expo.out" }, a);
+      tl.to(id, { opacity: 0, duration: 0.25, ease: "power2.in" }, b);
+    };
+    tl.fromTo("#s11-cam", { scale: 1.15, x: -91, y: -40 }, { scale: 1.15, x: -91, y: -40, duration: 0.01 }, 0);
+    // "Every test passes, the regression test included"
+    hl("#s11-h1", 0.1, 3.0); hl("#s11-t1", 0.25, 3.0);
+    // "and curl's style checker is clean"
+    hl("#s11-h2", 3.1, 4.65); hl("#s11-t2", 3.2, 4.65);
+    // "The agent never saw the maintainers' fix"
+    hl("#s11-h3", 5.5, 8.55); hl("#s11-t3", 5.6, 8.55);
+    hl("#s11-h4", 5.9, 8.55); hl("#s11-t4", 6.0, 8.55);
+    window.__timelines["s11"] = tl;
+  </script>
+</template>

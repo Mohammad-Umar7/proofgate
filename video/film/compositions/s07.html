@@ -1,0 +1,73 @@
+<template>
+  <style>
+    #root { position: absolute; inset: 0; background: #f3f4f6; overflow: hidden; font-family: "Inter", sans-serif; color: #0a0b0f; }
+    #s07-h { position: absolute; left: 118px; top: 104px; font-size: 64px; font-weight: 800; letter-spacing: -0.03em; opacity: 0; }
+    #s07-sub { position: absolute; left: 120px; top: 190px; font-size: 30px; color: #4b5263; opacity: 0; }
+    #s07-row { position: absolute; left: 118px; top: 282px; display: flex; gap: 17px; }
+    .st { width: 172px; height: 280px; border-radius: 16px; background: #ffffff; border: 2px solid #d9dce3; padding: 16px 14px;
+      display: flex; flex-direction: column; gap: 8px; opacity: 0; }
+    .st .n { font-family: "JetBrains Mono", monospace; font-size: 22px; color: #5d6473; }
+    .st b { font-size: 28px; font-weight: 800; letter-spacing: -0.02em; line-height: 1.05; }
+    .st .m { font-family: "JetBrains Mono", monospace; font-size: 20px; line-height: 1.25; color: #0b6e45; font-weight: 700; }
+    .st .w { font-size: 18px; line-height: 1.3; color: #4b5263; margin-top: auto; }
+    #s07-loop { position: absolute; left: 1228px; top: 560px; width: 220px; height: 120px; opacity: 0; overflow: visible; }
+    #s07-loopt { position: absolute; left: 1244px; top: 676px; font-size: 24px; font-weight: 700; color: #d93a40; opacity: 0; white-space: nowrap; }
+    .g { position: absolute; left: 120px; display: flex; align-items: center; gap: 22px; font-size: 40px; font-weight: 700;
+      letter-spacing: -0.02em; opacity: 0; }
+    .g i { width: 22px; height: 22px; border-radius: 6px; background: #0f9d63; display: block; flex: none; }
+    #s07-g1 { top: 722px; }
+    #s07-g2 { top: 792px; }
+    #s07-g3 { top: 862px; }
+  </style>
+  <div data-hf-id="hf-s07r" id="root" data-composition-id="s07" data-width="1920" data-height="1080">
+    <!-- the pipeline as the engine runs it (engine/proofgate/stages, docs/ARCHITECTURE.md) -->
+    <div data-hf-id="hf-s07h" id="s07-h">Nine stages, one model per job</div>
+    <div data-hf-id="hf-s07s" id="s07-sub">every model call on NVIDIA Nemotron through Nebius Token Factory</div>
+    <div data-hf-id="hf-s07row" id="s07-row">
+      <div data-hf-id="hf-st1" class="st" id="st1"><span class="n">01</span><b>Intake</b><span class="m">Nemotron 3.5 Super VL</span><span class="w" data-layout-ignore>screenshots and logs in the report</span></div>
+      <div data-hf-id="hf-st2" class="st" id="st2"><span class="n">02</span><b>Claims</b><span class="m">Nemotron 3 Nano</span><span class="w" data-layout-ignore>files, functions, lines, versions</span></div>
+      <div data-hf-id="hf-st3" class="st" id="st3"><span class="n">03</span><b>Grounding</b><span class="m">git · tree-sitter · Nemotron 3 Super</span><span class="w" data-layout-ignore>at the exact version, in all history</span></div>
+      <div data-hf-id="hf-st4" class="st" id="st4"><span class="n">04</span><b>Prior art</b><span class="m">Tavily · OSV</span><span class="w" data-layout-ignore>known CVEs and duplicates</span></div>
+      <div data-hf-id="hf-st5" class="st" id="st5"><span class="n">05</span><b>Policy</b><span class="m">Nemotron 3 Super</span><span class="w" data-layout-ignore>the project's own security rules</span></div>
+      <div data-hf-id="hf-st6" class="st" id="st6"><span class="n">06</span><b>Reproduce</b><span class="m">sandbox</span><span class="w" data-layout-ignore>no network, no credentials</span></div>
+      <div data-hf-id="hf-st7" class="st" id="st7"><span class="n">07</span><b>Verdict</b><span class="m">Nemotron 3 Ultra</span><span class="w" data-layout-ignore>explains, then argues the other side</span></div>
+      <div data-hf-id="hf-st8" class="st" id="st8"><span class="n">08</span><b>Fix</b><span class="m">Nemotron 3 Super</span><span class="w" data-layout-ignore>patch, build curl, run its tests</span></div>
+      <div data-hf-id="hf-st9" class="st" id="st9"><span class="n">09</span><b>Evidence</b><span class="m">card + reply draft</span><span class="w" data-layout-ignore>a maintainer decides</span></div>
+    </div>
+    <svg data-hf-id="hf-s07l" id="s07-loop" viewBox="0 0 220 120" aria-hidden="true">
+      <path data-hf-id="hf-s07lp" id="s07-lp" d="M 60 6 C 60 110, 160 110, 160 6" fill="none" stroke="#d93a40" stroke-width="5" stroke-linecap="round"
+        stroke-dasharray="260" stroke-dashoffset="260" />
+      <path data-hf-id="hf-s07la" d="M 148 22 L 160 4 L 172 22" fill="none" stroke="#d93a40" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" />
+    </svg>
+    <div data-hf-id="hf-s07lt" id="s07-loopt">adversarial pass</div>
+    <div data-hf-id="hf-s07g1" class="g" id="s07-g1"><i data-hf-id="hf-s07g1i"></i>The report is fenced as untrusted data, never instructions</div>
+    <div data-hf-id="hf-s07g2" class="g" id="s07-g2"><i data-hf-id="hf-s07g2i"></i>The model holds no credentials; the sandbox has no network</div>
+    <div data-hf-id="hf-s07g3" class="g" id="s07-g3"><i data-hf-id="hf-s07g3i"></i>A rule table decides the verdict; the model explains it</div>
+  </div>
+  <script>
+    const tl = gsap.timeline({ paused: true });
+    tl.fromTo("#s07-h", { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.55, ease: "expo.out" }, 0.1);
+    tl.fromTo("#s07-sub", { opacity: 0 }, { opacity: 1, duration: 0.4, ease: "power1.out" }, 0.5);
+    // "nine stages"
+    tl.fromTo(".st", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.45, ease: "expo.out", stagger: 0.09 }, 1.05);
+    // "each with a model sized to its job": the model lines flash
+    tl.fromTo(".st .m", { backgroundColor: "rgba(15, 157, 99, 0)" }, { backgroundColor: "rgba(15, 157, 99, 0.16)", duration: 0.25, stagger: 0.05 }, 2.4);
+    tl.to(".st .m", { backgroundColor: "rgba(15, 157, 99, 0)", duration: 0.4 }, 4.3);
+    const pick = (id, a, b) => {
+      tl.to(id, { y: -14, borderColor: "#0f9d63", boxShadow: "0 18px 40px -18px rgba(15, 157, 99, 0.55)", duration: 0.3, ease: "power2.out" }, a);
+      tl.to(id, { y: 0, borderColor: "#d9dce3", boxShadow: "0 0 0 0 rgba(0, 0, 0, 0)", duration: 0.3, ease: "power2.in" }, b);
+    };
+    // "Nano extracts the claims, Super reads the code, and Ultra writes the verdict, then argues against it"
+    pick("#st2", 4.85, 6.55);
+    pick("#st3", 6.7, 7.95);
+    pick("#st7", 8.05, 11.4);
+    tl.fromTo("#s07-loop", { opacity: 0 }, { opacity: 1, duration: 0.15 }, 9.8);
+    tl.fromTo("#s07-lp", { attr: { "stroke-dashoffset": 260 } }, { attr: { "stroke-dashoffset": 0 }, duration: 0.6, ease: "power2.out" }, 9.8);
+    tl.fromTo("#s07-loopt", { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.3, ease: "power2.out" }, 10.15);
+    // the three guarantees, on "untrusted data", "no credentials", "a rule table decides"
+    tl.fromTo("#s07-g1", { opacity: 0, x: -24 }, { opacity: 1, x: 0, duration: 0.4, ease: "expo.out" }, 11.6);
+    tl.fromTo("#s07-g2", { opacity: 0, x: -24 }, { opacity: 1, x: 0, duration: 0.4, ease: "expo.out" }, 13.85);
+    tl.fromTo("#s07-g3", { opacity: 0, x: -24 }, { opacity: 1, x: 0, duration: 0.4, ease: "expo.out" }, 15.85);
+    window.__timelines["s07"] = tl;
+  </script>
+</template>

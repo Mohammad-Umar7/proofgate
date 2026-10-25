@@ -1,0 +1,15 @@
+{
+  "s01": "In January twenty twenty-six, curl ended its bug bounty. AI made fake security reports free to write, and every one costs a volunteer hours to disprove.",
+  "s02": "ProofGate is a gate in front of the inbox. It checks every claim in a report against the real code, closes the fake ones with proof, and turns real ones into tested patches.",
+  "s03": "This is live, not a replay. I paste a link to a real report from curl's HackerOne program. ProofGate fetches it, and NVIDIA Nemotron, on Nebius Token Factory, pulls out every claim it can check.",
+  "s04": "Git and tree-sitter test each claim against curl's real source and its full history, while Tavily searches the web for earlier disclosures. Every request in that log is real.",
+  "s05": "Twenty-two seconds, under one cent. The function this report is built on has never existed in curl, in any of forty thousand commits. That is proof, not opinion, so the verdict is ungrounded.",
+  "s06": "This is the code galaxy: every function in curl and every call between them, parsed from the source. A real function lights up with its path from a public entry point. An invented one floats outside, connected to nothing.",
+  "s07": "Under the hood are nine stages, each with a model sized to its job. Nano extracts the claims, Super reads the code, and Ultra writes the verdict, then argues against it. The report is untrusted data, the model holds no credentials, and a rule table decides.",
+  "s08": "On a hundred and ninety-seven real curl reports with known outcomes, it never dismissed a real vulnerability. Zero of a hundred and forty-eight, for under a cent each.",
+  "s09": "Disproving slop is half the job. Real bugs need fixing. Live again: Nemotron Super gets a published curl CVE and the vulnerable code, and first reproduces the bug. The regression test fails.",
+  "s10": "It reads the code, writes a patch, then builds curl and runs curl's own tests, in a sandbox with no network. The whole run took about a minute, and three cents.",
+  "s11": "Every test passes, the regression test included, and curl's style checker is clean. The agent never saw the maintainers' fix.",
+  "s12": "Across twenty-seven real curl CVEs, Super and Ultra fix different bugs, so ProofGate routes by job: eleven fixed, all verified by curl's own tests, and none broke another.",
+  "s13": "ProofGate never closes a report on a guess, and a maintainer makes the final call. Built on NVIDIA Nemotron through Nebius Token Factory, with Tavily. Open source, and live now."
+}

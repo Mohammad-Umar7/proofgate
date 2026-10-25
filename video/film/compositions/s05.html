@@ -1,0 +1,56 @@
+<template>
+  <style>
+    #root { position: absolute; inset: 0; background: #05060a; overflow: hidden; font-family: "Inter", sans-serif; }
+    #s05-cam { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; transform-origin: 0 0; }
+    .vid { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; object-fit: cover; }
+    .hl { position: absolute; border: 3px solid #8bd3ff; border-radius: 12px; opacity: 0;
+      box-shadow: 0 0 0 3px rgba(139, 211, 255, 0.22), 0 0 26px rgba(139, 211, 255, 0.55); }
+    .spot { box-shadow: 0 0 0 3px rgba(139, 211, 255, 0.22), 0 0 26px rgba(139, 211, 255, 0.55), 0 0 0 3000px rgba(2, 3, 6, 0.5); }
+    .tag { position: absolute; padding: 6px 12px 7px; border-radius: 8px; background: #8bd3ff; color: #05060a;
+      font-size: 28px; font-weight: 700; letter-spacing: -0.01em; white-space: nowrap; opacity: 0; }
+    .badge { position: absolute; left: 1316px; top: 22px; display: flex; align-items: center; gap: 10px; padding: 8px 14px;
+      border-radius: 999px; background: rgba(255, 77, 94, 0.14); border: 1px solid rgba(255, 77, 94, 0.55);
+      color: #ffd9dd; font-family: "JetBrains Mono", monospace; font-size: 28px; letter-spacing: 0.02em; }
+    .badge i { width: 11px; height: 11px; border-radius: 50%; background: #ff4d5e; display: block; }
+  </style>
+  <div data-hf-id="hf-s05r" id="root" data-composition-id="s05" data-width="1920" data-height="1080">
+    <!-- the live run's result: the counters, the ghost in the galaxy, then the evidence card -->
+    <div data-hf-id="hf-s05c" id="s05-cam">
+      <video data-hf-id="hf-s05va" id="s05-va" class="clip vid" src="assets/rec/live.mp4" data-start="0" data-duration="6.3" data-media-start="34.58" data-playback-rate="0.6" muted playsinline></video>
+      <video data-hf-id="hf-s05vb" id="s05-vb" class="clip vid" src="assets/rec/live.mp4" data-start="6.3" data-duration="6.7" data-media-start="39.0" data-playback-rate="0.88" muted playsinline></video>
+      <div data-hf-id="hf-s05h1" id="s05-h1" class="hl spot" style="left: 687px; top: 192px; width: 312px; height: 82px;"></div>
+      <div data-hf-id="hf-s05t1" id="s05-t1" class="tag" style="left: 687px; top: 282px;">21.6 s · $0.0084, every call counted</div>
+      <div data-hf-id="hf-s05h2" id="s05-h2" class="hl spot" style="left: 1240px; top: 370px; width: 292px; height: 88px;"></div>
+      <div data-hf-id="hf-s05t2" id="s05-t2" class="tag" style="left: 1240px; top: 466px;">cited function: not in curl</div>
+      <!-- the evidence card (second clip), framed 1.35x -->
+      <div data-hf-id="hf-s05h3" id="s05-h3" class="hl spot" style="left: 372px; top: 608px; width: 1180px; height: 66px;"></div>
+      <div data-hf-id="hf-s05t3" id="s05-t3" class="tag" style="left: 372px; top: 682px;">git pickaxe: in none of 40,192 commits</div>
+      <div data-hf-id="hf-s05h4" id="s05-h4" class="hl spot" style="left: 365px; top: 379px; width: 612px; height: 163px;"></div>
+      <div data-hf-id="hf-s05t4" id="s05-t4" class="tag" style="left: 365px; top: 550px;">Nemotron Ultra argued the reporter's side · verdict stands</div>
+      <div data-hf-id="hf-s05h5" id="s05-h5" class="hl spot" style="left: 360px; top: 120px; width: 676px; height: 104px;"></div>
+    </div>
+    <div data-hf-id="hf-s05b" id="s05-badge" class="badge"><i data-hf-id="hf-s05bi"></i>LIVE RECORDING</div>
+  </div>
+  <script>
+    const tl = gsap.timeline({ paused: true });
+    const hl = (id, a, b) => {
+      tl.fromTo(id, { opacity: 0, scale: 1.05 }, { opacity: 1, scale: 1, duration: 0.35, ease: "expo.out" }, a);
+      tl.to(id, { opacity: 0, duration: 0.25, ease: "power2.in" }, b);
+    };
+    tl.fromTo("#s05-cam", { scale: 1, x: -300, y: 0 }, { scale: 1, x: -300, y: 0, duration: 0.01 }, 0);
+    // "22 seconds, under one cent"
+    hl("#s05-h1", 0.15, 2.75); hl("#s05-t1", 0.25, 2.75);
+    // "The function this report is built on has never existed in curl"
+    hl("#s05-h2", 2.85, 6.15); hl("#s05-t2", 2.95, 6.15);
+    // cut to the evidence card, framed on the verdict and the ledger
+    tl.set("#s05-cam", { scale: 1.35, x: -336, y: -135 }, 6.3);
+    tl.to("#s05-badge", { opacity: 0, duration: 0.2 }, 6.1);
+    // "in any of 40,000 commits"
+    hl("#s05-h3", 6.6, 8.85); hl("#s05-t3", 6.75, 8.85);
+    // "That is proof, not opinion"
+    hl("#s05-h4", 8.9, 11.2); hl("#s05-t4", 8.95, 11.2);
+    // "so the verdict is ungrounded"
+    hl("#s05-h5", 11.25, 12.9);
+    window.__timelines["s05"] = tl;
+  </script>
+</template>

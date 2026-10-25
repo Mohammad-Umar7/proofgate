@@ -1,0 +1,356 @@
+<template>
+  <style>
+    #root { position: absolute; inset: 0; pointer-events: none; }
+    .cap { position: absolute; left: 0; right: 0; bottom: 58px; text-align: center; opacity: 0; overflow: visible; }
+    .cap span { display: inline-block; max-width: 1500px; padding: 10px 22px 12px; border-radius: 14px;
+      background: rgba(5, 6, 10, 0.78); color: #f3f4f6; font-family: "Inter", sans-serif; font-weight: 600;
+      font-size: 44px; line-height: 1.2; letter-spacing: -0.01em; }
+  </style>
+  <div data-hf-id="hf-capr" id="root" data-composition-id="captions" data-width="1920" data-height="1080">
+    <!-- the narration, word-timed by Parakeet (assets/vo/transcript.json), spellings from SCRIPT.md -->
+    <div data-hf-id="hf-cap0" id="cap0" class="cap"><span>In January 2026,</span></div>
+    <div data-hf-id="hf-cap1" id="cap1" class="cap"><span>curl ended its bug bounty.</span></div>
+    <div data-hf-id="hf-cap2" id="cap2" class="cap"><span>AI made fake security reports free</span></div>
+    <div data-hf-id="hf-cap3" id="cap3" class="cap"><span>to write,</span></div>
+    <div data-hf-id="hf-cap4" id="cap4" class="cap"><span>and every one costs a volunteer hours</span></div>
+    <div data-hf-id="hf-cap5" id="cap5" class="cap"><span>to disprove.</span></div>
+    <div data-hf-id="hf-cap6" id="cap6" class="cap"><span>ProofGate is a gate in front</span></div>
+    <div data-hf-id="hf-cap7" id="cap7" class="cap"><span>of the inbox.</span></div>
+    <div data-hf-id="hf-cap8" id="cap8" class="cap"><span>It checks every claim in a report</span></div>
+    <div data-hf-id="hf-cap9" id="cap9" class="cap"><span>against the real code,</span></div>
+    <div data-hf-id="hf-cap10" id="cap10" class="cap"><span>closes the fake ones with proof,</span></div>
+    <div data-hf-id="hf-cap11" id="cap11" class="cap"><span>and turns real ones into tested patches.</span></div>
+    <div data-hf-id="hf-cap12" id="cap12" class="cap"><span>This is live,</span></div>
+    <div data-hf-id="hf-cap13" id="cap13" class="cap"><span>not a replay.</span></div>
+    <div data-hf-id="hf-cap14" id="cap14" class="cap"><span>I paste a link to a real</span></div>
+    <div data-hf-id="hf-cap15" id="cap15" class="cap"><span>report from curl's HackerOne program.</span></div>
+    <div data-hf-id="hf-cap16" id="cap16" class="cap"><span>ProofGate fetches it,</span></div>
+    <div data-hf-id="hf-cap17" id="cap17" class="cap"><span>and NVIDIA Nemotron,</span></div>
+    <div data-hf-id="hf-cap18" id="cap18" class="cap"><span>on Nebius Token Factory,</span></div>
+    <div data-hf-id="hf-cap19" id="cap19" class="cap"><span>pulls out every claim it can check.</span></div>
+    <div data-hf-id="hf-cap20" id="cap20" class="cap"><span>Git and tree-sitter test each claim against</span></div>
+    <div data-hf-id="hf-cap21" id="cap21" class="cap"><span>curl's real source and its full history,</span></div>
+    <div data-hf-id="hf-cap22" id="cap22" class="cap"><span>while Tavily searches the web for earlier</span></div>
+    <div data-hf-id="hf-cap23" id="cap23" class="cap"><span>disclosures.</span></div>
+    <div data-hf-id="hf-cap24" id="cap24" class="cap"><span>Every request in that log is real.</span></div>
+    <div data-hf-id="hf-cap25" id="cap25" class="cap"><span>22 seconds under one cent.</span></div>
+    <div data-hf-id="hf-cap26" id="cap26" class="cap"><span>The function this report is built</span></div>
+    <div data-hf-id="hf-cap27" id="cap27" class="cap"><span>on has never existed in curl</span></div>
+    <div data-hf-id="hf-cap28" id="cap28" class="cap"><span>in any of 40,000 commits.</span></div>
+    <div data-hf-id="hf-cap29" id="cap29" class="cap"><span>That is proof,</span></div>
+    <div data-hf-id="hf-cap30" id="cap30" class="cap"><span>not opinion,</span></div>
+    <div data-hf-id="hf-cap31" id="cap31" class="cap"><span>so the verdict is ungrounded.</span></div>
+    <div data-hf-id="hf-cap32" id="cap32" class="cap"><span>This is the code galaxy:</span></div>
+    <div data-hf-id="hf-cap33" id="cap33" class="cap"><span>every function in curl and every call</span></div>
+    <div data-hf-id="hf-cap34" id="cap34" class="cap"><span>between them,</span></div>
+    <div data-hf-id="hf-cap35" id="cap35" class="cap"><span>parsed from the source.</span></div>
+    <div data-hf-id="hf-cap36" id="cap36" class="cap"><span>A real function lights up</span></div>
+    <div data-hf-id="hf-cap37" id="cap37" class="cap"><span>with its path from a public entry</span></div>
+    <div data-hf-id="hf-cap38" id="cap38" class="cap"><span>point.</span></div>
+    <div data-hf-id="hf-cap39" id="cap39" class="cap"><span>An invented one floats outside,</span></div>
+    <div data-hf-id="hf-cap40" id="cap40" class="cap"><span>connected to nothing.</span></div>
+    <div data-hf-id="hf-cap41" id="cap41" class="cap"><span>Under the hood are nine stages,</span></div>
+    <div data-hf-id="hf-cap42" id="cap42" class="cap"><span>each with a model sized</span></div>
+    <div data-hf-id="hf-cap43" id="cap43" class="cap"><span>to its job.</span></div>
+    <div data-hf-id="hf-cap44" id="cap44" class="cap"><span>Nano extracts the claims,</span></div>
+    <div data-hf-id="hf-cap45" id="cap45" class="cap"><span>Super reads the code,</span></div>
+    <div data-hf-id="hf-cap46" id="cap46" class="cap"><span>and Ultra writes the verdict,</span></div>
+    <div data-hf-id="hf-cap47" id="cap47" class="cap"><span>then argues against it.</span></div>
+    <div data-hf-id="hf-cap48" id="cap48" class="cap"><span>The report is untrusted data,</span></div>
+    <div data-hf-id="hf-cap49" id="cap49" class="cap"><span>the model holds no credentials,</span></div>
+    <div data-hf-id="hf-cap50" id="cap50" class="cap"><span>and a rule table decides.</span></div>
+    <div data-hf-id="hf-cap51" id="cap51" class="cap"><span>On 197 real curl reports with known</span></div>
+    <div data-hf-id="hf-cap52" id="cap52" class="cap"><span>outcomes, it never dismissed a real</span></div>
+    <div data-hf-id="hf-cap53" id="cap53" class="cap"><span>vulnerability.</span></div>
+    <div data-hf-id="hf-cap54" id="cap54" class="cap"><span>Zero of 148,</span></div>
+    <div data-hf-id="hf-cap55" id="cap55" class="cap"><span>for under a cent each.</span></div>
+    <div data-hf-id="hf-cap56" id="cap56" class="cap"><span>Disproving slop is half the job.</span></div>
+    <div data-hf-id="hf-cap57" id="cap57" class="cap"><span>Real bugs need fixing.</span></div>
+    <div data-hf-id="hf-cap58" id="cap58" class="cap"><span>Live again:</span></div>
+    <div data-hf-id="hf-cap59" id="cap59" class="cap"><span>Nemotron Super gets a published curl CVE</span></div>
+    <div data-hf-id="hf-cap60" id="cap60" class="cap"><span>and the vulnerable code and first reproduces</span></div>
+    <div data-hf-id="hf-cap61" id="cap61" class="cap"><span>the bug.</span></div>
+    <div data-hf-id="hf-cap62" id="cap62" class="cap"><span>The regression test fails.</span></div>
+    <div data-hf-id="hf-cap63" id="cap63" class="cap"><span>It reads the code,</span></div>
+    <div data-hf-id="hf-cap64" id="cap64" class="cap"><span>writes a patch,</span></div>
+    <div data-hf-id="hf-cap65" id="cap65" class="cap"><span>then builds curl and runs curl's own</span></div>
+    <div data-hf-id="hf-cap66" id="cap66" class="cap"><span>tests in a sandbox with no network.</span></div>
+    <div data-hf-id="hf-cap67" id="cap67" class="cap"><span>The whole run took about a minute</span></div>
+    <div data-hf-id="hf-cap68" id="cap68" class="cap"><span>and three cents.</span></div>
+    <div data-hf-id="hf-cap69" id="cap69" class="cap"><span>Every test passes,</span></div>
+    <div data-hf-id="hf-cap70" id="cap70" class="cap"><span>the regression test included,</span></div>
+    <div data-hf-id="hf-cap71" id="cap71" class="cap"><span>and curl's style checker is clean.</span></div>
+    <div data-hf-id="hf-cap72" id="cap72" class="cap"><span>The agent never saw the maintainers' fix.</span></div>
+    <div data-hf-id="hf-cap73" id="cap73" class="cap"><span>Across 27 real curl CVEs,</span></div>
+    <div data-hf-id="hf-cap74" id="cap74" class="cap"><span>Super and Ultra fix different bugs,</span></div>
+    <div data-hf-id="hf-cap75" id="cap75" class="cap"><span>so ProofGate routes by job.</span></div>
+    <div data-hf-id="hf-cap76" id="cap76" class="cap"><span>11 fixed,</span></div>
+    <div data-hf-id="hf-cap77" id="cap77" class="cap"><span>all verified by curl's own tests,</span></div>
+    <div data-hf-id="hf-cap78" id="cap78" class="cap"><span>and none broke another.</span></div>
+    <div data-hf-id="hf-cap79" id="cap79" class="cap"><span>ProofGate never closes a report</span></div>
+    <div data-hf-id="hf-cap80" id="cap80" class="cap"><span>on a guess,</span></div>
+    <div data-hf-id="hf-cap81" id="cap81" class="cap"><span>and a maintainer makes the final call.</span></div>
+    <div data-hf-id="hf-cap82" id="cap82" class="cap"><span>Built on NVIDIA Nemotron through</span></div>
+    <div data-hf-id="hf-cap83" id="cap83" class="cap"><span>Nebius Token Factory, with Tavily,</span></div>
+    <div data-hf-id="hf-cap84" id="cap84" class="cap"><span>open source and live now.</span></div>
+  </div>
+  <script>
+    const tl = gsap.timeline({ paused: true });
+    tl.fromTo("#cap0", { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.12, ease: "power2.out" }, 0.100);
+    tl.to("#cap0", { opacity: 0, duration: 0.1, ease: "power2.in" }, 1.960);
+    tl.set("#cap0", { visibility: "hidden" }, 2.060);
+    tl.fromTo("#cap1", { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.12, ease: "power2.out" }, 2.020);
+    tl.to("#cap1", { opacity: 0, duration: 0.1, ease: "power2.in" }, 4.200);
+    tl.set("#cap1", { visibility: "hidden" }, 4.300);
+    tl.fromTo("#cap2", { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.12, ease: "power2.out" }, 4.260);
+    tl.to("#cap2", { opacity: 0, duration: 0.1, ease: "power2.in" }, 6.680);
+    tl.set("#cap2", { visibility: "hidden" }, 6.780);
+    tl.fromTo("#cap3", { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.12, ease: "power2.out" }, 6.740);
+    tl.to("#cap3", { opacity: 0, duration: 0.1, ease: "power2.in" }, 7.320);
+    tl.set("#cap3", { visibility: "hidden" }, 7.420);
+    tl.fromTo("#cap4", { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.12, ease: "power2.out" }, 7.380);
+    tl.to("#cap4", { opacity: 0, duration: 0.1, ease: "power2.in" }, 9.640);
+    tl.set("#cap4", { visibility: "hidden" }, 9.740);
+    tl.fromTo("#cap5", { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.12, ease: "power2.out" }, 9.700);
+    tl.to("#cap5", { opacity: 0, duration: 0.1, ease: "power2.in" }, 11.480);
+    tl.set("#cap5", { visibility: "hidden" }, 11.580);
+    tl.fromTo("#cap6", { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.12, ease: "power2.out" }, 11.540);
+    tl.to("#cap6", { opacity: 0, duration: 0.1, ease: "power2.in" }, 13.400);
+    tl.set("#cap6", { visibility: "hidden" }, 13.500);
+    tl.fromTo("#cap7", { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.12, ease: "power2.out" }, 13.460);
+    tl.to("#cap7", { opacity: 0, duration: 0.1, ease: "power2.in" }, 14.600);
+    tl.set("#cap7", { visibility: "hidden" }, 14.700);
+    tl.fromTo("#cap8", { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.12, ease: "power2.out" }, 14.660);
+    tl.to("#cap8", { opacity: 0, duration: 0.1, ease: "power2.in" }, 16.600);
+    tl.set("#cap8", { visibility: "hidden" }, 16.700);
+    tl.fromTo("#cap9", { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.12, ease: "power2.out" }, 16.660);
+    tl.to("#cap9", { opacity: 0, duration: 0.1, ease: "power2.in" }, 18.040);
+    tl.set("#cap9", { visibility: "hidden" }, 18.140);
+    tl.fromTo("#cap10", { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.12, ease: "power2.out" }, 18.100);
+    tl.to("#cap10", { opacity: 0, duration: 0.1, ease: "power2.in" }, 20.040);
+    tl.set("#cap10", { visibility: "hidden" }, 20.140);
+    tl.fromTo("#cap11", { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.12, ease: "power2.out" }, 20.100);
+    tl.to("#cap11", { opacity: 0, duration: 0.1, ease: "power2.in" }, 23.080);
+    tl.set("#cap11", { visibility: "hidden" }, 23.180);
+    tl.fromTo("#cap12", { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.12, ease: "power2.out" }, 23.140);
+    tl.to("#cap12", { opacity: 0, duration: 0.1, ease: "power2.in" }, 24.280);
+    tl.set("#cap12", { visibility: "hidden" }, 24.380);
+    tl.fromTo("#cap13", { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.12, ease: "power2.out" }, 24.340);
+    tl.to("#cap13", { opacity: 0, duration: 0.1, ease: "power2.in" }, 25.400);
+    tl.set("#cap13", { visibility: "hidden" }, 25.500);
+    tl.fromTo("#cap14", { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.12, ease: "power2.out" }, 25.460);
+    tl.to("#cap14", { opacity: 0, duration: 0.1, ease: "power2.in" }, 27.000);
+    tl.set("#cap14", { visibility: "hidden" }, 27.100);
+    tl.fromTo("#cap15", { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.12, ease: "power2.out" }, 27.060);
+    tl.to("#cap15", { opacity: 0, duration: 0.1, ease: "power2.in" }, 29.640);
+    tl.set("#cap15", { visibility: "hidden" }, 29.740);
+    tl.fromTo("#cap16", { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.12, ease: "power2.out" }, 29.700);
+    tl.to("#cap16", { opacity: 0, duration: 0.1, ease: "power2.in" }, 31.080);
+    tl.set("#cap16", { visibility: "hidden" }, 31.180);
+    tl.fromTo("#cap17", { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.12, ease: "power2.out" }, 31.140);
+    tl.to("#cap17", { opacity: 0, duration: 0.1, ease: "power2.in" }, 32.760);
+    tl.set("#cap17", { visibility: "hidden" }, 32.860);
+    tl.fromTo("#cap18", { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.12, ease: "power2.out" }, 32.820);
+    tl.to("#cap18", { opacity: 0, duration: 0.1, ease: "power2.in" }, 34.760);
+    tl.set("#cap18", { visibility: "hidden" }, 34.860);
+    tl.fromTo("#cap19", { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.12, ease: "power2.out" }, 34.820);
+    tl.to("#cap19", { opacity: 0, duration: 0.1, ease: "power2.in" }, 37.080);
+    tl.set("#cap19", { visibility: "hidden" }, 37.180);
+    tl.fromTo("#cap20", { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.12, ease: "power2.out" }, 37.140);
+    tl.to("#cap20", { opacity: 0, duration: 0.1, ease: "power2.in" }, 39.800);
+    tl.set("#cap20", { visibility: "hidden" }, 39.900);
+    tl.fromTo("#cap21", { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.12, ease: "power2.out" }, 39.860);
+    tl.to("#cap21", { opacity: 0, duration: 0.1, ease: "power2.in" }, 42.360);
+    tl.set("#cap21", { visibility: "hidden" }, 42.460);
+    tl.fromTo("#cap22", { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.12, ease: "power2.out" }, 42.420);
+    tl.to("#cap22", { opacity: 0, duration: 0.1, ease: "power2.in" }, 44.840);
+    tl.set("#cap22", { visibility: "hidden" }, 44.940);
+    tl.fromTo("#cap23", { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.12, ease: "power2.out" }, 44.900);
+    tl.to("#cap23", { opacity: 0, duration: 0.1, ease: "power2.in" }, 45.960);
+    tl.set("#cap23", { visibility: "hidden" }, 46.060);
+    tl.fromTo("#cap24", { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.12, ease: "power2.out" }, 46.020);
+    tl.to("#cap24", { opacity: 0, duration: 0.1, ease: "power2.in" }, 48.600);
+    tl.set("#cap24", { visibility: "hidden" }, 48.700);
+    tl.fromTo("#cap25", { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.12, ease: "power2.out" }, 48.660);
+    tl.to("#cap25", { opacity: 0, duration: 0.1, ease: "power2.in" }, 51.240);
+    tl.set("#cap25", { visibility: "hidden" }, 51.340);
+    tl.fromTo("#cap26", { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.12, ease: "power2.out" }, 51.300);
+    tl.to("#cap26", { opacity: 0, duration: 0.1, ease: "power2.in" }, 53.080);
+    tl.set("#cap26", { visibility: "hidden" }, 53.180);
+    tl.fromTo("#cap27", { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.12, ease: "power2.out" }, 53.140);
+    tl.to("#cap27", { opacity: 0, duration: 0.1, ease: "power2.in" }, 55.240);
+    tl.set("#cap27", { visibility: "hidden" }, 55.340);
+    tl.fromTo("#cap28", { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.12, ease: "power2.out" }, 55.300);
+    tl.to("#cap28", { opacity: 0, duration: 0.1, ease: "power2.in" }, 57.480);
+    tl.set("#cap28", { visibility: "hidden" }, 57.580);
+    tl.fromTo("#cap29", { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.12, ease: "power2.out" }, 57.540);
+    tl.to("#cap29", { opacity: 0, duration: 0.1, ease: "power2.in" }, 58.440);
+    tl.set("#cap29", { visibility: "hidden" }, 58.540);
+    tl.fromTo("#cap30", { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.12, ease: "power2.out" }, 58.500);
+    tl.to("#cap30", { opacity: 0, duration: 0.1, ease: "power2.in" }, 59.400);
+    tl.set("#cap30", { visibility: "hidden" }, 59.500);
+    tl.fromTo("#cap31", { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.12, ease: "power2.out" }, 59.460);
+    tl.to("#cap31", { opacity: 0, duration: 0.1, ease: "power2.in" }, 61.550);
+    tl.set("#cap31", { visibility: "hidden" }, 61.650);
+    tl.fromTo("#cap32", { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.12, ease: "power2.out" }, 61.610);
+    tl.to("#cap32", { opacity: 0, duration: 0.1, ease: "power2.in" }, 63.710);
+    tl.set("#cap32", { visibility: "hidden" }, 63.810);
+    tl.fromTo("#cap33", { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.12, ease: "power2.out" }, 63.770);
+    tl.to("#cap33", { opacity: 0, duration: 0.1, ease: "power2.in" }, 65.950);
+    tl.set("#cap33", { visibility: "hidden" }, 66.050);
+    tl.fromTo("#cap34", { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.12, ease: "power2.out" }, 66.010);
+    tl.to("#cap34", { opacity: 0, duration: 0.1, ease: "power2.in" }, 66.670);
+    tl.set("#cap34", { visibility: "hidden" }, 66.770);
+    tl.fromTo("#cap35", { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.12, ease: "power2.out" }, 66.730);
+    tl.to("#cap35", { opacity: 0, duration: 0.1, ease: "power2.in" }, 68.270);
+    tl.set("#cap35", { visibility: "hidden" }, 68.370);
+    tl.fromTo("#cap36", { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.12, ease: "power2.out" }, 68.330);
+    tl.to("#cap36", { opacity: 0, duration: 0.1, ease: "power2.in" }, 69.870);
+    tl.set("#cap36", { visibility: "hidden" }, 69.970);
+    tl.fromTo("#cap37", { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.12, ease: "power2.out" }, 69.930);
+    tl.to("#cap37", { opacity: 0, duration: 0.1, ease: "power2.in" }, 71.630);
+    tl.set("#cap37", { visibility: "hidden" }, 71.730);
+    tl.fromTo("#cap38", { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.12, ease: "power2.out" }, 71.690);
+    tl.to("#cap38", { opacity: 0, duration: 0.1, ease: "power2.in" }, 72.110);
+    tl.set("#cap38", { visibility: "hidden" }, 72.210);
+    tl.fromTo("#cap39", { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.12, ease: "power2.out" }, 72.170);
+    tl.to("#cap39", { opacity: 0, duration: 0.1, ease: "power2.in" }, 74.350);
+    tl.set("#cap39", { visibility: "hidden" }, 74.450);
+    tl.fromTo("#cap40", { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.12, ease: "power2.out" }, 74.410);
+    tl.to("#cap40", { opacity: 0, duration: 0.1, ease: "power2.in" }, 75.950);
+    tl.set("#cap40", { visibility: "hidden" }, 76.050);
+    tl.fromTo("#cap41", { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.12, ease: "power2.out" }, 76.010);
+    tl.to("#cap41", { opacity: 0, duration: 0.1, ease: "power2.in" }, 78.110);
+    tl.set("#cap41", { visibility: "hidden" }, 78.210);
+    tl.fromTo("#cap42", { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.12, ease: "power2.out" }, 78.170);
+    tl.to("#cap42", { opacity: 0, duration: 0.1, ease: "power2.in" }, 79.630);
+    tl.set("#cap42", { visibility: "hidden" }, 79.730);
+    tl.fromTo("#cap43", { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.12, ease: "power2.out" }, 79.690);
+    tl.to("#cap43", { opacity: 0, duration: 0.1, ease: "power2.in" }, 80.750);
+    tl.set("#cap43", { visibility: "hidden" }, 80.850);
+    tl.fromTo("#cap44", { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.12, ease: "power2.out" }, 80.810);
+    tl.to("#cap44", { opacity: 0, duration: 0.1, ease: "power2.in" }, 82.590);
+    tl.set("#cap44", { visibility: "hidden" }, 82.690);
+    tl.fromTo("#cap45", { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.12, ease: "power2.out" }, 82.650);
+    tl.to("#cap45", { opacity: 0, duration: 0.1, ease: "power2.in" }, 83.790);
+    tl.set("#cap45", { visibility: "hidden" }, 83.890);
+    tl.fromTo("#cap46", { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.12, ease: "power2.out" }, 83.850);
+    tl.to("#cap46", { opacity: 0, duration: 0.1, ease: "power2.in" }, 85.710);
+    tl.set("#cap46", { visibility: "hidden" }, 85.810);
+    tl.fromTo("#cap47", { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.12, ease: "power2.out" }, 85.770);
+    tl.to("#cap47", { opacity: 0, duration: 0.1, ease: "power2.in" }, 87.470);
+    tl.set("#cap47", { visibility: "hidden" }, 87.570);
+    tl.fromTo("#cap48", { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.12, ease: "power2.out" }, 87.530);
+    tl.to("#cap48", { opacity: 0, duration: 0.1, ease: "power2.in" }, 89.710);
+    tl.set("#cap48", { visibility: "hidden" }, 89.810);
+    tl.fromTo("#cap49", { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.12, ease: "power2.out" }, 89.770);
+    tl.to("#cap49", { opacity: 0, duration: 0.1, ease: "power2.in" }, 91.710);
+    tl.set("#cap49", { visibility: "hidden" }, 91.810);
+    tl.fromTo("#cap50", { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.12, ease: "power2.out" }, 91.770);
+    tl.to("#cap50", { opacity: 0, duration: 0.1, ease: "power2.in" }, 94.510);
+    tl.set("#cap50", { visibility: "hidden" }, 94.610);
+    tl.fromTo("#cap51", { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.12, ease: "power2.out" }, 94.570);
+    tl.to("#cap51", { opacity: 0, duration: 0.1, ease: "power2.in" }, 97.950);
+    tl.set("#cap51", { visibility: "hidden" }, 98.050);
+    tl.fromTo("#cap52", { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.12, ease: "power2.out" }, 98.010);
+    tl.to("#cap52", { opacity: 0, duration: 0.1, ease: "power2.in" }, 100.430);
+    tl.set("#cap52", { visibility: "hidden" }, 100.530);
+    tl.fromTo("#cap53", { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.12, ease: "power2.out" }, 100.490);
+    tl.to("#cap53", { opacity: 0, duration: 0.1, ease: "power2.in" }, 101.710);
+    tl.set("#cap53", { visibility: "hidden" }, 101.810);
+    tl.fromTo("#cap54", { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.12, ease: "power2.out" }, 101.770);
+    tl.to("#cap54", { opacity: 0, duration: 0.1, ease: "power2.in" }, 103.950);
+    tl.set("#cap54", { visibility: "hidden" }, 104.050);
+    tl.fromTo("#cap55", { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.12, ease: "power2.out" }, 104.010);
+    tl.to("#cap55", { opacity: 0, duration: 0.1, ease: "power2.in" }, 105.790);
+    tl.set("#cap55", { visibility: "hidden" }, 105.890);
+    tl.fromTo("#cap56", { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.12, ease: "power2.out" }, 105.850);
+    tl.to("#cap56", { opacity: 0, duration: 0.1, ease: "power2.in" }, 108.350);
+    tl.set("#cap56", { visibility: "hidden" }, 108.450);
+    tl.fromTo("#cap57", { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.12, ease: "power2.out" }, 108.410);
+    tl.to("#cap57", { opacity: 0, duration: 0.1, ease: "power2.in" }, 110.350);
+    tl.set("#cap57", { visibility: "hidden" }, 110.450);
+    tl.fromTo("#cap58", { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.12, ease: "power2.out" }, 110.410);
+    tl.to("#cap58", { opacity: 0, duration: 0.1, ease: "power2.in" }, 111.310);
+    tl.set("#cap58", { visibility: "hidden" }, 111.410);
+    tl.fromTo("#cap59", { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.12, ease: "power2.out" }, 111.370);
+    tl.to("#cap59", { opacity: 0, duration: 0.1, ease: "power2.in" }, 114.590);
+    tl.set("#cap59", { visibility: "hidden" }, 114.690);
+    tl.fromTo("#cap60", { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.12, ease: "power2.out" }, 114.650);
+    tl.to("#cap60", { opacity: 0, duration: 0.1, ease: "power2.in" }, 117.310);
+    tl.set("#cap60", { visibility: "hidden" }, 117.410);
+    tl.fromTo("#cap61", { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.12, ease: "power2.out" }, 117.370);
+    tl.to("#cap61", { opacity: 0, duration: 0.1, ease: "power2.in" }, 118.030);
+    tl.set("#cap61", { visibility: "hidden" }, 118.130);
+    tl.fromTo("#cap62", { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.12, ease: "power2.out" }, 118.090);
+    tl.to("#cap62", { opacity: 0, duration: 0.1, ease: "power2.in" }, 120.120);
+    tl.set("#cap62", { visibility: "hidden" }, 120.220);
+    tl.fromTo("#cap63", { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.12, ease: "power2.out" }, 120.180);
+    tl.to("#cap63", { opacity: 0, duration: 0.1, ease: "power2.in" }, 121.400);
+    tl.set("#cap63", { visibility: "hidden" }, 121.500);
+    tl.fromTo("#cap64", { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.12, ease: "power2.out" }, 121.460);
+    tl.to("#cap64", { opacity: 0, duration: 0.1, ease: "power2.in" }, 122.520);
+    tl.set("#cap64", { visibility: "hidden" }, 122.620);
+    tl.fromTo("#cap65", { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.12, ease: "power2.out" }, 122.580);
+    tl.to("#cap65", { opacity: 0, duration: 0.1, ease: "power2.in" }, 124.840);
+    tl.set("#cap65", { visibility: "hidden" }, 124.940);
+    tl.fromTo("#cap66", { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.12, ease: "power2.out" }, 124.900);
+    tl.to("#cap66", { opacity: 0, duration: 0.1, ease: "power2.in" }, 127.480);
+    tl.set("#cap66", { visibility: "hidden" }, 127.580);
+    tl.fromTo("#cap67", { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.12, ease: "power2.out" }, 127.540);
+    tl.to("#cap67", { opacity: 0, duration: 0.1, ease: "power2.in" }, 129.160);
+    tl.set("#cap67", { visibility: "hidden" }, 129.260);
+    tl.fromTo("#cap68", { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.12, ease: "power2.out" }, 129.220);
+    tl.to("#cap68", { opacity: 0, duration: 0.1, ease: "power2.in" }, 130.680);
+    tl.set("#cap68", { visibility: "hidden" }, 130.780);
+    tl.fromTo("#cap69", { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.12, ease: "power2.out" }, 130.740);
+    tl.to("#cap69", { opacity: 0, duration: 0.1, ease: "power2.in" }, 132.200);
+    tl.set("#cap69", { visibility: "hidden" }, 132.300);
+    tl.fromTo("#cap70", { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.12, ease: "power2.out" }, 132.260);
+    tl.to("#cap70", { opacity: 0, duration: 0.1, ease: "power2.in" }, 133.720);
+    tl.set("#cap70", { visibility: "hidden" }, 133.820);
+    tl.fromTo("#cap71", { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.12, ease: "power2.out" }, 133.780);
+    tl.to("#cap71", { opacity: 0, duration: 0.1, ease: "power2.in" }, 136.120);
+    tl.set("#cap71", { visibility: "hidden" }, 136.220);
+    tl.fromTo("#cap72", { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.12, ease: "power2.out" }, 136.180);
+    tl.to("#cap72", { opacity: 0, duration: 0.1, ease: "power2.in" }, 139.240);
+    tl.set("#cap72", { visibility: "hidden" }, 139.340);
+    tl.fromTo("#cap73", { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.12, ease: "power2.out" }, 139.300);
+    tl.to("#cap73", { opacity: 0, duration: 0.1, ease: "power2.in" }, 142.200);
+    tl.set("#cap73", { visibility: "hidden" }, 142.300);
+    tl.fromTo("#cap74", { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.12, ease: "power2.out" }, 142.260);
+    tl.to("#cap74", { opacity: 0, duration: 0.1, ease: "power2.in" }, 144.520);
+    tl.set("#cap74", { visibility: "hidden" }, 144.620);
+    tl.fromTo("#cap75", { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.12, ease: "power2.out" }, 144.580);
+    tl.to("#cap75", { opacity: 0, duration: 0.1, ease: "power2.in" }, 146.760);
+    tl.set("#cap75", { visibility: "hidden" }, 146.860);
+    tl.fromTo("#cap76", { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.12, ease: "power2.out" }, 146.820);
+    tl.to("#cap76", { opacity: 0, duration: 0.1, ease: "power2.in" }, 148.040);
+    tl.set("#cap76", { visibility: "hidden" }, 148.140);
+    tl.fromTo("#cap77", { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.12, ease: "power2.out" }, 148.100);
+    tl.to("#cap77", { opacity: 0, duration: 0.1, ease: "power2.in" }, 150.280);
+    tl.set("#cap77", { visibility: "hidden" }, 150.380);
+    tl.fromTo("#cap78", { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.12, ease: "power2.out" }, 150.340);
+    tl.to("#cap78", { opacity: 0, duration: 0.1, ease: "power2.in" }, 152.120);
+    tl.set("#cap78", { visibility: "hidden" }, 152.220);
+    tl.fromTo("#cap79", { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.12, ease: "power2.out" }, 152.180);
+    tl.to("#cap79", { opacity: 0, duration: 0.1, ease: "power2.in" }, 154.120);
+    tl.set("#cap79", { visibility: "hidden" }, 154.220);
+    tl.fromTo("#cap80", { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.12, ease: "power2.out" }, 154.180);
+    tl.to("#cap80", { opacity: 0, duration: 0.1, ease: "power2.in" }, 154.920);
+    tl.set("#cap80", { visibility: "hidden" }, 155.020);
+    tl.fromTo("#cap81", { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.12, ease: "power2.out" }, 154.980);
+    tl.to("#cap81", { opacity: 0, duration: 0.1, ease: "power2.in" }, 157.400);
+    tl.set("#cap81", { visibility: "hidden" }, 157.500);
+    tl.fromTo("#cap82", { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.12, ease: "power2.out" }, 157.460);
+    tl.to("#cap82", { opacity: 0, duration: 0.1, ease: "power2.in" }, 159.640);
+    tl.set("#cap82", { visibility: "hidden" }, 159.740);
+    tl.fromTo("#cap83", { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.12, ease: "power2.out" }, 159.700);
+    tl.to("#cap83", { opacity: 0, duration: 0.1, ease: "power2.in" }, 162.600);
+    tl.set("#cap83", { visibility: "hidden" }, 162.700);
+    tl.fromTo("#cap84", { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.12, ease: "power2.out" }, 162.660);
+    tl.to("#cap84", { opacity: 0, duration: 0.1, ease: "power2.in" }, 165.710);
+    tl.set("#cap84", { visibility: "hidden" }, 165.810);
+    window.__timelines["captions"] = tl;
+  </script>
+</template>
