@@ -66,6 +66,11 @@ make -j{jobs} > /work/build.log 2>&1 \
 make -C tests -j{jobs} > /work/tbuild.log 2>&1 \
   || { grep -E -B2 -A6 "error:|Error [0-9]" /work/tbuild.log | head -n 120; echo PG_BUILD_FAILED; exit 0; }
 echo PG_BUILD_OK
+files=$(grep '^+++ b/' /in/fix.patch | sed 's#^+++ b/##' | grep -E '\.[ch]$' || true)
+CS=scripts/checksrc.pl; [ -f "$CS" ] || CS=lib/checksrc.pl
+if [ -n "$files" ] && [ -f "$CS" ]; then
+  echo PG_CHECKSRC; perl "$CS" $files 2>&1 | tail -n 40; echo PG_CHECKSRC_END
+fi
 cd tests
 : > /work/tests.log
 if [ -n "{memcheck}" ]; then perl runtests.pl -a -p {memcheck} >> /work/tests.log 2>&1; fi
@@ -87,6 +92,15 @@ class TestRun:
     seconds: float = 0.0
     stage: str = "tests"  # tests | patch | build | infra
 
+    @property
+    def style(self) -> list[str]:
+        """Warnings from curl's own checksrc.pl on the files the patch touches."""
+        if "PG_CHECKSRC" not in self.log:
+            return []
+        block = self.log.split("PG_CHECKSRC", 1)[1].split("PG_CHECKSRC_END", 1)[0]
+        return [line.strip() for line in block.splitlines()
+                if re.search(r":\d+:\d+: (error|warning):", line)]
+
     def passed(self, tests: list[str]) -> bool:
         return self.build_ok and all(self.status.get(t) == "ok" for t in tests)
 
@@ -101,7 +115,9 @@ class TestRun:
             return "The build failed:\n" + self.log.split("PG_BUILD_FAILED")[0][-limit:]
         summary = ", ".join(f"test{t} {s}" for t, s in sorted(self.status.items()))
         tail = self.log.split("PG_LOG_TAIL")[-1].replace("PG_DONE", "")
-        return f"Build OK. {summary}\n--- runtests.pl output (tail) ---\n{tail[-limit:]}"
+        style = ("\ncurl's checksrc.pl style checker: " +
+                 (f"{len(self.style)} problem(s):\n" + "\n".join(self.style[:15]) if self.style else "clean"))
+        return f"Build OK. {summary}{style}\n--- runtests.pl output (tail) ---\n{tail[-limit:]}"
 
 
 def parse_runtests(log: str, tests: list[str]) -> dict[str, str]:
