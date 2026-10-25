@@ -9,6 +9,9 @@ at the exact version, before a volunteer maintainer spends an hour on it.
 
 Built on **NVIDIA Nemotron 3** via **Nebius Token Factory** · **Tavily** · **NVIDIA OpenShell**
 
+**SlopBench:** 0 of 148 real curl CVEs wrongly dismissed, $0.007 per report ·
+**FixBench:** Nemotron fixed **11 of 27 real curl CVEs**, each verified by curl's own test suite
+
 **[▶ Live demo: proofgate-ten.vercel.app](https://proofgate-ten.vercel.app)** · [Video](#video) · [SlopBench](#slopbench-measured-on-curls-own-record) · [FixBench](#fixbench-nemotron-fixing-real-curl-cves-judged-by-curls-own-tests) · [Architecture](docs/ARCHITECTURE.md)
 
 ![ProofGate: reports stream through the gate; slop dissolves, duplicates merge, real bugs pass](docs/img/hero.jpg)
@@ -146,7 +149,23 @@ fail-to-pass test **and** every pass-to-pass test. Style is reported separately 
 an indentation slip is never counted as a broken build.
 
 <!-- FIXBENCH:START -->
+| Agent model (Token Factory) | Resolved | Style-clean (checksrc) | Fixed on 1st test run | Edited the right file | Broke other tests | Cost / CVE | Cost / fix | Time / CVE |
+|---|---|---|---|---|---|---|---|---|
+| `nvidia/nemotron-3-super-120b-a12b` | **8 / 27** (30%) | 4 | 7 | 85% | 0 | $0.185 | $0.623 | 3.9 min |
+| `nvidia/Nemotron-3-Ultra-550b-a55b` | **9 / 27** (33%) | 6 | 9 | 67% | 0 | $0.661 | $1.982 | 2.7 min |
+| Cascade: Super on every CVE, Ultra only on Super's 19 failures (computed from the two runs) | **11 / 27** (41%) | | | | | $0.662 | $1.625 | |
+
+_27 of 29 candidate CVEs validated (regression test fails on the vulnerable commit and passes with curl's fix in the sandbox). Generated 2026-10-25 by `proofgate fixbench table`._
 <!-- FIXBENCH:END -->
+
+**What this says about Nemotron sizes.** Super and Ultra fix *different* CVEs: 6 are fixed by both, 2
+only by Super, 3 only by Ultra. Ultra passes on its first test run every time it succeeds and is
+faster in wall time, but costs about 3.5x more per CVE. So ProofGate routes by job here too: Super
+first, Ultra only on Super's failures, which fixes the most CVEs (11 of 27) at a lower cost per fix than
+Ultra alone. No fix broke a nearby test. All 9 of Ultra's fixes and 7 of Super's 8 are for CVEs fixed
+upstream after February 2026, past Nemotron 3 Super's documented training data.
+
+![FixBench page: KPIs, the Super-then-Ultra cascade, the model table and all 27 CVEs](docs/img/fixbench.jpg)
 
 Every transcript, the agent's diff and the maintainers' diff are on the
 [FixBench page](https://proofgate-ten.vercel.app/fixbench/). Methodology, dropped instances and threats
