@@ -27,8 +27,15 @@ export default function Home() {
     loadFixBench().then(setFixbench).catch(() => {});
   }, []);
   const full = bench?.configs?.full ?? bench?.configs?.deterministic;
-  // headline the model that fixed the most CVEs
+  // headline the routed cascade (Super, then Ultra on its failures) when both runs exist,
+  // otherwise the model that fixed the most CVEs
   const fixer = fixbench ? Object.values(fixbench.models).sort((a, b) => b.metrics.resolved - a.metrics.resolved)[0] : null;
+  const cascade = fixbench?.cascade;
+  const headline = cascade
+    ? { resolved: cascade.resolved, n: cascade.n, who: "Nemotron 3 Super, escalating to Nemotron 3 Ultra only when Super fails",
+        perFix: cascade.cost_per_resolved_usd }
+    : fixer ? { resolved: fixer.metrics.resolved, n: fixer.metrics.n, who: FIX_MODEL[fixer.role] ?? fixer.model,
+        perFix: fixer.metrics.cost_per_resolved_usd } : null;
 
   return (
     <main>
@@ -82,20 +89,20 @@ export default function Home() {
         </ol>
       </section>
 
-      {fixer && (
+      {headline && (
         <section className={`container ${styles.section}`}>
           <p className="eyebrow">From triage to a tested fix</p>
           <h2 className={styles.h2}>The agent writes the patch, builds curl, and runs curl&apos;s own tests.</h2>
           <div className={`panel ${styles.fix}`}>
             <div className={styles.fixK}>
-              <b>{fixer.metrics.resolved}<small>/{fixer.metrics.n}</small></b>
-              <span>real curl CVEs fixed by {FIX_MODEL[fixer.role] ?? fixer.model}, each verified by a fresh build passing the
+              <b>{headline.resolved}<small>/{headline.n}</small></b>
+              <span>real curl CVEs fixed by {headline.who}, each verified by a fresh build passing the
                 regression test curl&apos;s maintainers wrote and every nearby test.</span>
             </div>
             <ul className={styles.fixList}>
               <li>The agent gets the public advisory and the vulnerable checkout, never the maintainers&apos; fix.</li>
               <li>It reproduces the failure, reads the code, edits C, then compiles and tests in a sandbox with no network, and iterates.</li>
-              <li>{fixer.metrics.cost_per_resolved_usd != null ? `$${fixer.metrics.cost_per_resolved_usd.toFixed(3)} of Token Factory per verified fix. ` : ""}
+              <li>{headline.perFix != null ? `$${headline.perFix.toFixed(2)} of Token Factory per verified fix. ` : ""}
                 Every patch is shown next to the real one.</li>
             </ul>
             <Link className="btn" href="/fixbench/">Watch it fix them</Link>
