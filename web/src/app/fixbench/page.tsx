@@ -50,6 +50,39 @@ function testState(s: FbStep): "pass" | "fail" | null {
   return /^(FAILING|BUILD FAILED|PATCH DID NOT APPLY|SANDBOX ERROR)/.test(s.observation) ? "fail" : null;
 }
 
+/** Per-test results parsed from a sandbox run's first line: "Build OK. test1629 ok, test61 ok, ..." */
+function testStatuses(obs: string | undefined): [string, string][] {
+  if (!obs) return [];
+  const head = obs.split("\n").find((l) => l.startsWith("Build OK.")) ?? "";
+  return [...head.matchAll(/test(\d+) (ok|fail|skip|missing)/g)].map((m) => [m[1], m[2]]);
+}
+
+function TestLights({ row }: { row: FbRow }) {
+  const before = testStatuses(row.steps.find((s) => s.tool === "reproduce")?.observation);
+  const runs = row.steps.filter((s) => s.tool === "run_tests" && s.observation.includes("Build OK."));
+  const after = testStatuses(runs[runs.length - 1]?.observation);
+  if (!before.length && !after.length) return null;
+  const own = new Set(row.fail_to_pass);
+  const line = (label: string, items: [string, string][]) => (
+    <div className={styles.lightRow}>
+      <span>{label}</span>
+      <div className={styles.lights}>
+        {items.map(([t, s]) => (
+          <i key={t} title={`test${t}: ${s}`}
+            className={`${s === "ok" ? styles.lOk : s === "fail" ? styles.lFail : styles.lOff} ${own.has(t) ? styles.lOwn : ""}`} />
+        ))}
+      </div>
+    </div>
+  );
+  return (
+    <div className={styles.testLights}>
+      {line("vulnerable build", before)}
+      {after.length > 0 && line("after the agent's last test run", after)}
+      <p>Larger lights are curl&apos;s regression test{row.fail_to_pass.length > 1 ? "s" : ""} for this CVE; the rest are nearby tests that must keep passing.</p>
+    </div>
+  );
+}
+
 function Transcript({ row }: { row: FbRow }) {
   const [shown, setShown] = useState(row.steps.length);
   const [open, setOpen] = useState<number | null>(null);
@@ -126,6 +159,7 @@ function Detail({ row }: { row: FbRow }) {
           <div><b>{(row.seconds / 60).toFixed(1)} min</b><span>wall time, builds included</span></div>
         </div>
       </header>
+      <TestLights row={row} />
       <div className={styles.dGrid}>
         <Transcript row={row} />
         <div>
