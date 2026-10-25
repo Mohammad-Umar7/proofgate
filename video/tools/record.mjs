@@ -49,18 +49,18 @@ const SHOTS = {
                ["wait", 1500], ["rec"], ["wait", 4500]],
   // the code galaxy: free rotation in every direction, then one real and one invented function
   galaxy: [["go", "/galaxy/"], ["until", "document.querySelector('canvas')", 30000], ["wait", 5000],
-           ["move", 1000, 560, 10], ["rec"], ["wait", 1200],
+           ["move", 1330, 560, 10], ["rec"], ["wait", 1200],
            ["mark", "canvas", "[document.querySelector('canvas')]"],
-           ["drag", [[1100, 180], [1105, 980]], 2600], ["wait", 250],
-           ["drag", [[1100, 180], [1095, 980]], 2600], ["wait", 700],
-           ["drag", [[700, 560], [1500, 540]], 2400], ["wait", 250],
-           ["drag", [[700, 560], [1500, 600], [1100, 560]], 3000], ["wait", 1500],
+           ["drag", [[1330, 170], [1335, 990]], 2600], ["wait", 250],
+           ["drag", [[1330, 170], [1325, 990]], 2600], ["wait", 700],
+           ["drag", [[900, 560], [1760, 540]], 2400], ["wait", 250],
+           ["drag", [[900, 560], [1760, 600], [1330, 560]], 3000], ["wait", 1500],
            ["mark", "stats", "[document.querySelector('aside [class*=_stats]')]"],
            ["click", btn("Curl_cookie_add")], ["wait", 4200],
            ["mark", "result", "[document.querySelector('aside [class*=_result]')]"], ["wait", 1800],
            ["click", btn("Curl_cookie_parse_header")], ["wait", 4200],
            ["mark", "result2", "[document.querySelector('aside [class*=_result]')]"],
-           ["drag", [[900, 560], [1250, 610]], 2600], ["wait", 2400]],
+           ["drag", [[1150, 560], [1500, 610]], 2600], ["wait", 2400]],
   // a real HackerOne report, fetched and triaged live through Token Factory and Tavily
   live: [["go", "/console/"], ["until", btn("Live · your report"), 30000], ["wait", 2500], ["rec"], ["wait", 800],
          ["mark", "chip", "[document.querySelector('[class*=_mode] .chip')]"],
@@ -80,7 +80,7 @@ const SHOTS = {
             ["click", btn("Nemotron 3 Super 120B")], ["wait", 900],
             ["eval", `${btn(LIVE_CVE)}.scrollIntoView({ block: "center" })`], ["wait", 600], ["rec"], ["wait", 600],
             ["click", btn(LIVE_CVE)], ["wait", 1200],
-            ["eval", "const d=document.querySelector('[class*=_detail]'); window.scrollTo({ top: d.getBoundingClientRect().top + scrollY - 24, behavior: 'smooth' })"],
+            ["eval", "const d=document.querySelector('[class*=_detail]'); window.scrollTo({ top: d.getBoundingClientRect().top + scrollY - 92, behavior: 'smooth' })"],
             ["wait", 1200], ["mark", "run", `[${btn("Run live now")}]`],
             ["click", btn("Run live now")], ["wait", 1500],
             ["mark", "bar", "[document.querySelector('[class*=_liveBar]')]"],
@@ -90,7 +90,7 @@ const SHOTS = {
             ["wait", 1500], ["mark", "done", "[document.querySelector('[class*=_liveBar]'), document.querySelector('[class*=_testLights]')]"],
             ["wait", 2500],
             ["eval", "const g=document.querySelector('[class*=_dGrid]'); window.scrollTo({ top: g.getBoundingClientRect().top + scrollY - 40, behavior: 'smooth' })"],
-            ["wait", 1800], ["mark", "patch", "[document.querySelectorAll('[class*=_dGrid] pre')[0]]"], ["wait", 4000]],
+            ["wait", 1800], ["mark", "patch", "[document.querySelector('[class*=_dGrid] > div:last-child pre')]"], ["wait", 4000]],
 };
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -171,7 +171,8 @@ async function recordShot(name, steps) {
     "--no-default-browser-check", "--disable-extensions", "--hide-scrollbars", "--mute-audio",
     `--window-size=${W},${H + 140}`, "--window-position=0,0", "--force-device-scale-factor=1",
     "--disable-background-timer-throttling", "--disable-renderer-backgrounding",
-    "--disable-backgrounding-occluded-windows", "--disable-features=CalculateNativeWinOcclusion", "about:blank",
+    "--disable-backgrounding-occluded-windows", "--disable-features=CalculateNativeWinOcclusion",
+    "--hide-crash-restore-bubble", "--disable-session-crashed-bubble", "about:blank",
   ], { stdio: "ignore" });
   const cdp = client(await cdpConnect());
   await cdp.ready;
