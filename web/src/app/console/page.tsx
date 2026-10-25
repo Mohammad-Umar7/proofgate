@@ -29,7 +29,8 @@ export default function ConsolePage() {
   const [card, setCard] = useState<Card | null>(null);
   const [focus, setFocus] = useState<GalaxyFocus>({});
   const [running, setRunning] = useState(false);
-  const [draft, setDraft] = useState({ title: "", body: "" });
+  const [draft, setDraft] = useState({ url: "", title: "", body: "" });
+  const [liveTitle, setLiveTitle] = useState("");
   const [error, setError] = useState("");
   const [now, setNow] = useState(0);
   const stop = useRef<() => void>(() => {});
@@ -70,8 +71,11 @@ export default function ConsolePage() {
     setCard(null);
     setFocus({});
     setRunning(true);
+    setLiveTitle("");
     try {
-      const id = await submit(draft.title, draft.body);
+      const pasted = draft.body.trim().length >= 20;
+      const { run_id: id, title } = await submit(draft.title, pasted ? draft.body : "", pasted ? undefined : draft.url.trim());
+      setLiveTitle(title);
       stop.current = stream(id, (e) => setEvents((xs) => [...xs, e]), async () => {
         const c = await fetchCard(id);
         setCard(c);
@@ -92,6 +96,8 @@ export default function ConsolePage() {
     const ev = events.find((e) => e.stage === "claims" && e.status === "done");
     return (ev?.data?.claims as { kind: string; text: string }[]) ?? [];
   }, [events]);
+  const linkOk = /^https:\/\/hackerone\.com\/reports\/\d+\/?$/.test(draft.url.trim());
+  const pasteOk = draft.title.trim().length >= 3 && draft.body.trim().length >= 20;
   const stagesDone = new Set(events.filter((e) => ["done", "skipped"].includes(e.status)).map((e) => e.stage)).size;
 
   return (
@@ -128,13 +134,25 @@ export default function ConsolePage() {
           <p className={styles.colTitle}><span>Report</span><span>untrusted input</span></p>
           {active === "live" ? (
             <div className={styles.paste}>
+              <input placeholder="Link to a disclosed HackerOne report" value={draft.url} spellCheck={false}
+                aria-label="HackerOne report link" onChange={(e) => setDraft({ ...draft, url: e.target.value })} />
+              <span className={styles.or}>or paste a report</span>
               <input placeholder="Title" value={draft.title} onChange={(e) => setDraft({ ...draft, title: e.target.value })} />
-              <textarea rows={14} placeholder="Paste the report body (markdown)…" value={draft.body}
+              <textarea rows={liveTitle ? 3 : 9} placeholder="Report body (markdown)…" value={draft.body}
                 onChange={(e) => setDraft({ ...draft, body: e.target.value })} />
-              <button className="btn btn-primary" disabled={running || draft.body.length < 20 || draft.title.length < 3} onClick={runLive}>
-                {running ? "Running…" : "Run ProofGate"}
+              <button className="btn btn-primary" disabled={running || !(linkOk || pasteOk)} onClick={runLive}>
+                {running ? "Running live…" : "Run ProofGate live"}
               </button>
               {error && <div className={styles.error}>{error}</div>}
+              {liveTitle && (
+                <>
+                  <h2 className={styles.reportTitle}>{liveTitle}</h2>
+                  {!pasteOk && linkOk && <p className={styles.galaxyNote}>Fetched live from {draft.url.trim().replace("https://", "")}</p>}
+                  <div className={styles.claims}>
+                    {claims.map((c, i) => <div key={i} className={styles.claimRow}><span>{c.kind}</span>{c.text}</div>)}
+                  </div>
+                </>
+              )}
             </div>
           ) : rec ? (
             <>
