@@ -4,7 +4,8 @@
   history.json   commits per month across curl's whole history, for the history helix
   replays.json   recorded pipeline runs: synthetic samples + selected SlopBench reports
   bench.json     SlopBench metrics
-  fixbench.json  FixBench: the agent's transcripts, diffs and grades on real curl CVEs
+  fixbench.json  FixBench: metrics and per-CVE grades for each agent model (small)
+  fixbench-<model>.json  that model's transcripts, patches and the maintainers' patches
 
 Real HackerOne reports are exported as title, link and the extracted claims only; their full
 text is not redistributed.
@@ -119,23 +120,30 @@ async def export_arena(options: Options, seeds: tuple[int, ...] = (7, 11)) -> li
     return rounds
 
 
-def export_fixbench() -> dict:
-    """FixBench results per agent model, plus the instance list (validated or dropped, and why)."""
-    from .fixbench.dataset import load_index as fixbench_index
+HEAVY = ("steps", "diff", "gold_diff", "summary_agent")
 
-    results = ROOT / "bench" / "results"
-    models = {}
-    for role in ("nano", "super", "ultra"):
-        path = results / f"fixbench-{role}.json"
-        if path.exists():
-            models[role] = json.loads(path.read_text(encoding="utf-8"))
+
+def export_fixbench() -> tuple[dict, dict[str, dict]]:
+    """FixBench results: a small summary (metrics, per-instance outcome, dropped instances, the
+    Super-then-Ultra cascade) and, per model, the full transcripts and patches."""
+    from .fixbench.dataset import load_index as fixbench_index
+    from .fixbench.run import cascade, load_results
+
+    models = load_results()
+    routed = cascade(models["super"], models["ultra"]) if {"super", "ultra"} <= set(models) else None
     instances = [{k: r.get(k) for k in ("id", "summary", "severity", "published", "fix_commit",
                                         "base", "advisory_url", "source_files", "validated", "why",
                                         "fail_to_pass_valid", "pass_to_pass")}
                  for r in fixbench_index()]
     for r in instances:
         r["pass_to_pass"] = len(r["pass_to_pass"] or [])
-    return {"models": models, "instances": instances}
+    summary_models = {role: {**data, "rows": [{k: v for k, v in r.items() if k not in HEAVY}
+                                              for r in data["rows"]]}
+                      for role, data in models.items()}
+    details = {role: {"role": role, "rows": [{"id": r["id"], **{k: r.get(k) for k in HEAVY}}
+                                             for r in data["rows"]]}
+               for role, data in models.items()}
+    return {"models": summary_models, "instances": instances, "cascade": routed}, details
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -163,7 +171,10 @@ def main(argv: list[str] | None = None) -> int:
             bench = json.loads(src.read_text(encoding="utf-8"))
             write("bench.json", bench)
     if args.only in (None, "fixbench"):
-        write("fixbench.json", export_fixbench())
+        summary, details = export_fixbench()
+        write("fixbench.json", summary)
+        for role, detail in details.items():
+            write(f"fixbench-{role}.json", detail)
     options = Options(use_llm=not args.offline, sandbox=False, fix=False,
                       prior_art_web=not args.offline)
     if args.only in (None, "replays"):
