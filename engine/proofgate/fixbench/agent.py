@@ -48,7 +48,8 @@ output, fix, and run them again. Call finish once the tests pass.
 Rules:
 - Edit only .c/.h files under lib/, src/ or include/. Never edit tests or build files.
 - Fix the root cause with a minimal change in curl's style (C89, 2-space indent, curl's own
-  helpers). Never special-case the test.
+  helpers). Never special-case the test. run_tests also runs curl's own style checker
+  (checksrc.pl) on the files you changed; a mergeable fix passes it.
 - Layout: lib/ is libcurl (lib/vauth auth, lib/vtls TLS, lib/vssh SSH), src/ is the curl
   command line tool (tool_*.c), include/curl/ the public headers. Regression tests are
   tests/data/testNNNN (XML: server reply, client command, expected protocol and output).
@@ -105,6 +106,8 @@ class AgentResult:
     first_test_passed: bool | None = None
     last_test: TestRun | None = None
     last_test_diff: str = ""
+    green_test: TestRun | None = None  # the latest run where every test passed
+    green_diff: str = ""
     cost_usd: float = 0.0
     tokens: int = 0
     seconds: float = 0.0
@@ -451,6 +454,13 @@ async def solve(row: dict, tests: list[str], *, role: str = "super", budget_usd:
     else:
         result.stop = "turns"
     result.diff = ws.diff()
+    still_green = (result.last_test is not None and result.last_test_diff == result.diff
+                   and result.last_test.passed(tests))
+    if result.green_diff and not still_green:
+        # edits after the last green run never got back to green: keep the green patch
+        result.diff, result.last_test, result.last_test_diff = (
+            result.green_diff, result.green_test, result.green_diff)
+        result.stop += " (reverted to last green patch)"
     result.seconds = round(time.perf_counter() - started, 1)
     return result
 
@@ -470,12 +480,18 @@ async def _execute(tool: str, args: dict, ws: Workspace, row: dict, tests: list[
         run = await run_tests(row, ws.diff(), tests)
         result.tests_run += 1
         result.last_test, result.last_test_diff = run, ws.diff()
+        if run.passed(tests):
+            result.green_test, result.green_diff = run, ws.diff()
         if result.first_test_passed is None:
             result.first_test_passed = run.passed(tests)
         verdict = ("ALL TESTS PASS" if run.passed(tests) else
                    f"FAILING: {', '.join('test' + t for t in run.failing(tests)) or run.stage}")
         left = MAX_TESTS - result.tests_run
-        return f"{verdict} ({run.seconds}s, {left} test runs left)\n{run.feedback()}", False
+        hint = ""
+        if run.passed(tests) and run.style:
+            hint = ("\nThe fix works, but checksrc.pl reports style problems. If you have a test run "
+                    "left, fix them (keep the logic) and run_tests again; otherwise finish.")
+        return f"{verdict} ({run.seconds}s, {left} test runs left){hint}\n{run.feedback()}", False
     if tool == "grep":
         return ws.grep(args.get("pattern", ""), args.get("path", "")), False
     if tool == "ls":
