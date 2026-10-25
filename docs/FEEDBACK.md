@@ -27,6 +27,14 @@
   explore, edit, build curl, run 31 tests, iterate, pass) cost about **$0.08 and 3 minutes**.
 - **Ultra** reads larger chunks and commits sooner, at roughly 5x the tokens of Super on the same
   CVE (about $0.50 vs $0.08 in our first comparison).
+- **Measured on FixBench (27 real curl CVEs, same agent, same budget of 40 replies and 4 test runs):**
+  Nano 3 30B 2/27 fixed ($0.05 per CVE, right file 30% of the time), Super 3 120B 8/27 ($0.18 per CVE,
+  right file 85%), Ultra 3 550B 9/27 ($0.66 per CVE, every fix passed on its first test run). Super and
+  Ultra fix different CVEs: Super first and Ultra on its failures fixes 11/27 at $1.62 per verified fix.
+  No fix from any size broke a nearby test. Total FixBench spend about $24 across the three sizes.
+- **Agent failure modes we saw:** Super loops on repeated identical searches and small reads (a guard
+  that flags repeated calls helped); Ultra sometimes spends its budget searching for a dependency's
+  constants (libssh2) that are not in the repository; Nano rarely commits to an edit at all.
 - **Triage at scale.** The full SlopBench run (197 real curl reports, four Nemotron sizes routed
   by job plus Tavily) cost **$1.39 in total**, $0.007 per report.
 - **Billing UX.** The promo code lives in "Top up balance", where the default tab is "By card" with

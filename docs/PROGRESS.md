@@ -15,8 +15,10 @@
   Ablation without grounding: 0/49 slop closed, ranking AUC 0.53 (vs 0.67 with grounding).
 - FixBench, 27 validated curl CVEs (2 dropped, listed): Super 8/27 ($0.62/fix), Ultra 9/27
   ($1.98/fix), Super-then-Ultra cascade 11/27 (41%, $1.62/fix), 0 fixes broke a nearby test.
-- Nano run in progress (2026-10-25); add it with `proofgate fixbench table` +
-  `proofgate export-web --only fixbench`.
+- Nano 2/27 ($0.05 per CVE). All three sizes are on the site and in the README.
+- Demo film: `video/film` (HyperFrames), 1:56, rendered and mastered to -15 LUFS at
+  `video/film/renders/ProofGate-demo.mp4` (git-ignored; rebuild steps in `docs/VIDEO.md`).
+  Not yet uploaded to YouTube.
 
 ## Credits
 Token Factory: $25 promo redeemed 2026-10-25 (balance read $9.19 after the FixBench runs; usage posts
