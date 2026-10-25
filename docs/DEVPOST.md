@@ -5,7 +5,7 @@
 **Project name** (≤60): `ProofGate`
 
 **Elevator pitch** (≤200):
-> AI made fake security reports free to produce. ProofGate makes proving them cheap: every claim is checked against the real code and git history, on NVIDIA Nemotron via Nebius Token Factory.
+> AI made fake security reports free. ProofGate proves them against git history, then a Nemotron agent fixes real bugs: 11 of 27 curl CVEs, verified by curl's own tests, on Nebius Token Factory.
 
 Thumbnail: crop `docs/img/hero.jpg` to 3:2.
 
@@ -13,11 +13,11 @@ Thumbnail: crop `docs/img/hero.jpg` to 3:2.
 
 **Built with** (tags): `nvidia-nemotron`, `nebius-token-factory`, `nebius-ai-cloud`, `tavily`,
 `nvidia-openshell`, `python`, `fastapi`, `tree-sitter`, `git`, `sqlite`, `next.js`, `react`,
-`three.js`, `react-three-fiber`, `glsl`, `typescript`, `docker`, `github-actions`, `osv`
+`three.js`, `react-three-fiber`, `glsl`, `typescript`, `docker`, `github-actions`, `osv`, `valgrind`
 
 **Try it out links**: https://proofgate-ten.vercel.app · https://github.com/Mohammad-Umar7/proofgate
 
-**Image gallery**: `docs/img/hero.jpg`, `console.jpg`, `evidence.jpg`, `galaxy.jpg`, `arena.jpg`
+**Image gallery**: `docs/img/hero.jpg`, `fixbench.jpg`, `console.jpg`, `evidence.jpg`, `galaxy.jpg`, `arena.jpg`
 
 **About the project** (Markdown):
 
@@ -64,9 +64,17 @@ vulnerable checkout, never the maintainers' fix. It reproduces the failure, expl
 and tree-sitter, edits C, then builds curl and runs curl's own test suite (regression test under
 valgrind, plus nearby tests, plus curl's checksrc style checker) in a Docker sandbox with no network,
 and iterates on what fails. A CVE counts as fixed only if a fresh build of the final patch passes
-every regression and nearby test. Result: **[X] of 27 CVEs fixed by Nemotron [model], [Y] of them past
-its training cutoff, $[Z] per verified fix.** Every transcript and patch is on the FixBench page,
-next to the patch curl actually shipped.
+every regression and nearby test.
+
+Results: **Nemotron 3 Super fixed 8 of 27 ($0.62 per fix), Nemotron 3 Ultra 9 of 27 ($1.98 per fix),
+and no fix broke a nearby test.** The two sizes fix different CVEs, so ProofGate routes by job: Super
+first, Ultra only on Super's failures, which fixes **11 of 27 (41%) at $1.63 per verified fix**. Of
+Ultra's 9 fixes, all 9 are CVEs fixed upstream after February 2026, past Nemotron 3 Super's documented
+training data. Every transcript and patch is on the FixBench page, next to the patch curl actually
+shipped.
+
+We also ran a SlopBench ablation without git grounding: the same Nemotron models then close no slop at
+all and rank real vs fake reports at chance (AUC 0.53 vs 0.67). The evidence comes from the code.
 
 ## Challenges
 Our first benchmark run dismissed 39 real CVEs. The causes were instructive: we were checking 2021
