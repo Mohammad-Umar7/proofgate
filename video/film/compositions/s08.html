@@ -1,0 +1,24 @@
+<template>
+  <style>
+    #root { position: absolute; inset: 0; background: #05060a; overflow: hidden; }
+    #s08-cam { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; transform-origin: 0 0; }
+    #s08-v { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; object-fit: cover; }
+    #s08-dip { position: absolute; inset: 0; background: #000; opacity: 0; pointer-events: none; }
+  </style>
+  <div data-hf-id="hf-dzp0" id="root" data-composition-id="s08" data-width="1920" data-height="1080">
+    <!-- CVE-2026-92390 on FixBench: the recorded Nemotron 3 Ultra run replays step by step -->
+    <div data-hf-id="hf-w0ha" id="s08-cam">
+      <video data-hf-id="hf-kute" id="s08-v" class="clip" src="assets/rec/replay.mp4" data-start="0" data-duration="10.5" data-media-start="0.6" muted playsinline></video>
+    </div>
+    <div data-hf-id="hf-hw30" id="s08-dip"></div>
+  </div>
+  <script>
+    const tl = gsap.timeline({ paused: true });
+    tl.fromTo("#s08-dip", { opacity: 0.45 }, { opacity: 0, duration: 0.3, ease: "power2.out" }, 0);
+    // the CVE, its test lights and the transcript starting, 1.35x
+    tl.fromTo("#s08-cam", { scale: 1.42, x: -330, y: -40 }, { scale: 1.35, x: -255, y: 0, duration: 0.5, ease: "expo.out" }, 0);
+    // "It reproduces the failure ...": down onto the transcript and the patch, 1.5x
+    tl.to("#s08-cam", { scale: 1.5, x: -480, y: -540, duration: 0.8, ease: "power2.inOut" }, 4.4);
+    window.__timelines["s08"] = tl;
+  </script>
+</template>

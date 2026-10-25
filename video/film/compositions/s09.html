@@ -1,0 +1,19 @@
+<template>
+  <style>
+    #root { position: absolute; inset: 0; background: #05060a; overflow: hidden; }
+    #s09-cam { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; transform-origin: 0 0; }
+    #s09-v { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; object-fit: cover; }
+  </style>
+  <div data-hf-id="hf-eu53" id="root" data-composition-id="s09" data-width="1920" data-height="1080">
+    <!-- the test lights: curl's regression tests red on the vulnerable build, every test green after -->
+    <div data-hf-id="hf-om5j" id="s09-cam">
+      <video data-hf-id="hf-8vg4" id="s09-v" class="clip" src="assets/rec/replay.mp4" data-start="0" data-duration="8" data-media-start="3" muted playsinline></video>
+    </div>
+  </div>
+  <script>
+    const tl = gsap.timeline({ paused: true });
+    // hard punch-in up from the transcript onto the lights, 2x, then hold
+    tl.fromTo("#s09-cam", { scale: 2.12, x: -610, y: -110 }, { scale: 2.0, x: -520, y: -60, duration: 0.45, ease: "expo.out" }, 0);
+    window.__timelines["s09"] = tl;
+  </script>
+</template>

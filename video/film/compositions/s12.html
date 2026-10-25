@@ -1,0 +1,47 @@
+<template>
+  <style>
+    #root { position: absolute; inset: 0; background: #05060a; overflow: hidden; font-family: "Inter", sans-serif; }
+    #s12-lock { position: absolute; left: 0; right: 0; top: 330px; display: flex; align-items: center; justify-content: center; gap: 40px; }
+    #s12-mark { width: 168px; height: 168px; }
+    #s12-word { font-size: 112px; font-weight: 900; letter-spacing: -0.04em; color: #e8eaf0; clip-path: inset(0 100% 0 0); }
+    #s12-stack { position: absolute; left: 0; right: 0; top: 590px; text-align: center; font-size: 40px; font-weight: 700;
+      letter-spacing: -0.01em; color: #e8eaf0; opacity: 0; }
+    #s12-stack span { color: #3ddc97; }
+    #s12-links { position: absolute; left: 0; right: 0; top: 700px; text-align: center; font-family: "JetBrains Mono", monospace;
+      font-size: 32px; color: #8a91a3; line-height: 1.7; opacity: 0; }
+    #s12-links b { color: #e8eaf0; font-weight: 400; }
+  </style>
+  <div data-hf-id="hf-x143" id="root" data-composition-id="s12" data-width="1920" data-height="1080">
+    <div data-hf-id="hf-fjrf" id="s12-lock">
+      <!-- the ProofGate mark, as drawn on the site (web/src/components/Nav.tsx) -->
+      <svg data-hf-id="hf-4tj4" id="s12-mark" viewBox="0 0 32 32" aria-hidden="true">
+        <defs data-hf-id="hf-mh0t">
+          <linearGradient data-hf-id="hf-z2yf" id="s12-g" x1="0" y1="0" x2="1" y2="1">
+            <stop data-hf-id="hf-xu47" offset="0" stop-color="#e8eaf0" />
+            <stop data-hf-id="hf-pvtn" offset="1" stop-color="#7d8496" />
+          </linearGradient>
+        </defs>
+        <circle data-hf-id="hf-1qls" id="s12-ring1" cx="16" cy="16" r="12.5" fill="none" stroke="url(#s12-g)" stroke-width="2.4" stroke-dasharray="78.6" stroke-dashoffset="78.6" />
+        <circle data-hf-id="hf-6gho" id="s12-ring2" cx="16" cy="16" r="6.5" fill="none" stroke="url(#s12-g)" stroke-width="2.4" opacity="0.55" stroke-dasharray="40.9" stroke-dashoffset="40.9" />
+        <rect data-hf-id="hf-cgre" id="s12-cut" x="15" y="1" width="2" height="30" fill="#05060a" opacity="0" />
+        <circle data-hf-id="hf-v847" id="s12-dot" cx="16" cy="16" r="2.2" fill="#3ddc97" />
+      </svg>
+      <div data-hf-id="hf-a653" id="s12-word">ProofGate</div>
+    </div>
+    <div data-hf-id="hf-bw4n" id="s12-stack">Built on <span data-hf-id="hf-ld1s">NVIDIA Nemotron</span> · Nebius Token Factory · Tavily</div>
+    <div data-hf-id="hf-bt0l" id="s12-links"><b data-hf-id="hf-xd3o">proofgate-ten.vercel.app</b><br data-hf-id="hf-x5px" />github.com/Mohammad-Umar7/proofgate · Apache-2.0</div>
+  </div>
+  <script>
+    const tl = gsap.timeline({ paused: true });
+    // the mark is drawn, cut, and the green dot lands (the one impact in the film)
+    tl.fromTo("#s12-ring1", { attr: { "stroke-dashoffset": 60 } }, { attr: { "stroke-dashoffset": 0 }, duration: 0.8, ease: "power2.out" }, 0);
+    tl.fromTo("#s12-ring2", { attr: { "stroke-dashoffset": 40.9 } }, { attr: { "stroke-dashoffset": 0 }, duration: 0.6, ease: "power2.inOut" }, 0.35);
+    tl.fromTo("#s12-cut", { opacity: 0 }, { opacity: 1, duration: 0.01 }, 1.08);
+    tl.fromTo("#s12-dot", { scale: 0, transformOrigin: "50% 50%" }, { scale: 1, duration: 0.5, ease: "back.out(2.2)" }, 1.15);
+    // the wordmark wipes in beside it
+    tl.fromTo("#s12-word", { clipPath: "inset(0 100% 0 0)" }, { clipPath: "inset(0 0% 0 0)", duration: 0.5, ease: "power3.out" }, 1.35);
+    tl.fromTo("#s12-stack", { opacity: 0, filter: "blur(8px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.2, ease: "power2.out" }, 1.95);
+    tl.fromTo("#s12-links", { opacity: 0 }, { opacity: 1, duration: 0.3, ease: "power1.out" }, 5.3);
+    window.__timelines["s12"] = tl;
+  </script>
+</template>

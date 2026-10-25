@@ -1,0 +1,34 @@
+<template>
+  <style>
+    #root { position: absolute; inset: 0; background: #05060a; overflow: hidden; font-family: "Inter", sans-serif; }
+    #s06-cam { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; transform-origin: 0 0; }
+    #s06-v { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; object-fit: cover; }
+    #s06-light { position: absolute; inset: 0; background: #f3f4f6; clip-path: inset(100% 0 0 0); }
+    #s06-num { position: absolute; left: 210px; top: 150px; display: flex; align-items: baseline; gap: 28px; }
+    #s06-zero { font-size: 420px; font-weight: 900; letter-spacing: -0.06em; line-height: 1; color: #0f9d63; opacity: 0; }
+    #s06-of { font-size: 170px; font-weight: 900; letter-spacing: -0.05em; line-height: 1; color: #0a0b0f; opacity: 0; }
+    #s06-l1 { position: absolute; left: 216px; top: 640px; font-size: 68px; font-weight: 700; letter-spacing: -0.025em; color: #0a0b0f; opacity: 0; }
+    #s06-l2 { position: absolute; left: 216px; top: 750px; font-size: 38px; font-weight: 400; color: #4b5263; opacity: 0; }
+  </style>
+  <div data-hf-id="hf-utsa" id="root" data-composition-id="s06" data-width="1920" data-height="1080">
+    <div data-hf-id="hf-xhvs" id="s06-cam">
+      <video data-hf-id="hf-eefh" id="s06-v" class="clip" src="assets/rec/bench.mp4" data-start="0" data-duration="6" data-media-start="0" muted playsinline></video>
+    </div>
+    <!-- the ground floods to the number world; the payoff lands on the word "zero" -->
+    <div data-hf-id="hf-p8zm" id="s06-light" data-hold>
+      <div data-hf-id="hf-31ut" id="s06-num"><div data-hf-id="hf-tmof" id="s06-zero">0</div><div data-hf-id="hf-4suy" id="s06-of">/ 148</div></div>
+      <div data-hf-id="hf-dxgi" id="s06-l1">real curl CVEs wrongly dismissed</div>
+      <div data-hf-id="hf-9e0h" id="s06-l2">197 real reports on SlopBench · $0.007 per report on Token Factory</div>
+    </div>
+  </div>
+  <script>
+    const tl = gsap.timeline({ paused: true });
+    tl.fromTo("#s06-cam", { scale: 1.25, x: -240, y: -110 }, { scale: 1.25, x: -240, y: -110, duration: 0.01 }, 0);
+    tl.fromTo("#s06-light", { clipPath: "inset(100% 0 0 0)" }, { clipPath: "inset(0% 0 0 0)", duration: 0.42, ease: "power2.inOut" }, 5.35);
+    tl.fromTo("#s06-zero", { opacity: 0, scale: 1.12, filter: "blur(10px)" }, { opacity: 1, scale: 1, filter: "blur(0px)", duration: 0.45, ease: "expo.out" }, 6.0);
+    tl.fromTo("#s06-of", { opacity: 0, filter: "blur(8px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.3, ease: "power3.out" }, 6.12);
+    tl.fromTo("#s06-l1", { opacity: 0, filter: "blur(8px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.18, ease: "power2.out" }, 6.5);
+    tl.fromTo("#s06-l2", { opacity: 0 }, { opacity: 1, duration: 0.25, ease: "power1.out" }, 7.4);
+    window.__timelines["s06"] = tl;
+  </script>
+</template>

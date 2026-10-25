@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en" data-resolution="landscape">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      :root {
+        --ground: #05060a;
+        --ink: #e8eaf0;
+        --light: #f3f4f6;
+        --light-ink: #0a0b0f;
+        --green: #3ddc97;
+        --green-deep: #0f9d63;
+        --red: #ff4d5e;
+        --red-deep: #d93a40;
+        --font-display: "Inter", sans-serif;
+        --font-mono: "JetBrains Mono", monospace;
+      }
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { margin: 0; width: 1920px; height: 1080px; overflow: hidden; background: var(--ground); }
+      #root { position: relative; width: 100%; height: 100%; font-family: var(--font-display); }
+      #bg { position: absolute; inset: 0; background: var(--ground); }
+    </style>
+  </head>
+  <body>
+    <div data-hf-id="hf-dtl2" id="root" data-composition-id="main" data-start="0" data-duration="116" data-width="1920" data-height="1080">
+      <div data-hf-id="hf-2xc0" id="bg"></div>
+
+      <!-- scenes: one per beat, timed to the narration (SPEC.md SHOTS) -->
+      <div data-hf-id="hf-t69m" id="s01" data-composition-id="s01" data-composition-src="compositions/s01.html" data-start="0" data-duration="11.5" data-track-index="1" data-track-kind="graphics" data-width="1920" data-height="1080"></div>
+      <div data-hf-id="hf-9qds" id="s02" data-composition-id="s02" data-composition-src="compositions/s02.html" data-start="11.5" data-duration="9.2" data-track-index="1" data-track-kind="graphics" data-width="1920" data-height="1080"></div>
+      <div data-hf-id="hf-mq8o" id="s03" data-composition-id="s03" data-composition-src="compositions/s03.html" data-start="20.7" data-duration="14.5" data-track-index="1" data-track-kind="graphics" data-width="1920" data-height="1080"></div>
+      <div data-hf-id="hf-oy5r" id="s04" data-composition-id="s04" data-composition-src="compositions/s04.html" data-start="35.2" data-duration="7.6" data-track-index="1" data-track-kind="graphics" data-width="1920" data-height="1080"></div>
+      <div data-hf-id="hf-b3ex" id="s05" data-composition-id="s05" data-composition-src="compositions/s05.html" data-start="42.8" data-duration="7.9" data-track-index="1" data-track-kind="graphics" data-width="1920" data-height="1080"></div>
+      <div data-hf-id="hf-6h0k" id="s06" data-composition-id="s06" data-composition-src="compositions/s06.html" data-start="50.7" data-duration="11.2" data-track-index="1" data-track-kind="graphics" data-width="1920" data-height="1080"></div>
+      <div data-hf-id="hf-b9qx" id="s07" data-composition-id="s07" data-composition-src="compositions/s07.html" data-start="61.9" data-duration="7.3" data-track-index="1" data-track-kind="graphics" data-width="1920" data-height="1080"></div>
+      <div data-hf-id="hf-hvk7" id="s08" data-composition-id="s08" data-composition-src="compositions/s08.html" data-start="69.2" data-duration="10.5" data-track-index="1" data-track-kind="graphics" data-width="1920" data-height="1080"></div>
+      <div data-hf-id="hf-r21a" id="s09" data-composition-id="s09" data-composition-src="compositions/s09.html" data-start="79.7" data-duration="8" data-track-index="1" data-track-kind="graphics" data-width="1920" data-height="1080"></div>
+      <div data-hf-id="hf-ma0v" id="s10" data-composition-id="s10" data-composition-src="compositions/s10.html" data-start="87.7" data-duration="6.2" data-track-index="1" data-track-kind="graphics" data-width="1920" data-height="1080"></div>
+      <div data-hf-id="hf-sl4c" id="s11" data-composition-id="s11" data-composition-src="compositions/s11.html" data-start="93.9" data-duration="11.1" data-track-index="1" data-track-kind="graphics" data-width="1920" data-height="1080"></div>
+      <div data-hf-id="hf-w2vj" id="s12" data-composition-id="s12" data-composition-src="compositions/s12.html" data-start="105" data-duration="11" data-track-index="1" data-track-kind="graphics" data-width="1920" data-height="1080"></div>
+
+      <!-- narration: Kokoro af_heart, one clip per scene mixed at its cue (assets/vo, SCRIPT.md) -->
+      <audio data-hf-id="hf-vpj2" id="vo" class="clip" src="assets/vo/narration.wav" data-start="0" data-duration="116" data-track-index="2" data-volume="1"></audio>
+
+      <!-- effects, each on a visible cause; peaks land a frame after the picture -->
+      <audio data-hf-id="hf-ywcr" id="fx-whip1" class="clip" src="assets/sfx/whoosh-short.mp3" data-start="11.38" data-duration="0.57" data-track-index="3" data-volume="0.35"></audio>
+      <audio data-hf-id="hf-5mci" id="fx-flood1" class="clip" src="assets/sfx/whoosh.mp3" data-start="56.05" data-duration="0.57" data-track-index="3" data-volume="0.3"></audio>
+      <audio data-hf-id="hf-wjsj" id="fx-whip2" class="clip" src="assets/sfx/whoosh-short.mp3" data-start="61.8" data-duration="0.57" data-track-index="3" data-volume="0.3"></audio>
+      <audio data-hf-id="hf-ywuw" id="fx-flood2" class="clip" src="assets/sfx/whoosh.mp3" data-start="98.95" data-duration="0.57" data-track-index="3" data-volume="0.3"></audio>
+      <audio data-hf-id="hf-99sz" id="fx-pop49" class="clip" src="assets/sfx/pop.mp3" data-start="8.42" data-duration="0.72" data-track-index="4" data-volume="0.4"></audio>
+      <audio data-hf-id="hf-qv4v" id="fx-pop0" class="clip" src="assets/sfx/pop.mp3" data-start="56.72" data-duration="0.72" data-track-index="4" data-volume="0.45"></audio>
+      <audio data-hf-id="hf-o219" id="fx-pop11" class="clip" src="assets/sfx/pop.mp3" data-start="99.4" data-duration="0.72" data-track-index="4" data-volume="0.45"></audio>
+      <audio data-hf-id="hf-yp25" id="fx-mark" class="clip" src="assets/sfx/impact-bass-1.mp3" data-start="106.2" data-duration="2" data-track-index="4" data-volume="0.4"></audio>
+    </div>
+    <script>
+      const tl = gsap.timeline({ paused: true });
+      window.__timelines["main"] = tl;
+    </script>
+  </body>
+</html>

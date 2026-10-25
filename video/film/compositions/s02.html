@@ -1,0 +1,19 @@
+<template>
+  <style>
+    #root { position: absolute; inset: 0; background: #05060a; overflow: hidden; }
+    #s02-cam { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; transform-origin: 0 0; }
+    #s02-v { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; object-fit: cover; }
+  </style>
+  <div data-hf-id="hf-m6ce" id="root" data-composition-id="s02" data-width="1920" data-height="1080">
+    <!-- the live landing page: the gate, then the scroll fly-through (recorded, video/tools/record.mjs) -->
+    <div data-hf-id="hf-lmks" id="s02-cam">
+      <video data-hf-id="hf-iw3v" id="s02-v" class="clip" src="assets/rec/hero.mp4" data-start="0" data-duration="9.2" data-media-start="1.6" muted playsinline></video>
+    </div>
+  </div>
+  <script>
+    const tl = gsap.timeline({ paused: true });
+    // arrives on the whip from s01: lands slightly large and settles
+    tl.fromTo("#s02-cam", { scale: 1.06, x: -58, y: -32 }, { scale: 1, x: 0, y: 0, duration: 0.5, ease: "expo.out" }, 0);
+    window.__timelines["s02"] = tl;
+  </script>
+</template>

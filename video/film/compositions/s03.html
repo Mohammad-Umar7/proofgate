@@ -1,0 +1,21 @@
+<template>
+  <style>
+    #root { position: absolute; inset: 0; background: #05060a; overflow: hidden; }
+    #s03-cam { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; transform-origin: 0 0; }
+    #s03-v { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; object-fit: cover; }
+  </style>
+  <div data-hf-id="hf-3azd" id="root" data-composition-id="s03" data-width="1920" data-height="1080">
+    <!-- the triage console replaying a recorded live run of the invented-function report -->
+    <div data-hf-id="hf-dex1" id="s03-cam">
+      <video data-hf-id="hf-kib8" id="s03-v" class="clip" src="assets/rec/console.mp4" data-start="0" data-duration="14.5" data-media-start="0.6" data-playback-rate="0.89" muted playsinline></video>
+    </div>
+  </div>
+  <script>
+    const tl = gsap.timeline({ paused: true });
+    // "This report cites ...": the report text, 1.75x
+    tl.fromTo("#s03-cam", { scale: 1.75, x: 85, y: -790 }, { scale: 1.75, x: 85, y: -790, duration: 0.01 }, 0);
+    // "NVIDIA Nemotron Nano ...": travel to the pipeline and the galaxy, 1.9x
+    tl.to("#s03-cam", { scale: 1.9, x: -1181, y: -980, duration: 0.8, ease: "power2.inOut" }, 5.1);
+    window.__timelines["s03"] = tl;
+  </script>
+</template>

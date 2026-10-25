@@ -1,0 +1,19 @@
+<template>
+  <style>
+    #root { position: absolute; inset: 0; background: #05060a; overflow: hidden; }
+    #s04-cam { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; transform-origin: 0 0; }
+    #s04-v { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; object-fit: cover; }
+  </style>
+  <div data-hf-id="hf-h6so" id="root" data-composition-id="s04" data-width="1920" data-height="1080">
+    <!-- same run, later: the cited functions float outside curl's call graph as ghosts -->
+    <div data-hf-id="hf-j8gi" id="s04-cam">
+      <video data-hf-id="hf-l0n8" id="s04-v" class="clip" src="assets/rec/console.mp4" data-start="0" data-duration="7.6" data-media-start="7.4" data-playback-rate="0.8" muted playsinline></video>
+    </div>
+  </div>
+  <script>
+    const tl = gsap.timeline({ paused: true });
+    // hard punch-in from s03's framing onto the ghost labels, 2x, then hold while the voice reads them
+    tl.fromTo("#s04-cam", { scale: 2.15, x: -1995, y: -1040 }, { scale: 2.0, x: -1790, y: -930, duration: 0.45, ease: "expo.out" }, 0);
+    window.__timelines["s04"] = tl;
+  </script>
+</template>
