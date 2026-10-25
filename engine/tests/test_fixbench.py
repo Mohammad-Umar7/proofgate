@@ -65,4 +65,4 @@ def test_metrics_and_diff_files():
                        "published": "2024-10-09"}])
     assert m["resolved"] == 1 and m["n"] == 2
     assert m["cost_per_resolved_usd"] == 0.4
-    assert m["post_cutoff"] == {"n": 1, "resolved": 1}
+    assert m["post_cutoff"] == {"cutoff": "2026-03-01", "n": 1, "resolved": 1}

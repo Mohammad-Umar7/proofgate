@@ -91,7 +91,8 @@ async def run_one(row: dict, role: str, budget: float, log=print) -> dict:
     edited = _files(result.diff)
     out = {
         "id": row["id"], "summary": row["summary"], "severity": row.get("severity"),
-        "published": row.get("published"), "fix_commit": row["fix_commit"], "base": row["base"],
+        "published": row.get("published"), "fix_date": row.get("fix_date"),
+        "fix_commit": row["fix_commit"], "base": row["base"],
         "advisory_url": row.get("advisory_url"), "model": result.model, "role": role,
         "resolved": resolved,
         "f2p_passed": bool(grade and grade.passed(f2p)),
@@ -131,9 +132,20 @@ def metrics(rows: list[dict]) -> dict:
         "turns_mean": round(statistics.mean(r["turns"] for r in rows), 1) if rows else 0,
         "tests_mean": round(statistics.mean(r["tests_run"] for r in rows), 1) if rows else 0,
         "seconds_mean": round(statistics.mean(r["seconds"] for r in rows), 1) if rows else 0,
-        "post_cutoff": {"n": sum(1 for r in rows if (r.get("published") or "") >= "2026"),
-                        "resolved": sum(1 for r in resolved if (r.get("published") or "") >= "2026")},
+        # fixes committed after the model's training data ends cannot have been memorized
+        "post_cutoff": {"cutoff": TRAINING_CUTOFF,
+                        "n": sum(1 for r in rows if _after_cutoff(r)),
+                        "resolved": sum(1 for r in resolved if _after_cutoff(r))},
     }
+
+
+# Nemotron 3 Super model card (NVIDIA NIM reference, "Data Freshness"): pre-training data to
+# June 2025, post-training data to February 2026.
+TRAINING_CUTOFF = "2026-03-01"
+
+
+def _after_cutoff(row: dict) -> bool:
+    return (row.get("fix_date") or row.get("published") or "") >= TRAINING_CUTOFF
 
 
 async def run_bench(role: str, limit: int | None, concurrency: int, budget: float,

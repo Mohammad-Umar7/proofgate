@@ -142,7 +142,7 @@ export interface FbMetrics {
   turns_mean: number;
   tests_mean: number;
   seconds_mean: number;
-  post_cutoff: { n: number; resolved: number };
+  post_cutoff: { cutoff?: string; n: number; resolved: number };
 }
 
 export interface FixBench {

@@ -183,7 +183,7 @@ export default function FixBenchPage() {
       {m && (
         <div className={styles.kpis}>
           <div className="panel"><b className={styles.green}>{m.resolved}<small>/{m.n}</small></b><span>real CVEs fixed, verified by curl&apos;s tests</span></div>
-          <div className="panel"><b>{m.post_cutoff.resolved}<small>/{m.post_cutoff.n}</small></b><span>of the CVEs published in 2026</span></div>
+          <div className="panel"><b>{m.post_cutoff.resolved}<small>/{m.post_cutoff.n}</small></b><span>fixed CVEs whose fix landed after Feb 2026, past Nemotron 3 Super&apos;s training data</span></div>
           <div className="panel"><b>{m.cost_per_resolved_usd != null ? `$${m.cost_per_resolved_usd.toFixed(3)}` : "n/a"}</b><span>Token Factory cost per verified fix</span></div>
           <div className="panel"><b>{Math.round(m.localized * 100)}%</b><span>edited the same file as the maintainers</span></div>
           <div className="panel"><b className={m.broke_other_tests ? styles.red : ""}>{m.broke_other_tests}</b><span>fixes that broke another test</span></div>
