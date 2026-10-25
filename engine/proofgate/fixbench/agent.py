@@ -31,9 +31,10 @@ from ..llm import Budget, BudgetExceeded, get_llm
 from ..repo import GitError, get_repo
 from .harness import TestRun, run_tests
 
-MAX_TURNS = 30
+MAX_TURNS = 40
 MAX_TESTS = 4
 MAX_READ = 250
+MIN_READ = 120  # small slices make models circle; always show a real region of the file
 EDITABLE = re.compile(r"^(lib|src|include)/[\w./-]+\.[ch]$")
 
 SYSTEM = """You are ProofGate's fix agent, a careful curl maintainer. You work in a sandboxed
@@ -188,7 +189,11 @@ class Workspace:
             return f"No such file: {file}" + (f". Did you mean {', '.join(near[:3])}?" if near else "")
         lines = text.splitlines()
         lo = max(1, _int(start, 1))
-        hi = min(len(lines), _int(end, lo + 199), lo + MAX_READ - 1)
+        hi = _int(end, lo + 199)
+        if hi - lo + 1 < MIN_READ:  # widen tiny reads around the requested range
+            lo = max(1, lo - (MIN_READ - (hi - lo + 1)) // 3)
+            hi = lo + MIN_READ - 1
+        hi = min(len(lines), hi, lo + MAX_READ - 1)
         body = "\n".join(f"{i:5d}  {lines[i - 1]}" for i in range(lo, hi + 1))
         return f"{file} lines {lo}-{hi} of {len(lines)}\n{body}"
 
@@ -344,7 +349,8 @@ def _trim(messages: list[dict], keep: int = 10) -> list[dict]:
             if i in old and len(m["content"]) > 1500 else m for i, m in enumerate(messages)]
 
 
-COMMIT_AFTER = 12  # replies without an edit before the agent is told to commit to a fix
+COMMIT_AFTER = 10  # replies without an edit before the agent is told to commit to a fix
+NUDGE_EVERY = 6    # ... and again every this many replies until it does
 NUDGE = ("You have explored for {n} replies without editing. Commit to the most likely root cause "
          "now: make the edit and call run_tests. The test output will tell you if you were wrong, "
          "and you can iterate.")
@@ -446,7 +452,7 @@ async def solve(row: dict, tests: list[str], *, role: str = "super", budget_usd:
         if result.tests_run >= MAX_TESTS:
             result.stop = "tests"
             break
-        if turn in (COMMIT_AFTER, COMMIT_AFTER + 6) and not ws.edited:
+        if turn >= COMMIT_AFTER and (turn - COMMIT_AFTER) % NUDGE_EVERY == 0 and not ws.edited:
             messages.append({"role": "user", "content": NUDGE.format(n=turn)})
         elif turn == MAX_TURNS - 3:
             messages.append({"role": "user", "content": "Three replies left: run_tests on your "
