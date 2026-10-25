@@ -184,7 +184,23 @@ def table() -> str:
             f"| `{data['model']}` | **{m['resolved']} / {m['n']}** ({m['resolved_rate'] * 100:.0f}%) "
             f"| {m['first_try']} | {m['localized'] * 100:.0f}% | {m['broke_other_tests']} "
             f"| ${m['cost_mean_usd']:.3f} | {per_fix} | {m['seconds_mean'] / 60:.1f} min |")
+    index = load_index()
+    valid = sum(1 for r in index if r.get("validated"))
+    lines.append(f"\n_{valid} of {len(index)} candidate CVEs validated (regression test fails on the "
+                 f"vulnerable commit and passes with curl's fix in the sandbox). Generated "
+                 f"{time.strftime('%Y-%m-%d')} by `proofgate fixbench table`._")
     return "\n".join(lines)
+
+
+def update_readme() -> None:
+    readme = RESULTS.parent.parent / "README.md"
+    text = readme.read_text(encoding="utf-8")
+    start, end = "<!-- FIXBENCH:START -->", "<!-- FIXBENCH:END -->"
+    if start not in text:
+        return
+    before, _, rest = text.partition(start)
+    _, _, after = rest.partition(end)
+    readme.write_text(f"{before}{start}\n{table()}\n{end}{after}", encoding="utf-8")
 
 
 def main(argv: list[str]) -> int:
@@ -216,5 +232,6 @@ def main(argv: list[str]) -> int:
                                         args.only))
         print(json.dumps(summary["metrics"], indent=1))
     else:
+        update_readme()
         print(table())
     return 0

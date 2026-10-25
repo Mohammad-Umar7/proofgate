@@ -9,7 +9,7 @@ at the exact version, before a volunteer maintainer spends an hour on it.
 
 Built on **NVIDIA Nemotron 3** via **Nebius Token Factory** · **Tavily** · **NVIDIA OpenShell**
 
-**[▶ Live demo: proofgate-ten.vercel.app](https://proofgate-ten.vercel.app)** · [Video](#video) · [SlopBench](#slopbench-measured-on-curls-own-record) · [Architecture](docs/ARCHITECTURE.md)
+**[▶ Live demo: proofgate-ten.vercel.app](https://proofgate-ten.vercel.app)** · [Video](#video) · [SlopBench](#slopbench-measured-on-curls-own-record) · [FixBench](#fixbench-nemotron-fixing-real-curl-cves-judged-by-curls-own-tests) · [Architecture](docs/ARCHITECTURE.md)
 
 ![ProofGate: reports stream through the gate; slop dissolves, duplicates merge, real bugs pass](docs/img/hero.jpg)
 
@@ -98,6 +98,49 @@ dismissed" is the number that must stay at or near zero: those were genuine vuln
 
 Reproduce: `proofgate bench build && proofgate bench fetch && proofgate bench run --config deterministic`
 (or `--config full` with Token Factory and Tavily keys).
+
+## FixBench: Nemotron fixing real curl CVEs, judged by curl's own tests
+
+Triage is half the job. For a real bug, ProofGate's fix agent writes the patch, and FixBench measures
+whether it actually works, the same way coding agents are measured on SWE-bench, but on security bugs
+in a 30-year-old C codebase.
+
+**Instances** ([`bench/fixbench.jsonl`](bench/fixbench.jsonl)) come from curl's official advisory feed:
+every CVE since 2023 whose fix commit added a regression test (29 candidates, most of them published
+in 2026). For each one:
+
+- **base** = the parent of curl's fix commit, i.e. the vulnerable code;
+- **fail-to-pass** = the regression test the curl maintainers wrote with the fix;
+- **pass-to-pass** = up to 30 existing tests in the same area (shared test keywords);
+- **gold patch** = the maintainers' fix, used only to validate the instance, **never shown to the agent**.
+
+An instance is kept only if, in our sandbox build, its regression test **fails on the vulnerable commit
+and passes with the maintainers' fix**. Dropped instances are listed with the reason, not hidden.
+
+**The agent** ([`engine/proofgate/fixbench/agent.py`](engine/proofgate/fixbench/agent.py)) is a
+native tool-calling loop on Token Factory. It gets the public advisory (fenced as untrusted text)
+and the vulnerable checkout:
+
+1. **Reproduce.** It runs the regression test on the untouched build and sees the real failure.
+2. **Explore.** `grep`, `ls`, `read`, tree-sitter `outline`/`function`, plus a deterministic first pass
+   that locates the identifiers the advisory names.
+3. **Edit.** Exact search/replace edits, limited to `.c/.h` files under `lib/`, `src/`, `include/`.
+   Edits to tests or build files are refused.
+4. **Build and test.** `run_tests` compiles curl (debug build, ccache) and runs curl's own `runtests.pl`
+   in a Docker sandbox with `--network none`, a read-only root, no capabilities and hard limits. The
+   regression test runs under valgrind, as in curl's CI, so memory errors fail it too. Failures
+   (compiler errors, protocol diffs, valgrind reports) go back to the model, and it iterates, up to
+   4 test runs and 30 replies.
+
+**Grading is strict.** A CVE counts as fixed only if a fresh build of the agent's final diff passes every
+fail-to-pass test **and** every pass-to-pass test.
+
+<!-- FIXBENCH:START -->
+<!-- FIXBENCH:END -->
+
+Every transcript, the agent's diff and the maintainers' diff are on the
+[FixBench page](https://proofgate-ten.vercel.app/fixbench/). Reproduce (Docker required):
+`proofgate fixbench validate && proofgate fixbench run --model super && proofgate fixbench table`.
 
 ## Built on Nebius + NVIDIA
 
