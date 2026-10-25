@@ -85,6 +85,17 @@ async def fetch_reports(rows: list[dict], delay: float = 1.0) -> dict[str, int]:
     return stats
 
 
+async def fetch_one(h1: str) -> dict | None:
+    """One disclosed report, live from HackerOne's public JSON (used by the console's link box)."""
+    async with httpx.AsyncClient(timeout=20, headers={"Accept": "application/json",
+                                                       "User-Agent": "ProofGate/0.1"}) as client:
+        resp = await client.get(f"https://hackerone.com/reports/{h1}.json")
+    if resp.status_code != 200:
+        return None
+    data = resp.json()
+    return data if data.get("vulnerability_information") else None
+
+
 def load_report(row: dict) -> dict | None:
     path = cache_dir() / f"{row['h1']}.json"
     return json.loads(path.read_text(encoding="utf-8")) if path.exists() else None

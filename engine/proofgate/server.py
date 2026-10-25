@@ -5,7 +5,9 @@ from __future__ import annotations
 import asyncio
 import json
 import os
+import re
 import time
+import uuid
 from collections import defaultdict, deque
 
 from fastapi import FastAPI, HTTPException, Request
@@ -14,6 +16,7 @@ from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 
 from . import __version__, store
+from .bench.dataset import fetch_one
 from .codeindex import get_index
 from .config import ENGINE_DIR, get_settings
 from .llm import get_llm
@@ -77,9 +80,16 @@ def _guard(request: Request) -> None:
     window.append(now)
 
 
+H1_LINK = re.compile(r"^https://hackerone\.com/reports/(\d+)/?$")
+
+
+def _local(request: Request) -> bool:
+    return bool(request.client and request.client.host in ("127.0.0.1", "::1"))
+
+
 class ReportIn(BaseModel):
-    title: str = Field(min_length=3, max_length=300)
-    body: str = Field(min_length=20, max_length=60_000)
+    title: str = Field(default="", max_length=300)
+    body: str = Field(default="", max_length=60_000)
     project: str = "curl"
     source_url: str | None = None
     attachments: list[dict] = Field(default_factory=list, max_length=4)
@@ -129,13 +139,25 @@ async def health() -> dict:
 @app.post("/api/runs")
 async def create_run(body: ReportIn, request: Request) -> dict:
     _guard(request)
+    title, text, url = body.title.strip(), body.body.strip(), (body.source_url or "").strip()
+    if not text and url:
+        # a disclosed HackerOne report: fetch its public text now (only this exact URL shape)
+        match = H1_LINK.match(url)
+        if not match:
+            raise HTTPException(422, "Only disclosed HackerOne links (https://hackerone.com/reports/<id>) can be fetched.")
+        data = await fetch_one(match.group(1))
+        if data is None:
+            raise HTTPException(404, "HackerOne has no public text for that report (not disclosed).")
+        title, text = title or (data.get("title") or f"HackerOne #{match.group(1)}"), data["vulnerability_information"]
+    if len(title) < 3 or len(text) < 20:
+        raise HTTPException(422, "Give a title and a report body, or a disclosed HackerOne link.")
     allowed = {"grounding", "routed", "prior_art_web"}
     options = Options(**{k: bool(v) for k, v in body.options.items() if k in allowed})
-    options.fix = False if request.client and request.client.host != "127.0.0.1" else options.fix
-    report = Report(title=body.title, body=body.body, project=body.project,
-                    source_url=body.source_url, attachments=body.attachments)
+    options.fix = options.fix and _local(request)
+    report = Report(title=title, body=text, project=body.project,
+                    source_url=url or None, attachments=body.attachments)
     run_id = await _launch(report, options, source="api")
-    return {"run_id": run_id}
+    return {"run_id": run_id, "title": title}
 
 
 @app.get("/api/runs")
@@ -182,6 +204,55 @@ async def stream(run_id: str) -> StreamingResponse:
 
     return StreamingResponse(gen(), media_type="text/event-stream",
                              headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})
+
+
+class FixIn(BaseModel):
+    cve: str = Field(min_length=5, max_length=40)
+    role: str = "super"
+    budget_usd: float = Field(default=0.6, gt=0, le=1.0)
+
+
+@app.post("/api/fix")
+async def fix_live(body: FixIn, request: Request) -> dict:
+    """Run the FixBench agent live on one CVE and stream every step. It builds and tests curl in
+    the Docker sandbox, so it only runs on the machine that hosts the engine."""
+    from .fixbench.dataset import load_index
+    from .fixbench.run import _step_dict, run_one
+
+    if not _local(request):
+        raise HTTPException(403, "Live fixes run only on the machine that hosts the sandbox.")
+    if body.role not in ("nano", "super", "ultra"):
+        raise HTTPException(422, "role must be nano, super or ultra")
+    row = next((r for r in load_index() if r["id"] == body.cve and r.get("validated")), None)
+    if row is None:
+        raise HTTPException(404, "not a validated FixBench instance")
+    _guard(request)
+    llm = get_llm()
+    await llm.resolve_models()
+    run_id = f"fix-{uuid.uuid4().hex[:12]}"
+    await hub.publish(run_id, {"kind": "start", "cve": row["id"], "role": body.role,
+                               "model": llm.model_for(body.role), "started": time.time(),
+                               "tests": row["fail_to_pass_valid"], "nearby": len(row["pass_to_pass"])})
+
+    async def emit(step) -> None:
+        await hub.publish(run_id, {"kind": "step", "step": _step_dict(step)})
+
+    async def status(text: str) -> None:
+        await hub.publish(run_id, {"kind": "status", "text": text, "t": time.time()})
+
+    async def job() -> None:
+        try:
+            out = await run_one(row, body.role, body.budget_usd, log=lambda *_: None, emit=emit,
+                                status=status)
+            _spend["usd"] += out["cost_usd"]
+            await hub.publish(run_id, {"kind": "result", "row": out})
+        except Exception as exc:  # noqa: BLE001 - surface it to the page
+            await hub.publish(run_id, {"kind": "error", "error": str(exc)[:300]})
+        finally:
+            await hub.finish(run_id)
+
+    asyncio.create_task(job())
+    return {"run_id": run_id}
 
 
 @app.get("/api/graph")
