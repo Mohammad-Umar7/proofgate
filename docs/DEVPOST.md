@@ -50,8 +50,23 @@ nodes, and a helix of 40,000 commits swept by the pickaxe search.
 ## SlopBench
 197 disclosed curl reports: every entry on curl's public slop list and every curl CVE whose
 advisory links the original HackerOne report, with leakage control so ProofGate cannot look up
-the answer. We report how much slop is closed with proof and, most importantly, how many real
-vulnerabilities would have been wrongly dismissed.
+the answer. Full live run (four Nemotron sizes + Tavily): **0 of 148 real CVEs wrongly dismissed**,
+$0.007 per report, $1.39 for the whole benchmark.
+
+## FixBench: an open model fixing real curl CVEs
+Triage is half the job. FixBench measures ProofGate's fix agent the way SWE-bench measures coding
+agents, on security bugs in curl. Instances come from curl's advisory feed: every CVE since 2023 whose
+fix commit added a regression test. 27 of 29 validate in our sandbox (the test fails on the vulnerable
+commit and passes with curl's fix); 20 of those were fixed after Nemotron 3 Super's training data ends.
+
+The agent is a native tool-calling loop on Nebius Token Factory. It gets the public advisory and the
+vulnerable checkout, never the maintainers' fix. It reproduces the failure, explores with grep, read
+and tree-sitter, edits C, then builds curl and runs curl's own test suite (regression test under
+valgrind, plus nearby tests, plus curl's checksrc style checker) in a Docker sandbox with no network,
+and iterates on what fails. A CVE counts as fixed only if a fresh build of the final patch passes
+every regression and nearby test. Result: **[X] of 27 CVEs fixed by Nemotron [model], [Y] of them past
+its training cutoff, $[Z] per verified fix.** Every transcript and patch is on the FixBench page,
+next to the patch curl actually shipped.
 
 ## Challenges
 Our first benchmark run dismissed 39 real CVEs. The causes were instructive: we were checking 2021
