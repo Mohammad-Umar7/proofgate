@@ -490,8 +490,12 @@ async def _execute(tool: str, args: dict, ws: Workspace, row: dict, tests: list[
             result.green_test, result.green_diff = run, ws.diff()
         if result.first_test_passed is None:
             result.first_test_passed = run.passed(tests)
-        verdict = ("ALL TESTS PASS" if run.passed(tests) else
-                   f"FAILING: {', '.join('test' + t for t in run.failing(tests)) or run.stage}")
+        if not run.build_ok:
+            verdict = ("PATCH DID NOT APPLY" if run.stage == "patch" else
+                       "BUILD FAILED" if run.stage == "build" else "SANDBOX ERROR")
+        else:
+            verdict = ("ALL TESTS PASS" if run.passed(tests) else
+                       f"FAILING: {', '.join('test' + t for t in run.failing(tests))}")
         left = MAX_TESTS - result.tests_run
         hint = ""
         if run.passed(tests) and run.style:

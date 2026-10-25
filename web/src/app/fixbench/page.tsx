@@ -46,7 +46,8 @@ function argLine(s: FbStep) {
 function testState(s: FbStep): "pass" | "fail" | null {
   if (s.tool === "reproduce") return "fail";
   if (s.tool !== "run_tests") return null;
-  return s.observation.startsWith("ALL TESTS PASS") ? "pass" : s.observation.startsWith("FAILING") ? "fail" : null;
+  if (s.observation.startsWith("ALL TESTS PASS")) return "pass";
+  return /^(FAILING|BUILD FAILED|PATCH DID NOT APPLY|SANDBOX ERROR)/.test(s.observation) ? "fail" : null;
 }
 
 function Transcript({ row }: { row: FbRow }) {
