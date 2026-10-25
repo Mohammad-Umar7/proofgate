@@ -2,8 +2,8 @@
 
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { loadFixBench, loadFixBenchDetail } from "@/lib/api";
-import type { FbDetail, FbRow, FbStep, FixBench } from "@/lib/types";
+import { API, health, loadFixBench, loadFixBenchDetail, stream, submitFix } from "@/lib/api";
+import type { FbDetail, FbRow, FbStep, FixBench, FixEvent } from "@/lib/types";
 import styles from "./fixbench.module.css";
 
 const ROLE_LABEL: Record<string, string> = {
@@ -16,6 +16,47 @@ const TOOL_CSS: Record<string, string> = {
   finish: "green", none: "",
 };
 const TOOL_LABEL: Record<string, string> = { run_tests: "build + test", reproduce: "reproduce", none: "thinking" };
+
+/** A live agent run streamed from the engine (POST /api/fix): same shape as a recorded row. */
+interface LiveFix {
+  cve: string; role: string; model: string; started: number; ended?: number;
+  steps: FbStep[]; status: string; result?: FbRow; error?: string; done: boolean;
+}
+
+function advance(l: LiveFix, e: FixEvent): LiveFix {
+  const now = Date.now() / 1000;
+  switch (e.kind) {
+    case "start": return { ...l, model: e.model, started: e.started };
+    case "status": return { ...l, status: e.text };
+    case "step": return { ...l, steps: [...l.steps, e.step] };
+    case "result": return { ...l, result: e.row, done: true, ended: now };
+    case "error": return { ...l, error: e.error, done: true, ended: now };
+  }
+}
+
+function LiveBar({ live }: { live: LiveFix }) {
+  const [now, setNow] = useState(() => Date.now() / 1000);
+  useEffect(() => {
+    if (live.done) return;
+    const id = setInterval(() => setNow(Date.now() / 1000), 250);
+    return () => clearInterval(id);
+  }, [live.done]);
+  const secs = Math.max(0, (live.ended ?? now) - live.started);
+  const cost = live.result?.cost_usd ?? live.steps.reduce((a, s) => a + (s.cost_usd || 0), 0);
+  const state = live.error ? "red" : !live.done ? "blue" : live.result?.resolved ? "green" : "red";
+  return (
+    <div className={styles.liveBar}>
+      <span className={`chip ${state} ${live.done ? "" : styles.pulse}`}><span className="dot" />
+        {live.error ? "live run failed" : !live.done ? "LIVE" : live.result?.resolved ? "live run: fixed" : "live run: not fixed"}
+      </span>
+      <span className="mono">{live.model || "…"}</span>
+      <span className={styles.dim}>started {new Date(live.started * 1000).toLocaleTimeString()}</span>
+      <b className="mono">{Math.floor(secs / 60)}:{String(Math.floor(secs % 60)).padStart(2, "0")}</b>
+      <b className="mono">${cost.toFixed(4)}</b>
+      <span className={styles.liveStatus}>{live.error ?? (live.done ? "Graded on a fresh build of the final patch." : live.status)}</span>
+    </div>
+  );
+}
 
 function DiffView({ diff, empty }: { diff: string; empty: string }) {
   if (!diff.trim()) return <div className={styles.none}>{empty}</div>;
@@ -83,11 +124,15 @@ function TestLights({ row }: { row: FbRow }) {
   );
 }
 
-function Transcript({ row }: { row: FbRow }) {
+function Transcript({ row, live }: { row: FbRow; live: boolean }) {
   const [shown, setShown] = useState(row.steps.length);
   const [open, setOpen] = useState<number | null>(null);
   const timer = useRef<ReturnType<typeof setInterval> | null>(null);
-  useEffect(() => { setShown(row.steps.length); setOpen(null); return () => { if (timer.current) clearInterval(timer.current); }; }, [row]);
+  const list = useRef<HTMLOListElement>(null);
+  useEffect(() => { setShown(row.steps.length); if (!live) setOpen(null); return () => { if (timer.current) clearInterval(timer.current); }; }, [row, live]);
+  useEffect(() => {
+    if (live && list.current) list.current.scrollTo({ top: list.current.scrollHeight, behavior: "smooth" });
+  }, [live, row.steps.length]);
   const play = () => {
     if (timer.current) clearInterval(timer.current);
     setShown(0);
@@ -102,10 +147,10 @@ function Transcript({ row }: { row: FbRow }) {
     <div>
       <div className={styles.tHead}>
         <h3>Agent transcript · {row.turns} replies · {row.tests_run} sandbox test run{row.tests_run === 1 ? "" : "s"}</h3>
-        <button className="btn" onClick={play}>Replay</button>
+        {!live && <button className="btn" onClick={play}>Replay</button>}
       </div>
-      {row.steps.length === 0 && <div className={styles.none}>Loading the transcript…</div>}
-      <ol className={styles.steps}>
+      {row.steps.length === 0 && <div className={styles.none}>{live ? "Reproducing the bug first: the regression test runs on the vulnerable build…" : "Loading the transcript…"}</div>}
+      <ol className={styles.steps} ref={list}>
         <AnimatePresence initial={false}>
           {row.steps.slice(0, shown).map((s, i) => {
             const st = testState(s);
@@ -119,7 +164,7 @@ function Transcript({ row }: { row: FbRow }) {
                   <span className={styles.t}>{s.t.toFixed(0)}s</span>
                 </button>
                 {s.thought && <p className={styles.thought}>{s.thought}</p>}
-                {(open === i || st) && <pre className={styles.obs}>{s.observation}</pre>}
+                {(open === i || st || (live && s.tool === "edit")) && <pre className={styles.obs}>{s.observation}</pre>}
               </motion.li>
             );
           })}
@@ -129,13 +174,17 @@ function Transcript({ row }: { row: FbRow }) {
   );
 }
 
-function Detail({ row }: { row: FbRow }) {
+function Detail({ row, live, onRun }: { row: FbRow; live: LiveFix | null; onRun?: () => void }) {
+  const pending = live !== null && !live.done;
   return (
     <motion.section key={row.id + row.role} className={`panel ${styles.detail}`} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
+      {live && <LiveBar live={live} />}
       <header className={styles.dHead}>
         <div>
           <div className={styles.dMeta}>
-            <span className={`chip ${row.resolved ? "green" : "red"}`}><span className="dot" />{row.resolved ? "fixed: curl's tests pass" : "not fixed"}</span>
+            {pending ? <span className="chip blue"><span className="dot" />agent working</span> : (
+              <span className={`chip ${row.resolved ? "green" : "red"}`}><span className="dot" />{row.resolved ? "fixed: curl's tests pass" : "not fixed"}</span>
+            )}
             {row.resolved && row.style_problems && (
               <span className={`chip ${row.style_problems.length ? "amber" : "green"}`}
                 title={row.style_problems.slice(0, 5).join("\n")}>
@@ -152,20 +201,25 @@ function Detail({ row }: { row: FbRow }) {
             <a href={`https://github.com/curl/curl/commit/${row.fix_commit}`} target="_blank" rel="noreferrer">curl&apos;s fix ↗</a>
             <a href={`https://github.com/curl/curl/tree/${row.base}`} target="_blank" rel="noreferrer">vulnerable tree {row.base.slice(0, 10)} ↗</a>
           </div>
+          {onRun && (
+            <button className={`btn btn-primary ${styles.runLive}`} onClick={onRun} disabled={pending}>
+              {pending ? "Running live…" : `Run live now: ${ROLE_LABEL[row.role] ?? row.role}`}
+            </button>
+          )}
         </div>
         <div className={styles.dStats}>
-          <div><b>{row.f2p_passed ? "pass" : "fail"}</b><span>regression test{row.fail_to_pass.length > 1 ? "s" : ""} {row.fail_to_pass.map((t) => `test${t}`).join(", ")}</span></div>
-          <div><b>{row.p2p_broken.length ? `${row.p2p_broken.length} broke` : `${row.pass_to_pass} ok`}</b><span>nearby tests still passing</span></div>
-          <div><b>${row.cost_usd.toFixed(3)}</b><span>{row.tokens.toLocaleString()} tokens on Token Factory</span></div>
-          <div><b>{(row.seconds / 60).toFixed(1)} min</b><span>wall time, builds included</span></div>
+          <div><b>{pending ? "…" : row.f2p_passed ? "pass" : "fail"}</b><span>regression test{row.fail_to_pass.length > 1 ? "s" : ""} {row.fail_to_pass.map((t) => `test${t}`).join(", ")}</span></div>
+          <div><b>{pending ? "…" : row.p2p_broken.length ? `${row.p2p_broken.length} broke` : `${row.pass_to_pass} ok`}</b><span>nearby tests still passing</span></div>
+          <div><b>${row.cost_usd.toFixed(pending ? 4 : 3)}</b><span>{pending ? "spent so far" : `${row.tokens.toLocaleString()} tokens`} on Token Factory</span></div>
+          <div><b>{pending ? `${row.turns} / 40` : `${(row.seconds / 60).toFixed(1)} min`}</b><span>{pending ? "model replies so far" : "wall time, builds included"}</span></div>
         </div>
       </header>
       <TestLights row={row} />
       <div className={styles.dGrid}>
-        <Transcript row={row} />
+        <Transcript row={row} live={live !== null} />
         <div>
           <h3>Patch written by {ROLE_LABEL[row.role] ?? row.model}</h3>
-          <DiffView diff={row.diff} empty="The agent did not produce a patch." />
+          <DiffView diff={row.diff} empty={pending ? "The final patch appears here when the agent finishes; its edits show in the transcript as they happen." : "The agent did not produce a patch."} />
           {row.summary_agent && <p className={styles.agentSum}>{row.summary_agent}</p>}
           <h3>The curl maintainers&apos; fix (never shown to the agent)</h3>
           <DiffView diff={row.gold_diff} empty="" />
@@ -180,6 +234,10 @@ export default function FixBenchPage() {
   const [role, setRole] = useState<string>("ultra");
   const [sel, setSel] = useState<string | null>(null);
   const [details, setDetails] = useState<Record<string, FbDetail>>({});
+  const [engine, setEngine] = useState<Record<string, unknown> | null>(null);
+  const [live, setLive] = useState<LiveFix | null>(null);
+  const stopLive = useRef<() => void>(() => {});
+  useEffect(() => { health().then(setEngine); return () => stopLive.current(); }, []);
   useEffect(() => {
     loadFixBench().then((d) => {
       setFb(d);
@@ -204,6 +262,29 @@ export default function FixBenchPage() {
   }, [model, details, role]);
   const cascade = fb?.cascade;
   const current = rows.find((r) => r.id === sel) ?? rows.find((r) => r.resolved) ?? rows[0];
+  const canRun = Boolean(API && engine?.token_factory && engine?.sandbox_ready);
+  const liveHere = live && current && live.cve === current.id && live.role === role ? live : null;
+  const shown: FbRow | undefined = !current || !liveHere ? current : liveHere.result ?? {
+    ...current, model: liveHere.model || current.model, resolved: false, f2p_passed: false, p2p_broken: [],
+    build_ok: false, style_problems: undefined, first_test_passed: null, stop: "", tokens: 0, seconds: 0,
+    tests_run: liveHere.steps.filter((s) => s.tool === "run_tests").length,
+    turns: liveHere.steps.reduce((a, s) => Math.max(a, s.turn), 0),
+    cost_usd: liveHere.steps.reduce((a, s) => a + (s.cost_usd || 0), 0),
+    files_edited: [], diff: "", summary_agent: "", steps: liveHere.steps,
+  };
+
+  async function runLive(row: FbRow) {
+    stopLive.current();
+    const base: LiveFix = { cve: row.id, role, model: "", started: Date.now() / 1000, steps: [], status: "Starting the run…", done: false };
+    setLive(base);
+    try {
+      const id = await submitFix(row.id, role);
+      stopLive.current = stream<FixEvent>(id, (e) => setLive((l) => (l ? advance(l, e) : l)),
+        () => setLive((l) => (l && !l.done ? { ...l, done: true, ended: Date.now() / 1000, error: "the stream closed before a result" } : l)));
+    } catch (e) {
+      setLive({ ...base, error: String((e as Error).message), done: true, ended: Date.now() / 1000 });
+    }
+  }
   const dropped = (fb?.instances ?? []).filter((i) => i.validated === false);
 
   return (
@@ -312,7 +393,7 @@ export default function FixBenchPage() {
         </section>
       )}
 
-      {current && <Detail row={current} />}
+      {shown && <Detail row={shown} live={liveHere} onRun={canRun && current ? () => runLive(current) : undefined} />}
 
       {dropped.length > 0 && (
         <section className={`panel ${styles.section}`}>
