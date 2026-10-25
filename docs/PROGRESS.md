@@ -1,6 +1,6 @@
 # Build progress (updated 2026-10-25)
 
-## Done and pushed (~185 commits on main)
+## Done and pushed (~215 commits on main)
 - **Engine** (`engine/proofgate`): nine-stage triage pipeline, FastAPI + SSE, CLI, SQLite store,
   arena, SlopBench, export for the static demo, draft-PR publisher, Docker + OpenShell sandboxes.
 - **FixBench** (`engine/proofgate/fixbench`): instances from curl's advisory feed, sandboxed
@@ -9,6 +9,12 @@
   Methodology: `docs/FIXBENCH.md`. CI reproduces one instance end to end on every push.
 - **Web** (`web/`): landing (gate hero, helix, FixBench headline), console, code galaxy, arena,
   SlopBench, FixBench (per-CVE replay, test lights, agent patch vs maintainers' patch). Vercel.
+- **Live mode** (engine + site with `NEXT_PUBLIC_API_URL`): the console takes a disclosed HackerOne
+  link (fetched at run time); FixBench has Run live (localhost only), streaming steps, test lights,
+  live clock and spend. The galaxy now rotates freely over the poles and frames itself beside panels.
+- **Engine fixes from live runs (Oct 25):** Nemotron 3 ignores `/no_think`; reasoning is now switched
+  with `chat_template_kwargs.enable_thinking` (live triage 38-60 s -> 17-22 s); failed JSON attempts
+  now count in the run's cost; the adversarial challenge runs without reasoning so it completes.
 
 ## Results (all live on Token Factory)
 - SlopBench, 197 curl reports: full pipeline 0/148 CVEs wrongly dismissed, $0.007/report, $1.39 total.
@@ -16,13 +22,16 @@
 - FixBench, 27 validated curl CVEs (2 dropped, listed): Super 8/27 ($0.62/fix), Ultra 9/27
   ($1.98/fix), Super-then-Ultra cascade 11/27 (41%, $1.62/fix), 0 fixes broke a nearby test.
 - Nano 2/27 ($0.05 per CVE). All three sizes are on the site and in the README.
-- Demo film: `video/film` (HyperFrames), 1:56, rendered and mastered to -15 LUFS at
-  `video/film/renders/ProofGate-demo.mp4` (git-ignored; rebuild steps in `docs/VIDEO.md`).
-  Not yet uploaded to YouTube.
+- Live runs filmed Oct 25 (`video/runs/`): HackerOne #3418528 UNGROUNDED in 21.6 s, $0.0084;
+  CVE-2026-6276 fixed live by Nemotron 3 Super twice (61 s / $0.034, 68 s / $0.043).
+- Demo film v2: `video/film` (HyperFrames), 2:46, built from the live runs, with subtitles, highlights
+  and the engine log; rendered and mastered to `video/film/renders/ProofGate-demo.mp4` (git-ignored;
+  rebuild steps in `docs/VIDEO.md`). Not yet uploaded to YouTube.
+- SlopBench predates the reasoning-switch fix; a rerun (about $1.6) is pending a decision.
 
 ## Credits
-Token Factory: $25 promo redeemed 2026-10-25 (balance read $9.19 after the FixBench runs; usage posts
-with a delay). FixBench Ultra is the expensive part (~$0.66/CVE); Super ~$0.18/CVE, Nano ~$0.04/CVE.
+Token Factory: $25 promo redeemed 2026-10-25; balance read $3.70 on Oct 25 afternoon (usage posts
+with a delay). The public site makes no model calls, so judging costs nothing. FixBench Ultra is the expensive part (~$0.66/CVE); Super ~$0.18/CVE, Nano ~$0.04/CVE.
 
 ## Waiting on the team
 1. Record the video (`docs/VIDEO.md`), personalize the ✍️ items in `docs/FEEDBACK.md`.
