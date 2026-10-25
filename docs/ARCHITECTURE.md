@@ -42,6 +42,33 @@ flowchart LR
 Model ids are resolved at startup from `GET /v1/models` (override with `PG_MODEL_*`). Every call is
 recorded with tokens, latency and cost; `PG_MAX_COST_PER_REPORT` aborts a run that exceeds its budget.
 
+## FixBench: the fix agent and how it is measured
+
+```mermaid
+flowchart LR
+  ADV[curl advisory feed<br/>vuln.json] --> IDX[instances<br/>fix commit adds a test]
+  IDX --> VAL{validate in sandbox<br/>test fails on base,<br/>passes with curl's fix?}
+  VAL -->|no| DROP[listed as dropped,<br/>with the reason]
+  VAL -->|yes| REP[reproduce:<br/>run the test on base]
+  REP --> LOOP[Nemotron tool loop on Token Factory<br/>grep · ls · read · outline · function · edit]
+  LOOP --> RT[run_tests:<br/>build + runtests.pl,<br/>--network none]
+  RT -->|fail: compiler errors,<br/>protocol diff, valgrind| LOOP
+  RT -->|pass| GR[grade: fresh build,<br/>fail-to-pass + pass-to-pass]
+```
+
+- **Harness** (`fixbench/harness.py`). One toolchain image (`sandbox/Dockerfile.curl-test`, with
+  stunnel, sshd and valgrind for curl's own test servers). Every run unpacks a `git archive` of the
+  base commit into a tmpfs, applies the regression test and the candidate patch, builds with a shared
+  ccache volume and runs `runtests.pl`. Autotools output is cached per instance (keyed by image and
+  configure flags), so a build-and-test cycle takes about a minute. The container has no network,
+  no capabilities and a read-only root; the test servers bind to loopback.
+- **Agent** (`fixbench/agent.py`). Native function calling on Token Factory, so the model can never
+  invent a tool result. It works on an in-memory overlay of the vulnerable tree, can only edit
+  `.c/.h` files under `lib/`, `src/`, `include/`, and has a budget of 30 replies, 4 test runs and a
+  dollar cap. A deterministic first pass gives it the files where the advisory's identifiers occur.
+- **Grading** (`fixbench/run.py`). Resolved only if a fresh build of the final diff passes every
+  fail-to-pass and every pass-to-pass test. The maintainers' fix is used only to validate instances.
+
 ## Evidence model
 
 Each claim produces `Evidence(status, method, deterministic, detail, file, line, url, data)`:
