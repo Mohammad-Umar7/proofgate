@@ -27,6 +27,14 @@
 
 .section { padding: 24px; margin-top: 16px; }
 .section h2 { font-size: 18px; margin: 0 0 14px; letter-spacing: -0.01em; }
+.cascade { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: 24px; align-items: center; }
+.cascade h2 { font-size: 20px; }
+.cascadeK { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.cascadeK > div { border: 1px solid var(--line); border-radius: var(--radius-sm); padding: 12px; display: flex; flex-direction: column; gap: 2px; }
+.cascadeK b { font-family: var(--font-mono); font-size: 26px; }
+.cascadeK span { color: var(--muted); font-size: 12px; }
+@media (max-width: 960px) { .cascade { grid-template-columns: 1fr; } }
+
 .table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
 .table th { text-align: left; font-weight: 500; color: var(--muted); font-size: 12px; padding: 8px 10px; border-bottom: 1px solid var(--line-2); }
 .table td { padding: 10px; border-bottom: 1px solid var(--line); font-family: var(--font-mono); font-size: 12.5px; vertical-align: top; }

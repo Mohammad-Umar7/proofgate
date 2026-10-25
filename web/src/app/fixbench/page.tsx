@@ -2,8 +2,8 @@
 
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { loadFixBench } from "@/lib/api";
-import type { FbRow, FbStep, FixBench } from "@/lib/types";
+import { loadFixBench, loadFixBenchDetail } from "@/lib/api";
+import type { FbDetail, FbRow, FbStep, FixBench } from "@/lib/types";
 import styles from "./fixbench.module.css";
 
 const ROLE_LABEL: Record<string, string> = {
@@ -104,6 +104,7 @@ function Transcript({ row }: { row: FbRow }) {
         <h3>Agent transcript · {row.turns} replies · {row.tests_run} sandbox test run{row.tests_run === 1 ? "" : "s"}</h3>
         <button className="btn" onClick={play}>Replay</button>
       </div>
+      {row.steps.length === 0 && <div className={styles.none}>Loading the transcript…</div>}
       <ol className={styles.steps}>
         <AnimatePresence initial={false}>
           {row.steps.slice(0, shown).map((s, i) => {
@@ -176,13 +177,32 @@ function Detail({ row }: { row: FbRow }) {
 
 export default function FixBenchPage() {
   const [fb, setFb] = useState<FixBench | null>(null);
-  const [role, setRole] = useState<string>("super");
+  const [role, setRole] = useState<string>("ultra");
   const [sel, setSel] = useState<string | null>(null);
-  useEffect(() => { loadFixBench().then((d) => { setFb(d); if (d && !d.models.super) setRole(Object.keys(d.models)[0] ?? "super"); }).catch(() => {}); }, []);
+  const [details, setDetails] = useState<Record<string, FbDetail>>({});
+  useEffect(() => {
+    loadFixBench().then((d) => {
+      setFb(d);
+      // open on the model that fixed the most CVEs
+      const best = d ? Object.entries(d.models).sort((a, b) => b[1].metrics.resolved - a[1].metrics.resolved)[0] : null;
+      if (best) setRole(best[0]);
+    }).catch(() => {});
+  }, []);
+  useEffect(() => {
+    if (!fb?.models[role] || details[role]) return;
+    loadFixBenchDetail(role).then((d) => { if (d) setDetails((prev) => ({ ...prev, [role]: d })); }).catch(() => {});
+  }, [fb, role, details]);
 
   const model = fb?.models[role];
   const m = model?.metrics;
-  const rows = useMemo(() => model?.rows ?? [], [model]);
+  const rows = useMemo(() => {
+    const byId = new Map((details[role]?.rows ?? []).map((r) => [r.id, r]));
+    return (model?.rows ?? []).map((r): FbRow => {
+      const d = byId.get(r.id);
+      return { ...r, steps: d?.steps ?? [], diff: d?.diff ?? "", gold_diff: d?.gold_diff ?? "", summary_agent: d?.summary_agent ?? "" };
+    });
+  }, [model, details, role]);
+  const cascade = fb?.cascade;
   const current = rows.find((r) => r.id === sel) ?? rows.find((r) => r.resolved) ?? rows[0];
   const dropped = (fb?.instances ?? []).filter((i) => i.validated === false);
 
@@ -224,16 +244,36 @@ export default function FixBenchPage() {
       {m && (
         <div className={styles.kpis}>
           <div className="panel"><b className={styles.green}>{m.resolved}<small>/{m.n}</small></b><span>real CVEs fixed, verified by curl&apos;s tests</span></div>
-          <div className="panel"><b>{m.post_cutoff.resolved}<small>/{m.post_cutoff.n}</small></b><span>fixed CVEs whose fix landed after Feb 2026, past Nemotron 3 Super&apos;s training data</span></div>
+          <div className="panel"><b>{m.post_cutoff.resolved}<small>/{m.post_cutoff.n}</small></b><span>of the CVEs fixed upstream after Feb 2026, past Nemotron 3 Super&apos;s documented training data</span></div>
           <div className="panel"><b>{m.cost_per_resolved_usd != null ? `$${m.cost_per_resolved_usd.toFixed(3)}` : "n/a"}</b><span>Token Factory cost per verified fix</span></div>
           <div className="panel"><b>{Math.round(m.localized * 100)}%</b><span>edited the same file as the maintainers</span></div>
           <div className="panel"><b className={m.broke_other_tests ? styles.red : ""}>{m.broke_other_tests}</b><span>fixes that broke another test</span></div>
         </div>
       )}
 
+      {cascade && (
+        <section className={`panel ${styles.section} ${styles.cascade}`}>
+          <div>
+            <p className="eyebrow">Route by job</p>
+            <h2>Super first, Ultra only when Super fails: <span className={styles.green}>{cascade.resolved} of {cascade.n}</span> fixed</h2>
+            <p className={styles.note} style={{ marginTop: 0 }}>
+              The two models fix different CVEs. Running Nemotron 3 Super on every CVE and sending only its {cascade.escalated} failures
+              to Nemotron 3 Ultra fixes {cascade.resolved} ({Math.round(cascade.resolved_rate * 100)}%) for
+              ${cascade.cost_total_usd.toFixed(2)} in total, {cascade.cost_per_resolved_usd != null ? `$${cascade.cost_per_resolved_usd.toFixed(2)}` : "n/a"} per
+              verified fix. Computed from the two full runs above; no extra calls.
+            </p>
+          </div>
+          <div className={styles.cascadeK}>
+            <div><b>{Object.values(cascade.fixed_by).filter((v) => v === "both").length}</b><span>fixed by both</span></div>
+            <div><b>{Object.values(cascade.fixed_by).filter((v) => v === cascade.roles[0]).length}</b><span>only Super</span></div>
+            <div><b>{Object.values(cascade.fixed_by).filter((v) => v === cascade.roles[1]).length}</b><span>only Ultra</span></div>
+          </div>
+        </section>
+      )}
+
       {fb && Object.keys(fb.models).length > 1 && (
         <section className={`panel ${styles.section}`}>
-          <h2>Same agent, three Nemotron sizes</h2>
+          <h2>Same agent, {Object.keys(fb.models).length} Nemotron sizes</h2>
           <table className={styles.table}>
             <thead><tr><th>Model</th><th>Fixed</th><th>Style-clean fixes</th><th>Right file</th><th>Passed on 1st test run</th><th>$ / CVE</th><th>$ / fix</th><th>Replies</th><th>Test runs</th></tr></thead>
             <tbody>
@@ -263,7 +303,8 @@ export default function FixBenchPage() {
               <span className={styles.tId}>{r.id}</span>
               <span className={styles.tSum}>{r.summary}</span>
               <span className={styles.tFoot}>
-                <span>{r.resolved ? "fixed" : r.f2p_passed ? "broke a test" : r.build_ok ? "test still fails" : "no build"}</span>
+                <span>{r.resolved ? "fixed" : !r.files_edited.length ? "no patch" : r.f2p_passed ? "broke a test"
+                  : r.build_ok ? "test still fails" : "does not build"}</span>
                 <span>{r.tests_run} runs · ${r.cost_usd.toFixed(3)}</span>
               </span>
             </button>

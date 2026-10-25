@@ -147,7 +147,27 @@ export interface FbMetrics {
   post_cutoff: { cutoff?: string; n: number; resolved: number };
 }
 
+export interface FbCascade {
+  models: string[];
+  roles: string[];
+  n: number;
+  resolved: number;
+  resolved_rate: number;
+  escalated: number;
+  cost_total_usd: number;
+  cost_per_resolved_usd: number | null;
+  post_cutoff: { cutoff?: string; n: number; resolved: number };
+  fixed_by: Record<string, string>;
+}
+
+/** Per-model transcripts and patches, loaded only on the FixBench page. */
+export interface FbDetail {
+  role: string;
+  rows: Pick<FbRow, "id" | "steps" | "diff" | "gold_diff" | "summary_agent">[];
+}
+
 export interface FixBench {
+  cascade?: FbCascade | null;
   models: Record<string, { role: string; model: string; generated: string; metrics: FbMetrics; rows: FbRow[] }>;
   instances: {
     id: string; summary: string; severity?: string | null; published?: string | null; fix_commit: string;
