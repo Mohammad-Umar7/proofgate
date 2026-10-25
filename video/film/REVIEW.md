@@ -18,7 +18,9 @@
 - `hyperframes check`: passes, no errors. Snapshots and the review sheets (beats, seams) were read.
 - Word timings come from a Parakeet transcript of the final narration; numbers land on their words
   (49 at 8.4 s, 0 at 56.7 s, 11 at 99.4 s).
-- The sound was measured, not heard: nobody has listened to the mix.
+- The sound was measured, not heard: nobody has listened to the mix. First render measured -21.7 LUFS
+  integrated; the narration was loudness-normalized (two-pass loudnorm, -15.5 LUFS, true peak -1.5 dBTP)
+  and the effects raised 6 dB to keep their balance, then re-rendered.
 
 ## Weakest shot
 s09 (79.7-87.7 s): the test lights are the hero but share the frame with the CVE header and cost
