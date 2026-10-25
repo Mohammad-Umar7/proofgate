@@ -68,6 +68,10 @@ flowchart LR
   dollar cap. A deterministic first pass gives it the files where the advisory's identifiers occur.
 - **Grading** (`fixbench/run.py`). Resolved only if a fresh build of the final diff passes every
   fail-to-pass and every pass-to-pass test. The maintainers' fix is used only to validate instances.
+- **Relation to stage 8.** The triage pipeline's fix stage (`stages/fix.py`) is the earlier
+  single-call patch loop, driven by the reporter's reproduction. The FixBench agent is its
+  tool-calling successor; moving stage 8 onto it (with the reproduction as the failing test) is the
+  next step.
 
 ## Evidence model
 
