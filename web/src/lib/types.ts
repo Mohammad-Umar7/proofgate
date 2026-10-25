@@ -129,6 +129,14 @@ export interface FbRow {
   steps: FbStep[];
 }
 
+/** Events of a live FixBench run, streamed by POST /api/fix. */
+export type FixEvent =
+  | { kind: "start"; cve: string; role: string; model: string; started: number; tests: string[]; nearby: number }
+  | { kind: "status"; text: string; t: number }
+  | { kind: "step"; step: FbStep }
+  | { kind: "result"; row: FbRow }
+  | { kind: "error"; error: string };
+
 export interface FbMetrics {
   n: number;
   resolved: number;

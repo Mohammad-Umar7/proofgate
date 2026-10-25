@@ -45,17 +45,29 @@ export async function loadHistory(): Promise<{ months: [string, number][]; total
   return res.json();
 }
 
-export async function submit(title: string, body: string): Promise<string> {
+/** Submit a report: either title + body, or a disclosed HackerOne link the engine fetches itself. */
+export async function submit(title: string, body: string, sourceUrl?: string): Promise<{ run_id: string; title: string }> {
   const res = await fetch(`${API}/api/runs`, {
     method: "POST",
     headers: { "content-type": "application/json" },
-    body: JSON.stringify({ title, body }),
+    body: JSON.stringify({ title, body, source_url: sourceUrl || null }),
+  });
+  if (!res.ok) throw new Error((await res.json().catch(() => ({}))).detail || res.statusText);
+  return res.json();
+}
+
+/** Start a live FixBench agent run (only accepted by an engine on this machine). */
+export async function submitFix(cve: string, role: string): Promise<string> {
+  const res = await fetch(`${API}/api/fix`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ cve, role }),
   });
   if (!res.ok) throw new Error((await res.json().catch(() => ({}))).detail || res.statusText);
   return (await res.json()).run_id;
 }
 
-export function stream(runId: string, onEvent: (e: StageEvent) => void, onEnd: () => void): () => void {
+export function stream<T = StageEvent>(runId: string, onEvent: (e: T) => void, onEnd: () => void): () => void {
   const source = new EventSource(`${API}/api/runs/${runId}/events`);
   source.onmessage = (msg) => onEvent(JSON.parse(msg.data));
   source.addEventListener("end", () => {
