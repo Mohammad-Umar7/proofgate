@@ -74,7 +74,7 @@ export function Welcome({ onTour, onClose }: { onTour: () => void; onClose: () =
           browser. Nothing to install, no sign-in, no keys.
         </p>
         <div className={styles.welcomeActions}>
-          <button ref={primary} className="btn btn-primary" onClick={onTour}>Take the 2-minute tour →</button>
+          <button ref={primary} className={`btn btn-primary ${styles.glow}`} onClick={onTour}>Take the 2-minute tour →</button>
           <a className="btn" href={VIDEO_URL} target="_blank" rel="noreferrer">Watch the 2:46 video ↗</a>
           <button className={styles.textBtn} onClick={onClose}>Explore on my own</button>
         </div>
