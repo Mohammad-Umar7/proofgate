@@ -119,6 +119,12 @@ export default function ConsolePage() {
           <span className={`chip ${live ? "green" : ""}`}><span className="dot" />
             {live ? `Live · Token Factory ${live.token_factory ? "connected" : "off"}` : "Replay of recorded runs"}
           </span>
+          {!live && (
+            <a className={styles.modeWhy} href="https://github.com/Mohammad-Umar7/proofgate#live-mode" target="_blank" rel="noreferrer"
+              title="Each card replays a real run recorded on NVIDIA Nemotron through Nebius Token Factory, with its real timings and spend. With the engine running, this console triages a link you paste, live.">
+              Why a replay?
+            </a>
+          )}
         </div>
       </div>
 
