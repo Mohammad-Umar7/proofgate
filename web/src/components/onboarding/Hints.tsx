@@ -16,7 +16,7 @@ const hinted = (): string[] => {
 
 /** Shown when a page has no hint of its own, or on request from the Guide on such a page. */
 const GENERAL: Hint = {
-  text: "Not sure where to look? The guided tour walks through every page in about two minutes.",
+  text: "Not sure where to look? The guided tour walks through every page in about three minutes.",
   actions: [{ label: "Take the tour", run: () => command("tour") }],
 };
 

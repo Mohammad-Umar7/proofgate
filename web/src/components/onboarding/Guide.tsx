@@ -52,7 +52,7 @@ export function Guide({ offer = true }: { offer?: boolean }) {
             </button>
           )}
           <button role="menuitem" onClick={run("tour")}>
-            <b>{paused !== null ? "Restart the tour" : "Take the guided tour"}</b><span>every page in about two minutes</span>
+            <b>{paused !== null ? "Restart the tour" : "Take the guided tour"}</b><span>every page in about three minutes</span>
           </button>
           <button role="menuitem" onClick={run("hint")}>
             <b>Tips for this page</b><span>what to try here</span>
