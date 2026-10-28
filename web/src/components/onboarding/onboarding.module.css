@@ -63,3 +63,56 @@
   .placeGo { grid-row: 1 / 3; grid-column: 3; }
   .textBtn { margin-left: 0; }
 }
+
+/* ---------- guided tour ---------- */
+/* nothing here blocks the page except the card itself: the visitor can click what it points at */
+.tour { position: fixed; inset: 0; z-index: 300; pointer-events: none; }
+.dim { position: absolute; inset: 0; background: rgba(3, 4, 8, 0.55); animation: fadeIn 0.25s ease both; }
+.hole {
+  position: absolute; border-radius: 14px;
+  box-shadow: 0 0 0 2px rgba(61, 220, 151, 0.85), 0 0 0 6px rgba(61, 220, 151, 0.18), 0 0 0 200vmax rgba(3, 4, 8, 0.62);
+  transition: top 0.35s cubic-bezier(0.2, 0.8, 0.2, 1), left 0.35s cubic-bezier(0.2, 0.8, 0.2, 1),
+    width 0.35s cubic-bezier(0.2, 0.8, 0.2, 1), height 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.hole::after {
+  content: ""; position: absolute; inset: -2px; border-radius: inherit; border: 2px solid var(--green);
+  animation: ring 1.8s ease-out infinite;
+}
+@keyframes ring { 0% { opacity: 0.8; transform: scale(1); } 100% { opacity: 0; transform: scale(1.04); } }
+
+.card {
+  position: absolute; width: min(380px, calc(100vw - 24px)); pointer-events: auto;
+  padding: 16px 18px 12px; border-radius: 14px;
+  background: linear-gradient(180deg, rgba(22, 26, 37, 0.98), rgba(13, 15, 22, 0.98));
+  border: 1px solid var(--line-2); box-shadow: 0 30px 80px -20px rgba(0, 0, 0, 0.9);
+  transition: top 0.35s cubic-bezier(0.2, 0.8, 0.2, 1), left 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+  animation: rise 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.cardHead { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.count { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--green); }
+.skip {
+  background: none; border: 0; padding: 4px 0; color: var(--muted); font: inherit; font-size: 12.5px; cursor: pointer;
+}
+.skip:hover { color: var(--text); }
+.cardTitle { margin: 8px 0 6px; font-size: 17px; line-height: 1.25; letter-spacing: -0.01em; }
+.cardBody { margin: 0; color: #b6bccb; font-size: 13.5px; line-height: 1.55; }
+.waiting {
+  display: flex; gap: 8px; align-items: center; margin: 10px 0 0; padding: 8px 10px; border-radius: 9px;
+  font-size: 12.5px; color: var(--amber); background: var(--amber-soft);
+}
+.waiting i {
+  flex: none; width: 12px; height: 12px; border-radius: 50%;
+  border: 2px solid rgba(255, 181, 71, 0.3); border-top-color: var(--amber); animation: spin 0.9s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.progress { height: 3px; margin: 14px 0 12px; border-radius: 3px; background: rgba(255, 255, 255, 0.07); overflow: hidden; }
+.progress i { display: block; height: 100%; background: var(--green); transition: width 0.35s ease; }
+.cardActions { display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap; }
+.cardActions .btn { height: 38px; padding: 0 14px; font-size: 13.5px; }
+.keys { margin: 8px 0 0; text-align: right; font-size: 11px; color: var(--dim); font-family: var(--font-mono); }
+
+/* phones: the card docks to the bottom of the screen as a sheet */
+@media (max-width: 640px) {
+  .card { top: auto !important; left: 8px !important; right: 8px; bottom: 8px; width: auto; }
+  .keys { display: none; }
+}
