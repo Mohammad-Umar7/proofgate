@@ -6,7 +6,7 @@ import { Bloom, EffectComposer, Vignette } from "@react-three/postprocessing";
 import { type RefObject, useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 import type { GraphData } from "@/lib/types";
-import { Ghost } from "./Ghost";
+import { Ghost, LABEL_Z } from "./Ghost";
 import { nodeColor } from "./palette";
 import { PathBeam } from "./PathBeam";
 
@@ -377,7 +377,7 @@ function Scene({ graph, focus, autoRotate, compact, insetLeft }: {
           <Ghost key={`${g.name}:${k}`} name={g.name} position={g.pos} anchor={g.anchor} near={g.near} note={g.note} />
         ))}
         {hovered && (
-          <Html position={hovered.pos} center style={{ pointerEvents: "none" }}>
+          <Html position={hovered.pos} center zIndexRange={LABEL_Z} style={{ pointerEvents: "none" }}>
             <div className="galaxy-tip">
               <b>{hovered.name}()</b>
               <span>{hovered.file}:{hovered.line}</span>
@@ -385,7 +385,7 @@ function Scene({ graph, focus, autoRotate, compact, insetLeft }: {
           </Html>
         )}
         {pathIdx.length > 0 && pathIdx.map((i, k) => (
-          <Html key={`lbl-${i}`} position={graph.nodes[i].pos} style={{ pointerEvents: "none" }}>
+          <Html key={`lbl-${i}`} position={graph.nodes[i].pos} zIndexRange={LABEL_Z} style={{ pointerEvents: "none" }}>
             <div className={`galaxy-label ${k === pathIdx.length - 1 ? "target" : ""}`}>{graph.nodes[i].name}</div>
           </Html>
         ))}

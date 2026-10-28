@@ -5,6 +5,10 @@ import { useFrame } from "@react-three/fiber";
 import { useMemo, useRef } from "react";
 import * as THREE from "three";
 
+/** Labels over the galaxy stay under the nav (z 50) and the onboarding layer above it: drei's
+ *  default stacks them over everything on the page, the tour card included. */
+export const LABEL_Z: [number, number] = [40, 0];
+
 /** A function the report cites that does not exist: a flickering wireframe adrift outside the
  *  galaxy, connected to nothing. A dashed tether points at the real name it imitates. */
 export function Ghost({ name, position, anchor, near, note = "never existed in curl" }: {
@@ -72,7 +76,7 @@ export function Ghost({ name, position, anchor, near, note = "never existed in c
           <meshBasicMaterial color={[1.6, 0.35, 0.42]} wireframe toneMapped={false} />
         </mesh>
       </group>
-      <Html position={[position.x, position.y + 6.5, position.z]} center style={{ pointerEvents: "none" }}>
+      <Html position={[position.x, position.y + 6.5, position.z]} center zIndexRange={LABEL_Z} style={{ pointerEvents: "none" }}>
         <div className="galaxy-ghost">
           <b>{name}()</b>
           <span>{note}</span>
