@@ -124,7 +124,8 @@ export default function ConsolePage() {
 
       <div className={styles.picker} data-tour="picker">
         {API && (
-          <button className={`${styles.pick} ${active === "live" ? styles.pickOn : ""}`} onClick={() => setActive("live")}>
+          <button className={`${styles.pick} ${active === "live" ? styles.pickOn : ""}`} onClick={() => setActive("live")}
+            aria-pressed={active === "live"}>
             <span className={styles.pickLabel}>Live · your report</span>
             <b>Paste a link or a report and run the real pipeline</b>
           </button>
@@ -132,7 +133,8 @@ export default function ConsolePage() {
         {!replays.length && (failed.replays ? <LoadError what="The recorded runs" className={styles.pickerStatus} />
           : <Loading label="Loading recorded runs…" className={styles.pickerStatus} />)}
         {replays.map((r) => (
-          <button key={r.id} className={`${styles.pick} ${active === r.id ? styles.pickOn : ""}`} onClick={() => start(r)}>
+          <button key={r.id} className={`${styles.pick} ${active === r.id ? styles.pickOn : ""}`} onClick={() => start(r)}
+            aria-pressed={active === r.id}>
             <span className={styles.pickLabel}>{r.label}</span>
             <b>{r.report.title}</b>
           </button>
