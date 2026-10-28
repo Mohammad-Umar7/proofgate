@@ -65,7 +65,7 @@ export default function BenchPage() {
       </div>}
 
       {main && (
-        <div className={styles.kpis}>
+        <div className={styles.kpis} data-tour="bench-kpis">
           <div className="panel"><b>{Math.round(main.slop_closed * 100)}%</b><span>of known slop closed with evidence</span></div>
           <div className="panel"><b className={main.valid_dismissed ? styles.red : styles.green}>{main.valid_dismissed}</b><span>real CVEs wrongly dismissed (of {main.n_valid})</span></div>
           <div className="panel"><b>{Math.round(main.agreement * 100)}%</b><span>agreement with the curl team&apos;s outcome</span></div>
@@ -117,7 +117,7 @@ export default function BenchPage() {
       )}
 
       {bench?.rows?.length ? (
-        <section className={`panel ${styles.section}`}>
+        <section className={`panel ${styles.section}`} data-tour="bench-rows">
           <div className={styles.rowsHead}>
             <h2>Every report ({CONFIG_LABEL[bench.rows_config] ?? bench.rows_config})</h2>
             <div className={styles.filters}>
