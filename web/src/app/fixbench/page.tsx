@@ -2,6 +2,7 @@
 
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { LoadError, Loading } from "@/components/Status";
 import { API, health, loadFixBench, loadFixBenchDetail, stream, submitFix } from "@/lib/api";
 import type { FbDetail, FbRow, FbStep, FixBench, FixEvent } from "@/lib/types";
 import styles from "./fixbench.module.css";
@@ -236,6 +237,7 @@ export default function FixBenchPage() {
   const [details, setDetails] = useState<Record<string, FbDetail>>({});
   const [engine, setEngine] = useState<Record<string, unknown> | null>(null);
   const [live, setLive] = useState<LiveFix | null>(null);
+  const [failed, setFailed] = useState(false);
   const stopLive = useRef<() => void>(() => {});
   useEffect(() => { health().then(setEngine); return () => stopLive.current(); }, []);
   useEffect(() => {
@@ -244,7 +246,8 @@ export default function FixBenchPage() {
       // open on the model that fixed the most CVEs
       const best = d ? Object.entries(d.models).sort((a, b) => b[1].metrics.resolved - a[1].metrics.resolved)[0] : null;
       if (best) setRole(best[0]);
-    }).catch(() => {});
+      else setFailed(true);
+    }).catch(() => setFailed(true));
   }, []);
   useEffect(() => {
     if (!fb?.models[role] || details[role]) return;
@@ -312,7 +315,9 @@ export default function FixBenchPage() {
         ))}
       </div>
 
-      {!fb && <div className={`panel ${styles.empty}`}>FixBench results are being generated.</div>}
+      {!fb && <div className={`panel ${styles.empty}`}>
+        {failed ? <LoadError what="The FixBench results" /> : <Loading label="Loading 27 CVE runs per model…" />}
+      </div>}
 
       {fb && (
         <div className={styles.tabs}>
