@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { EVENT, KEYS, type OnboardingCommand, read, write } from "@/lib/onboarding";
+import { Guide } from "./Guide";
 import { Hints } from "./Hints";
 import { STEPS } from "./steps";
 import { Tour } from "./Tour";
@@ -65,6 +66,7 @@ export function Onboarding() {
   return (
     <>
       <Hints suppressed={phase.kind !== "idle"} ask={ask} />
+      {phase.kind !== "tour" && <Guide />}
       {phase.kind === "welcome" && <Welcome onTour={startTour} onClose={end} />}
       {phase.kind === "tour" && <Tour index={phase.step} onGo={go} onClose={end} onLeave={pause} />}
     </>
