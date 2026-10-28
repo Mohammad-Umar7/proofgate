@@ -2,6 +2,8 @@
  *  at an element marked `data-tour="<target>"` on its page; a step without a target is a centred
  *  card. Copy states only what the recorded data shows. */
 
+import { PLAY_HERO } from "@/lib/onboarding";
+
 export interface TourStep {
   route: string;
   target?: string;
@@ -40,9 +42,9 @@ export const STEPS: TourStep[] = [
     body: "AI made fake vulnerability reports free to write. ProofGate checks every claim in a report against the real source code and its git history, so a volunteer maintainer only spends time on what holds up.",
   },
   {
-    route: "/", target: "hero-legend", top: true,
-    title: "The gate, driven by your scroll",
-    body: "Each shard flying in is a report. Scroll to fly through: slop dissolves on the gate, duplicates of published advisories merge, and real bugs pass through to the maintainer.",
+    route: "/", top: true, clear: true, dock: "right", run: { event: PLAY_HERO, delay: 900 },
+    title: "Fly through the gate",
+    body: "The tour is flying you through; scroll any time to drive it yourself. Each shard is a report: slop (red) dissolves on the gate, duplicates of published advisories (blue) merge, and real bugs (green) pass through to the maintainer.",
   },
   {
     route: "/console/", target: "picker",
