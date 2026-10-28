@@ -194,6 +194,15 @@
   transition: background 0.2s, border-color 0.2s;
 }
 .guideBtn:hover { background: rgba(28, 32, 44, 0.96); border-color: rgba(255, 255, 255, 0.24); }
+.tourBtn {
+  display: inline-flex; align-items: center; gap: 9px; height: 42px; padding: 0 18px 0 15px; border-radius: 999px;
+  border: 0; background: var(--green); color: #05060a; cursor: pointer;
+  font: inherit; font-size: 14px; font-weight: 650; animation: rise 0.35s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.tourBtn:hover { background: #62e9ad; }
+.tourBtn b { font-size: 10px; }
+.tourBtn.glow { animation: rise 0.35s cubic-bezier(0.2, 0.8, 0.2, 1) both, glow 2.4s ease-out 0.35s infinite; }
+@media (prefers-reduced-motion: reduce) { .tourBtn.glow { animation: none; } }
 .guideBtn span {
   width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center;
   background: var(--green); color: #05060a; font-weight: 700; font-size: 14px;
