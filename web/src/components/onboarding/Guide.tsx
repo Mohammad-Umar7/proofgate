@@ -10,7 +10,7 @@ const typing = (t: EventTarget | null) =>
 
 /** The Guide button, bottom right on every page: the way back to the tour, this page's tip and the
  *  welcome after they were dismissed. "?" opens it from the keyboard. */
-export function Guide() {
+export function Guide({ offer = true }: { offer?: boolean }) {
   const [open, setOpen] = useState(false);
   const [paused, setPaused] = useState<number | null>(null);
   const root = useRef<HTMLDivElement>(null);
@@ -66,7 +66,7 @@ export function Guide() {
           <a role="menuitem" href={REPO_URL} target="_blank" rel="noreferrer"><b>Source on GitHub ↗</b></a>
         </div>
       )}
-      {!toured && !open && (
+      {offer && !toured && !open && (
         <button className={`${styles.tourBtn} ${styles.glow}`} onClick={() => command("tour")}>
           <b aria-hidden>▶</b> Take the guided tour
         </button>

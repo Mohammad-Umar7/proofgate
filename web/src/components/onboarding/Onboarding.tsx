@@ -67,7 +67,8 @@ export function Onboarding() {
   return (
     <>
       <Hints suppressed={phase.kind !== "idle"} ask={ask} />
-      {phase.kind !== "tour" && <Guide />}
+      {/* the welcome already offers the tour: no second offer behind it */}
+      {phase.kind !== "tour" && <Guide offer={phase.kind === "idle"} />}
       {phase.kind === "welcome" && <Welcome onTour={startTour} onClose={end} />}
       {phase.kind === "tour" && <Tour index={phase.step} onGo={go} onClose={end} onLeave={pause} />}
     </>
