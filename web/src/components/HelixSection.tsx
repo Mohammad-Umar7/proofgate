@@ -2,6 +2,7 @@
 
 import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
+import { Guard3D } from "@/components/Guard3D";
 import { loadHistory } from "@/lib/api";
 import type { History } from "@/three/helix/HistoryHelix";
 import styles from "./HelixSection.module.css";
@@ -26,7 +27,7 @@ export function HelixSection() {
         </p>
       </div>
       <div className={styles.canvas}>
-        {history && <HistoryHelix history={history} onProgress={setScanned} />}
+        {history && <Guard3D what="commit helix"><HistoryHelix history={history} onProgress={setScanned} /></Guard3D>}
         {history && (
           <div className={styles.years}>
             {history.months.filter(([ym]) => ym.endsWith("-01") && Number(ym.slice(0, 4)) % 3 === 0).map(([ym]) => (
