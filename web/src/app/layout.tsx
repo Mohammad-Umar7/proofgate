@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import { Nav } from "@/components/Nav";
+import { Onboarding } from "@/components/onboarding/Onboarding";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
@@ -20,6 +21,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="grain">
         <Nav />
         {children}
+        <Onboarding />
       </body>
     </html>
   );
