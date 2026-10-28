@@ -20,6 +20,11 @@ export function place(target: Box | null, card: { width: number; height: number 
   const below = target.top + target.height + GAP, above = target.top - GAP - card.height;
   const right = target.left + target.width + GAP, left = target.left - GAP - card.width;
 
+  // a narrow element (a side panel, one column) reads best with the card beside it
+  if (target.width < view.width * 0.45) {
+    if (right + card.width <= view.width - EDGE) return { top: clampY(midY), left: right, side: "right" };
+    if (left >= EDGE) return { top: clampY(midY), left, side: "left" };
+  }
   if (below + card.height <= view.height - EDGE) return { top: below, left: clampX(midX), side: "bottom" };
   if (above >= NAV + EDGE) return { top: above, left: clampX(midX), side: "top" };
   if (right + card.width <= view.width - EDGE) return { top: clampY(midY), left: right, side: "right" };
