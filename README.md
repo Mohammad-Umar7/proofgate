@@ -272,9 +272,12 @@ to `main`): recorded runs of real curl reports in the console, the code galaxy, 
 SlopBench and FixBench. No model calls, so it costs nothing to keep up.
 
 **First visit.** A short welcome says what ProofGate is, points at the three places to start and
-offers a **2-minute guided tour**: eleven stops across every page, each one ringing the element it
-explains, with the page still usable underneath (← → to move, Esc to end). A page left idle for a
-few seconds gets one quiet hint with a button that does the next thing: play the flight through the
+offers a **3-minute guided tour**: fifteen stops across every page, each one ringing the element it
+explains, with the page still usable underneath (← → to move, Esc to end). The tour also shows the 3D
+views working instead of describing them: it flies through the gate, lights a real call path in the
+code galaxy and then floats an invented function outside it, and opens a CVE the agent fixed. Until
+a visitor has taken it, a glowing **Take the guided tour** button waits above the Guide. A page left
+idle for a few seconds gets one quiet hint with a button that does the next thing: play the flight through the
 gate, replay the next report, show a hallucinated function, open a fixed CVE. The **Guide** button
 (bottom right, or press `?`) brings back the tour, resumes it where you left it, or shows this
 page's tip. Nothing breaks on a browser without WebGL: each 3D view is replaced by a short note,
