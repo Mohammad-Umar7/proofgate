@@ -1,6 +1,7 @@
 .page { position: relative; height: 100vh; overflow: hidden; }
 .canvas { position: absolute; inset: 0; }
-.view { position: absolute; top: 76px; right: 12px; bottom: 12px; pointer-events: none; }
+/* up to the top edge: a ghost's label can float high, behind the nav */
+.view { position: absolute; top: 12px; right: 12px; bottom: 12px; pointer-events: none; }
 .side {
   position: absolute; top: 84px; left: max(16px, calc((100vw - 1240px) / 2)); width: 380px;
   padding: 22px; max-height: calc(100vh - 110px); overflow: auto;
