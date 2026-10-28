@@ -1,6 +1,6 @@
-# Build progress (updated 2026-10-25)
+# Build progress (updated 2026-10-28)
 
-## Done and pushed (~215 commits on main)
+## Done and pushed (~277 commits on main)
 - **Engine** (`engine/proofgate`): nine-stage triage pipeline, FastAPI + SSE, CLI, SQLite store,
   arena, SlopBench, export for the static demo, draft-PR publisher, Docker + OpenShell sandboxes.
 - **FixBench** (`engine/proofgate/fixbench`): instances from curl's advisory feed, sandboxed
@@ -12,6 +12,11 @@
 - **Live mode** (engine + site with `NEXT_PUBLIC_API_URL`): the console takes a disclosed HackerOne
   link (fetched at run time); FixBench has Run live (localhost only), streaming steps, test lights,
   live clock and spend. The galaxy now rotates freely over the poles and frames itself beside panels.
+- **Onboarding (Oct 28)** (`web/src/components/onboarding`): first-visit welcome, an 11-stop guided
+  tour across all six pages (spotlight, keyboard, phone bottom sheet, pauses if you wander off),
+  idle hints with a one-click next step, a Guide button (`?`), a Play button for the scroll-driven
+  hero, WebGL fallbacks and loading/retry states on every page. The galaxy now opens face-on, with
+  the subsystem clusters ringed around the core.
 - **Engine fixes from live runs (Oct 25):** Nemotron 3 ignores `/no_think`; reasoning is now switched
   with `chat_template_kwargs.enable_thinking` (live triage 38-60 s -> 17-22 s); failed JSON attempts
   now count in the run's cost; the adversarial challenge runs without reasoning so it completes.
@@ -33,10 +38,13 @@
 Token Factory: $25 promo redeemed 2026-10-25; balance read $3.70 on Oct 25 afternoon (usage posts
 with a delay). The public site makes no model calls, so judging costs nothing. FixBench Ultra is the expensive part (~$0.66/CVE); Super ~$0.18/CVE, Nano ~$0.04/CVE.
 
+## Submission
+Submitted on Devpost on Oct 28, 2026: https://devpost.com/software/proofgate-ik0f95 (editable until
+the deadline, Oct 30 10:00 AM PT). Video: https://youtu.be/d4L-x6sTMmI. The site redeploys from `main`.
+
 ## Waiting on the team
-1. Record the video (`docs/VIDEO.md`), personalize the ✍️ items in `docs/FEEDBACK.md`.
-2. Fill the Devpost form from `docs/DEVPOST.md` (pitch, About, Built with, gallery incl. fixbench.jpg).
-3. Optional: join the Nebius Builders Program for +$25 Token Factory credits.
+1. Personalize the ✍️ items in `docs/FEEDBACK.md`.
+2. Optional: join the Nebius Builders Program for +$25 Token Factory credits.
 
 ## Local setup notes (Windows)
 - Python venv: `%USERPROFILE%\.cache\proofgate\venv` (session folder path too long for tree-sitter).
