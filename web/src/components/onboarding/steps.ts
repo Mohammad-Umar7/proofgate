@@ -15,6 +15,19 @@ export interface TourStep {
   clear?: boolean;
   /** keep the card in this bottom corner, out of the way of what the step shows */
   dock?: "left" | "right";
+  /** what the tour does on arrival, so the visitor sees it happen instead of reading about it */
+  run?: StepAction;
+}
+
+export interface StepAction {
+  /** click the element marked `data-tour=<click>` (left alone if it is already open or pressed) */
+  click?: string;
+  /** or send this event to the window */
+  event?: string;
+  /** wait for the element marked `data-tour=<when>` first: a view that only works once its data loaded */
+  when?: string;
+  /** then wait this long (ms), so the page has settled before it moves */
+  delay?: number;
 }
 
 export const VIDEO_URL = "https://youtu.be/d4L-x6sTMmI";

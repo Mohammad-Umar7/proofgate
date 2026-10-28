@@ -6,7 +6,7 @@ import { createPortal } from "react-dom";
 import { samePage, scrollBehavior } from "@/lib/onboarding";
 import { dock, place } from "./place";
 import { REPO_URL, STEPS, VIDEO_URL } from "./steps";
-import { useBox, useTarget } from "./useTarget";
+import { selector, useBox, useTarget } from "./useTarget";
 import styles from "./onboarding.module.css";
 
 const PAD = 8; // spotlight margin around the element
@@ -65,6 +65,30 @@ export function Tour({ index, onGo, onClose, onLeave }: {
     window.scrollTo({ top: Math.max(0, top), behavior: scrollBehavior() });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [el, here, index]);
+
+  // the step's action, once per arrival: wait for what it needs, let the page settle, then act
+  useEffect(() => {
+    const run = step.run;
+    if (!here || !run) return;
+    const t0 = performance.now();
+    let ready = 0;
+    const id = window.setInterval(() => {
+      const now = performance.now();
+      if (now - t0 > 15000) { clearInterval(id); return; }
+      if (run.when && !document.querySelector(selector(run.when))) return;
+      ready ||= now;
+      if (now - ready < (run.delay ?? 0)) return;
+      if (run.click) {
+        const b = document.querySelector<HTMLElement>(selector(run.click));
+        if (!b) return;
+        if (b.getAttribute("aria-expanded") !== "true" && b.getAttribute("aria-pressed") !== "true") b.click();
+      }
+      if (run.event) window.dispatchEvent(new Event(run.event));
+      clearInterval(id);
+    }, 100);
+    return () => clearInterval(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [here, index]);
 
   // keyboard: arrows move, Escape ends; never while the visitor is typing in the page
   useEffect(() => {
