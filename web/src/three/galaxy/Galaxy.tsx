@@ -276,6 +276,7 @@ function Scene({ graph, focus, autoRotate, compact, insetLeft }: {
     return Math.max(halfW / Math.tan(hfov / 2), halfH / Math.tan(vfov / 2)) * margin;
   };
   const homeDist = fit(bounds.r, bounds.r, compact ? 1.12 : 1.22);
+  const homed = useRef(false);
   const world = useRef<THREE.Group>(null!);
   const spin = useSpin(world, controls);
   const [hover, setHover] = useState<number | null>(null);
@@ -316,6 +317,8 @@ function Scene({ graph, focus, autoRotate, compact, insetLeft }: {
     const c = controls.current;
     if (!c) return;
     spin.recenter();
+    const fly = homed.current;
+    homed.current = true;
     if (ghostAnchors.length && !pathIdx.length && compact) {
       // the ghost floats above the galaxy: frame both, stacked
       const top = Math.max(...ghostAnchors.map((g) => g.pos.y)) + 12;
@@ -340,7 +343,8 @@ function Scene({ graph, focus, autoRotate, compact, insetLeft }: {
     if (focus.target && byName.has(focus.target)) pts.push(new THREE.Vector3(...graph.nodes[byName.get(focus.target)!].pos));
     if (!pts.length) {
       const eye = bounds.c.clone().addScaledVector(HOME_DIR, homeDist);
-      c.setLookAt(eye.x, eye.y, eye.z, bounds.c.x, bounds.c.y, bounds.c.z, true);
+      // the first frame is already the home view; only later returns to it fly there
+      c.setLookAt(eye.x, eye.y, eye.z, bounds.c.x, bounds.c.y, bounds.c.z, fly);
       return;
     }
     const box = new THREE.Box3().setFromPoints(pts);
