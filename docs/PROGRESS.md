@@ -12,8 +12,9 @@
 - **Live mode** (engine + site with `NEXT_PUBLIC_API_URL`): the console takes a disclosed HackerOne
   link (fetched at run time); FixBench has Run live (localhost only), streaming steps, test lights,
   live clock and spend. The galaxy now rotates freely over the poles and frames itself beside panels.
-- **Onboarding (Oct 28)** (`web/src/components/onboarding`): first-visit welcome, an 11-stop guided
-  tour across all six pages (spotlight, keyboard, phone bottom sheet, pauses if you wander off),
+- **Onboarding (Oct 28)** (`web/src/components/onboarding`): first-visit welcome, a 15-stop guided
+  tour across all six pages that plays the 3D views (gate flight, commit helix, a lit call path and a
+  floating invented function in the galaxy, a fixed CVE), a glowing tour button until it is taken (spotlight, keyboard, phone bottom sheet, pauses if you wander off),
   idle hints with a one-click next step, a Guide button (`?`), a Play button for the scroll-driven
   hero, WebGL fallbacks and loading/retry states on every page. The galaxy now opens face-on, with
   the subsystem clusters ringed around the core.
