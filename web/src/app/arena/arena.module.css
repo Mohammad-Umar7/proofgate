@@ -47,3 +47,5 @@
   .liveState { grid-column: auto; }
   .scoreSide b { font-size: 64px; }
 }
+
+.status { margin-top: 18px; }

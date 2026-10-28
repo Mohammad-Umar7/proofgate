@@ -3,6 +3,7 @@
 import { motion } from "motion/react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { LoadError, Loading } from "@/components/Status";
 import { API, card as fetchCard, data, stream } from "@/lib/api";
 import { VERDICT_META, type Card, type StageEvent, type Verdict } from "@/lib/types";
 import styles from "./arena.module.css";
@@ -20,9 +21,11 @@ export default function ArenaPage() {
   const [open, setOpen] = useState<number | null>(null);
   const [liveLevel, setLiveLevel] = useState(4);
   const [liveState, setLiveState] = useState<string>("");
+  const [load, setLoad] = useState<"loading" | "ok" | "failed">("loading");
 
   useEffect(() => {
-    fetch(data("arena.json")).then((r) => r.json()).then(setRounds).catch(() => {});
+    fetch(data("arena.json")).then((r) => r.json()).then((r) => { setRounds(r); setLoad("ok"); })
+      .catch(() => setLoad("failed"));
   }, []);
 
   const caught = rounds.filter((r) => r.caught).length;
@@ -99,6 +102,10 @@ export default function ArenaPage() {
           {liveState && <p className={styles.liveState}>{liveState}</p>}
         </div>
       )}
+
+      {load !== "ok" && <div className={`panel ${styles.status}`}>
+        {load === "failed" ? <LoadError what="The arena rounds" /> : <Loading label="Loading the red-team rounds…" />}
+      </div>}
 
       <div className={styles.rounds}>
         {rounds.map((r, i) => {
