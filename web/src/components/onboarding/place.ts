@@ -30,5 +30,14 @@ export function place(target: Box | null, card: { width: number; height: number 
   if (right + card.width <= view.width - EDGE) return { top: clampY(midY), left: right, side: "right" };
   if (left >= EDGE) return { top: clampY(midY), left, side: "left" };
   // the element fills the screen: dock the card in the bottom-right corner, where it covers the least
-  return { top: clampY(view.height - card.height - EDGE * 2), left: clampX(view.width - card.width - EDGE * 2), side: "center" };
+  return dock("right", card, view);
+}
+
+/** The card in a bottom corner of the screen, for a step that shows something large (a 3D scene)
+ *  and should cover as little of it as possible. */
+export function dock(corner: "left" | "right", card: { width: number; height: number },
+  view: { width: number; height: number }): { top: number; left: number; side: Side } {
+  const top = Math.min(Math.max(NAV + EDGE, view.height - card.height - EDGE * 2), view.height - card.height - EDGE);
+  const left = corner === "left" ? EDGE * 2 : Math.max(EDGE, view.width - card.width - EDGE * 2);
+  return { top, left, side: "center" };
 }
