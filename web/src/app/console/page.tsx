@@ -6,11 +6,15 @@ import styles from "@/components/console/console.module.css";
 import { EventLog } from "@/components/console/EventLog";
 import { EvidenceCard } from "@/components/console/EvidenceCard";
 import { StageList } from "@/components/console/StageList";
+import { Guard3D } from "@/components/Guard3D";
+import { LoadError, Loading } from "@/components/Status";
 import { API, card as fetchCard, health, loadGraph, loadReplays, replay, stream, submit } from "@/lib/api";
 import type { Card, GraphData, Replay, StageEvent } from "@/lib/types";
 import type { GalaxyFocus } from "@/three/galaxy/Galaxy";
 
-const Galaxy = dynamic(() => import("@/three/galaxy/Galaxy"), { ssr: false });
+const Galaxy = dynamic(() => import("@/three/galaxy/Galaxy"), {
+  ssr: false, loading: () => <Loading label="Starting the 3D view…" fill />,
+});
 
 function focusFrom(card: Card | null): GalaxyFocus {
   if (!card) return {};
@@ -34,12 +38,14 @@ export default function ConsolePage() {
   const [draft, setDraft] = useState({ url: "", title: "", body: "" });
   const [liveTitle, setLiveTitle] = useState("");
   const [error, setError] = useState("");
+  const [failed, setFailed] = useState({ replays: false, graph: false });
   const [now, setNow] = useState(0);
   const stop = useRef<() => void>(() => {});
 
   useEffect(() => {
-    loadReplays().then((r) => { setReplays(r); if (r[0]) start(r[0]); });
-    loadGraph().then(setGraph);
+    loadReplays().then((r) => { setReplays(r); if (r[0]) start(r[0]); })
+      .catch(() => setFailed((f) => ({ ...f, replays: true })));
+    loadGraph().then(setGraph).catch(() => setFailed((f) => ({ ...f, graph: true })));
     health().then(setLive);
     return () => stop.current();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -123,6 +129,8 @@ export default function ConsolePage() {
             <b>Paste a link or a report and run the real pipeline</b>
           </button>
         )}
+        {!replays.length && (failed.replays ? <LoadError what="The recorded runs" className={styles.pickerStatus} />
+          : <Loading label="Loading recorded runs…" className={styles.pickerStatus} />)}
         {replays.map((r) => (
           <button key={r.id} className={`${styles.pick} ${active === r.id ? styles.pickOn : ""}`} onClick={() => start(r)}>
             <span className={styles.pickLabel}>{r.label}</span>
@@ -185,7 +193,10 @@ export default function ConsolePage() {
 
         <section className={`panel ${styles.col}`}>
           <p className={styles.colTitle}><span>Code galaxy</span><span>curl {graph?.version}</span></p>
-          <div className={styles.galaxy}>{graph && <Galaxy graph={graph} focus={focus} autoRotate compact />}</div>
+          <div className={styles.galaxy}>
+            {graph ? <Guard3D what="code galaxy"><Galaxy graph={graph} focus={focus} autoRotate compact /></Guard3D>
+              : failed.graph ? <LoadError what="The code galaxy" fill /> : <Loading label="Loading curl's functions…" fill />}
+          </div>
           <p className={styles.galaxyNote}>
             {focus.ghosts?.length ? `${focus.ghosts.length} cited function(s) do not exist: shown adrift, connected to nothing.`
               : focus.path?.length ? "Reachable path from a public entry point to the cited function."
