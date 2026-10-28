@@ -35,3 +35,8 @@
 @media (max-width: 720px) {
   .side { top: auto; bottom: 12px; left: 12px; right: 12px; width: auto; max-height: 46vh; }
 }
+
+/* a note in place of the 3D view sits in the space beside the floating panel */
+@media (min-width: 721px) {
+  .beside { left: calc(max(16px, (100vw - 1240px) / 2) + 404px); }
+}

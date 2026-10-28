@@ -2,6 +2,8 @@
 
 import dynamic from "next/dynamic";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { Guard3D } from "@/components/Guard3D";
+import { LoadError, Loading } from "@/components/Status";
 import { loadGraph } from "@/lib/api";
 import { nearNames, pathFromEntry } from "@/lib/graph";
 import type { GraphData } from "@/lib/types";
@@ -9,7 +11,9 @@ import type { GalaxyFocus } from "@/three/galaxy/Galaxy";
 import { LEGEND } from "@/three/galaxy/palette";
 import styles from "./galaxy.module.css";
 
-const Galaxy = dynamic(() => import("@/three/galaxy/Galaxy"), { ssr: false });
+const Galaxy = dynamic(() => import("@/three/galaxy/Galaxy"), {
+  ssr: false, loading: () => <Loading label="Starting the 3D view…" fill />,
+});
 
 const PRESETS = [
   { q: "Curl_cookie_add", note: "real · reached via curl_easy_setopt" },
@@ -24,8 +28,9 @@ export default function GalaxyPage() {
   const [query, setQuery] = useState("");
   const [focus, setFocus] = useState<GalaxyFocus>({});
   const [result, setResult] = useState<{ kind: "real" | "ghost"; text: string } | null>(null);
+  const [failed, setFailed] = useState(false);
 
-  useEffect(() => { loadGraph().then(setGraph); }, []);
+  useEffect(() => { loadGraph().then(setGraph).catch(() => setFailed(true)); }, []);
 
   // on wide screens the panel floats over the canvas: tell the galaxy how much it covers, so it
   // frames itself in the space beside the panel instead of underneath it
@@ -78,7 +83,14 @@ export default function GalaxyPage() {
 
   return (
     <main className={styles.page}>
-      <div className={styles.canvas} ref={canvas}>{graph && <Galaxy graph={graph} focus={focus} insetLeft={inset} />}</div>
+      <div className={styles.canvas} ref={canvas}>
+        {graph ? (
+          <Guard3D what="code galaxy" className={styles.beside}>
+            <Galaxy graph={graph} focus={focus} insetLeft={inset} />
+          </Guard3D>
+        ) : failed ? <LoadError what="The code galaxy" fill style={{ left: inset }} />
+          : <Loading label="Loading every function in curl…" fill style={{ left: inset }} />}
+      </div>
       <aside className={`panel ${styles.side}`} ref={side}>
         <p className="eyebrow">Code galaxy · curl {stats?.version ?? "…"}</p>
         <h1 className={styles.h1}>Every function in curl, every call between them.</h1>
