@@ -75,7 +75,17 @@ export const STEPS: TourStep[] = [
   {
     route: "/galaxy/", target: "galaxy-presets",
     title: "Look up any function",
-    body: "All 4,291 functions of curl 8.23.0 and the 9,747 calls between them. Click a real function to light up its call path from a public entry point, then a hallucinated one to see it float outside. Drag the galaxy to turn it, scroll to zoom.",
+    body: "All 4,291 functions of curl 8.23.0 and the 9,747 calls between them. Type any name or pick one here. Next, the tour looks up a real one and an invented one for you.",
+  },
+  {
+    route: "/galaxy/", target: "galaxy-view", dock: "left", run: { click: "galaxy-real", when: "galaxy-view", delay: 600 },
+    title: "A real function lights up its path",
+    body: "Curl_cookie_add() exists, so the galaxy dims and lights the chain of calls that reaches it from curl_easy_setopt, the public API a program calls. Drag to turn the galaxy, scroll to zoom.",
+  },
+  {
+    route: "/galaxy/", target: "galaxy-view", dock: "left", run: { click: "galaxy-ghost", when: "galaxy-view", delay: 300 },
+    title: "An invented one floats outside",
+    body: "Curl_cookie_parse_header() sounds real, but it has never existed in curl. With nothing to attach to, it floats outside the galaxy, labelled with the closest real names. That is a contradiction ProofGate can prove.",
   },
   {
     route: "/arena/", target: "arena-ladder",
