@@ -26,7 +26,7 @@ export function HelixSection() {
           that is the whole helix below, searched in about four seconds, at no model cost.
         </p>
       </div>
-      <div className={styles.canvas}>
+      <div className={styles.canvas} data-tour="helix">
         {history && <Guard3D what="commit helix"><HistoryHelix history={history} onProgress={setScanned} /></Guard3D>}
         {history && (
           <div className={styles.years}>
