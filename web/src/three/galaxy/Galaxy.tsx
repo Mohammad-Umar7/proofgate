@@ -275,7 +275,8 @@ function Scene({ graph, focus, autoRotate, compact, insetLeft }: {
     const hfov = 2 * Math.atan(Math.tan(vfov / 2) * (free / size.height));
     return Math.max(halfW / Math.tan(hfov / 2), halfH / Math.tan(vfov / 2)) * margin;
   };
-  const homeDist = fit(bounds.r, bounds.r, compact ? 1.12 : 1.22);
+  // seen end-on the ring of subsystem clusters is the outline, a little past the 95% radius
+  const homeDist = fit(bounds.r, bounds.r, compact ? 1.22 : 1.38);
   const homed = useRef(false);
   const world = useRef<THREE.Group>(null!);
   const spin = useSpin(world, controls);
