@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import styles from "./Nav.module.css";
 
 const LINKS = [
@@ -26,6 +26,12 @@ export function Nav() {
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, [path]);
+  // on a phone the links scroll sideways: keep the current page's link in view
+  const links = useRef<HTMLElement>(null);
+  useEffect(() => {
+    const row = links.current, on = row?.querySelector<HTMLElement>(`.${styles.active}`);
+    if (row && on && row.scrollWidth > row.clientWidth) row.scrollLeft = on.offsetLeft - (row.clientWidth - on.offsetWidth) / 2;
+  }, [path]);
   return (
     <header className={styles.nav} data-scrolled={scrolled}>
       <div className={styles.inner}>
@@ -44,7 +50,7 @@ export function Nav() {
           </svg>
           <span>ProofGate</span>
         </Link>
-        <nav className={styles.links}>
+        <nav className={styles.links} ref={links}>
           {LINKS.map((l) => (
             <Link key={l.href} href={l.href} className={path?.startsWith(l.href) ? styles.active : undefined}>
               {l.label}
