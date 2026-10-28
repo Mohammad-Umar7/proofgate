@@ -11,6 +11,10 @@ export interface TourStep {
   top?: boolean;
   /** shown while the target is not on the page yet, e.g. a card that appears when a run ends */
   waiting?: string;
+  /** leave the page undimmed: the step is about a full-screen 3D scene, which should be seen whole */
+  clear?: boolean;
+  /** keep the card in this bottom corner, out of the way of what the step shows */
+  dock?: "left" | "right";
 }
 
 export const VIDEO_URL = "https://youtu.be/d4L-x6sTMmI";

@@ -4,7 +4,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { samePage, scrollBehavior } from "@/lib/onboarding";
-import { place } from "./place";
+import { dock, place } from "./place";
 import { REPO_URL, STEPS, VIDEO_URL } from "./steps";
 import { useBox, useTarget } from "./useTarget";
 import styles from "./onboarding.module.css";
@@ -90,12 +90,12 @@ export function Tour({ index, onGo, onClose, onLeave }: {
   }, []);
 
   const hole = box && { top: box.top - PAD, left: box.left - PAD, width: box.width + PAD * 2, height: box.height + PAD * 2 };
-  const pos = place(hole, size, view);
+  const pos = step.dock ? dock(step.dock, size, view) : place(hole, size, view);
   const waiting = here && step.target && !el;
 
   return createPortal(
     <div className={styles.tour}>
-      {hole ? <div className={styles.hole} style={hole} /> : <div className={styles.dim} />}
+      {step.clear ? null : hole ? <div className={styles.hole} style={hole} /> : <div className={styles.dim} />}
       <div ref={card} className={styles.card} style={{ top: pos.top, left: pos.left }} data-side={pos.side}
         role="dialog" aria-modal="false" aria-labelledby="pg-tour-title" aria-describedby="pg-tour-body">
         <div className={styles.cardHead}>
