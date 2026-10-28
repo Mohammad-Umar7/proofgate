@@ -121,7 +121,7 @@ export function HeroScroll() {
             <Link href="/console/" className="btn btn-primary">Watch it triage a real report →</Link>
             <Link href="/arena/" className="btn">Try to fool it</Link>
           </div>
-          <div className={styles.legend} data-tour="hero-legend">
+          <div className={styles.legend}>
             <span><i style={{ background: "var(--red)" }} /> slop dissolves on the gate</span>
             <span><i style={{ background: "var(--blue)" }} /> duplicates merge</span>
             <span><i style={{ background: "var(--green)" }} /> real bugs pass through</span>
