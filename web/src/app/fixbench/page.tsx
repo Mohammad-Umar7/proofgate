@@ -178,7 +178,8 @@ function Transcript({ row, live }: { row: FbRow; live: boolean }) {
 function Detail({ row, live, onRun }: { row: FbRow; live: LiveFix | null; onRun?: () => void }) {
   const pending = live !== null && !live.done;
   return (
-    <motion.section key={row.id + row.role} className={`panel ${styles.detail}`} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
+    <motion.section key={row.id + row.role} className={`panel ${styles.detail}`} data-tour="fixbench-detail"
+      initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
       {live && <LiveBar live={live} />}
       <header className={styles.dHead}>
         <div>
@@ -264,6 +265,7 @@ export default function FixBenchPage() {
     });
   }, [model, details, role]);
   const cascade = fb?.cascade;
+  const firstFixed = rows.find((r) => r.resolved)?.id;
   const current = rows.find((r) => r.id === sel) ?? rows.find((r) => r.resolved) ?? rows[0];
   const canRun = Boolean(API && engine?.token_factory && engine?.sandbox_ready);
   const liveHere = live && current && live.cve === current.id && live.role === role ? live : null;
@@ -382,9 +384,9 @@ export default function FixBenchPage() {
       )}
 
       {rows.length > 0 && (
-        <section className={styles.grid}>
+        <section className={styles.grid} data-tour="fixbench-grid">
           {rows.map((r) => (
-            <button key={r.id} onClick={() => setSel(r.id)}
+            <button key={r.id} onClick={() => setSel(r.id)} data-tour={r.id === firstFixed ? "fixbench-fixed" : undefined}
               className={`${styles.tile} ${r.resolved ? styles.tOk : styles.tNo} ${current?.id === r.id ? styles.tSel : ""}`}>
               <span className={styles.tId}>{r.id}</span>
               <span className={styles.tSum}>{r.summary}</span>
