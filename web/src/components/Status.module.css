@@ -3,7 +3,7 @@
   min-height: 140px; padding: 24px; text-align: center; color: var(--muted); font-size: 13.5px;
 }
 .box b { color: var(--text); font-weight: 600; font-size: 14.5px; }
-.box .btn, .box button { margin-top: 4px; }
+.box button { margin-top: 4px; }
 .spin {
   width: 22px; height: 22px; border-radius: 50%;
   border: 2px solid rgba(255, 255, 255, 0.12); border-top-color: var(--green);

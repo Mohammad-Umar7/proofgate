@@ -14,7 +14,7 @@
   border: 1px solid var(--line-2); box-shadow: 0 40px 120px -20px rgba(0, 0, 0, 0.9);
   animation: rise 0.35s cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
-.welcome .eyebrow { margin: 0; }
+.welcome :global(.eyebrow) { margin: 0; }
 .close {
   position: absolute; top: 14px; right: 14px; width: 32px; height: 32px; border-radius: 50%;
   border: 1px solid var(--line-2); background: transparent; color: var(--muted); font-size: 18px; line-height: 1;
@@ -43,7 +43,7 @@
   display: flex; gap: 10px; align-items: baseline; margin: 0 0 18px; padding: 10px 12px; border-radius: 10px;
   font-size: 12.5px; color: #b6bccb; background: var(--green-soft); border: 1px solid rgba(61, 220, 151, 0.22);
 }
-.demoNote .dot { color: var(--green); flex: none; transform: translateY(-1px); }
+.demoNote :global(.dot) { color: var(--green); flex: none; transform: translateY(-1px); }
 .welcomeActions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
 .textBtn {
   background: none; border: 0; color: var(--muted); font: inherit; font-size: 14px; cursor: pointer;
@@ -108,7 +108,7 @@
 .progress { height: 3px; margin: 14px 0 12px; border-radius: 3px; background: rgba(255, 255, 255, 0.07); overflow: hidden; }
 .progress i { display: block; height: 100%; background: var(--green); transition: width 0.35s ease; }
 .cardActions { display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap; }
-.cardActions .btn { height: 38px; padding: 0 14px; font-size: 13.5px; }
+.cardActions :global(.btn) { height: 38px; padding: 0 14px; font-size: 13.5px; }
 .keys { margin: 8px 0 0; text-align: right; font-size: 11px; color: var(--dim); font-family: var(--font-mono); }
 
 /* phones: the card docks to the bottom of the screen as a sheet */
