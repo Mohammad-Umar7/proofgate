@@ -47,6 +47,11 @@ export const STEPS: TourStep[] = [
     body: "The tour is flying you through; scroll any time to drive it yourself. Each shard is a report: slop (red) dissolves on the gate, duplicates of published advisories (blue) merge, and real bugs (green) pass through to the maintainer.",
   },
   {
+    route: "/", target: "helix",
+    title: "Every claim, checked against every commit",
+    body: "Each point is one commit in curl's history, oldest on the left. When a report names a function, ProofGate looks for it at the claimed release and across all of history with git's pickaxe, in about four seconds at no model cost. This search is for a name that never existed.",
+  },
+  {
     route: "/console/", target: "picker",
     title: "Pick a report to replay",
     body: "Ten recorded runs: four synthetic reports that each test one check, four real reports from curl's public AI-slop list, and two real reports that became CVEs. Click any card to replay it with its real timings.",
