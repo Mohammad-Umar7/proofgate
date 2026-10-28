@@ -122,7 +122,7 @@ export default function ConsolePage() {
         </div>
       </div>
 
-      <div className={styles.picker}>
+      <div className={styles.picker} data-tour="picker">
         {API && (
           <button className={`${styles.pick} ${active === "live" ? styles.pickOn : ""}`} onClick={() => setActive("live")}>
             <span className={styles.pickLabel}>Live · your report</span>
@@ -180,7 +180,7 @@ export default function ConsolePage() {
           ) : null}
         </section>
 
-        <section className={`panel ${styles.col}`}>
+        <section className={`panel ${styles.col}`} data-tour="pipeline">
           <p className={styles.colTitle}><span>Pipeline</span><span>{stagesDone}/9 stages</span></p>
           <div className={styles.counters}>
             <div className={styles.counter}><b>{elapsed.toFixed(1)}s</b><span>elapsed</span></div>
@@ -191,7 +191,7 @@ export default function ConsolePage() {
           <EventLog events={events} />
         </section>
 
-        <section className={`panel ${styles.col}`}>
+        <section className={`panel ${styles.col}`} data-tour="console-galaxy">
           <p className={styles.colTitle}><span>Code galaxy</span><span>curl {graph?.version}</span></p>
           <div className={styles.galaxy}>
             {graph ? <Guard3D what="code galaxy"><Galaxy graph={graph} focus={focus} autoRotate compact /></Guard3D>

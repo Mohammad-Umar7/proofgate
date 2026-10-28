@@ -49,6 +49,7 @@ export function EvidenceCard({ card }: { card: Card }) {
   return (
     <motion.section
       className={`panel ${styles.card}`}
+      data-tour="evidence"
       style={{ ["--v" as string]: meta.color }}
       initial={{ opacity: 0, y: 24 }}
       animate={{ opacity: 1, y: 0 }}
