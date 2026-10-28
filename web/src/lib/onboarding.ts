@@ -7,6 +7,8 @@ export const KEYS = {
   welcomed: "pg.onboarding.welcomed.v1",
   /** sessionStorage: index of the tour step in progress, so a reload resumes the tour */
   tourStep: "pg.onboarding.tour",
+  /** sessionStorage: the step a visitor was on when they left the tour's page on their own */
+  tourPaused: "pg.onboarding.tour.paused",
   /** sessionStorage: pages whose hint was already shown in this visit */
   hinted: "pg.onboarding.hinted",
 } as const;

@@ -17,14 +17,25 @@ const typing = (t: EventTarget | null) =>
 /** The guided tour. It walks STEPS across pages: opens each step's page, waits for its element,
  *  scrolls it into view, dims everything else and explains it in a card beside it. The page stays
  *  usable underneath: a visitor can click what the card points at. */
-export function Tour({ index, onGo, onClose }: { index: number; onGo: (i: number) => void; onClose: () => void }) {
+export function Tour({ index, onGo, onClose, onLeave }: {
+  index: number; onGo: (i: number) => void; onClose: () => void;
+  /** the visitor left the step's page on their own (the nav, a link): stop following them */
+  onLeave: () => void;
+}) {
   const step = STEPS[index];
   const last = index === STEPS.length - 1;
   const path = usePathname();
   const router = useRouter();
   const here = samePage(path, step.route);
 
-  useEffect(() => { if (!here) router.push(step.route); }, [here, step.route, router]);
+  // open the step's page; but once the visitor has been on it and goes elsewhere, they chose to
+  const arrived = useRef(false);
+  useEffect(() => { arrived.current = false; }, [index]);
+  useEffect(() => {
+    if (here) { arrived.current = true; return; }
+    if (arrived.current) onLeave();
+    else router.push(step.route);
+  }, [here, step.route, router, onLeave]);
 
   const el = useTarget(here ? step.target : undefined, index);
   const box = useBox(el);

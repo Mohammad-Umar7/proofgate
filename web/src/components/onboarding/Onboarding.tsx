@@ -31,8 +31,17 @@ export function Onboarding() {
   }, []);
   const end = useCallback(() => {
     write(KEYS.tourStep, null, "session");
+    write(KEYS.tourPaused, null, "session");
     write(KEYS.welcomed, "1");
     setPhase({ kind: "idle" });
+  }, []);
+  // a visitor who wanders off mid-tour keeps their place: the Guide offers to resume it
+  const pause = useCallback(() => {
+    setPhase((p) => {
+      if (p.kind === "tour") write(KEYS.tourPaused, String(p.step), "session");
+      return { kind: "idle" };
+    });
+    write(KEYS.tourStep, null, "session");
   }, []);
   const startTour = useCallback(() => { write(KEYS.welcomed, "1"); go(0); }, [go]);
 
@@ -47,6 +56,6 @@ export function Onboarding() {
   }, [startTour]);
 
   if (phase.kind === "welcome") return <Welcome onTour={startTour} onClose={end} />;
-  if (phase.kind === "tour") return <Tour index={phase.step} onGo={go} onClose={end} />;
+  if (phase.kind === "tour") return <Tour index={phase.step} onGo={go} onClose={end} onLeave={pause} />;
   return null;
 }
