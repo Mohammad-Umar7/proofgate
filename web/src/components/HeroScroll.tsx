@@ -58,7 +58,7 @@ export function HeroScroll() {
 
         <div className={`container ${styles.inner}`} style={{ opacity: 1 - fade, transform: `translateY(${-fade * 40}px)`, pointerEvents: fade > 0.6 ? "none" : "auto" }}>
           <p className="eyebrow">Open-source security triage · NVIDIA Nemotron on Nebius Token Factory</p>
-          <h1 className={styles.title}>
+          <h1 className={styles.title} data-tour="hero-copy">
             AI made fake security reports <em>free to produce.</em>
             <br />
             ProofGate makes proving them <span>cheap.</span>
@@ -72,7 +72,7 @@ export function HeroScroll() {
             <Link href="/console/" className="btn btn-primary">Watch it triage a real report →</Link>
             <Link href="/arena/" className="btn">Try to fool it</Link>
           </div>
-          <div className={styles.legend}>
+          <div className={styles.legend} data-tour="hero-legend">
             <span><i style={{ background: "var(--red)" }} /> slop dissolves on the gate</span>
             <span><i style={{ background: "var(--blue)" }} /> duplicates merge</span>
             <span><i style={{ background: "var(--green)" }} /> real bugs pass through</span>
@@ -87,7 +87,7 @@ export function HeroScroll() {
           </div>
         ))}
 
-        <div className={styles.hint} style={{ opacity: 1 - fade }}>
+        <div className={styles.hint} style={{ opacity: 1 - fade }} data-tour="hero-hint">
           <span>Scroll to fly through the gate</span>
           <i />
         </div>
