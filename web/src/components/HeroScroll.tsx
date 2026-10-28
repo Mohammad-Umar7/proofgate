@@ -3,6 +3,7 @@
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import { Guard3D } from "@/components/Guard3D";
 import styles from "./HeroScroll.module.css";
 
 const GateScene = dynamic(() => import("@/three/gate/GateScene"), { ssr: false });
@@ -47,7 +48,12 @@ export function HeroScroll() {
   return (
     <section ref={wrap} className={styles.wrap}>
       <div className={styles.sticky}>
-        <div className={styles.canvas}><GateScene progress={progress} /></div>
+        <div className={styles.canvas}>
+          {/* without WebGL, a still of the gate: the captions and calls to action work the same */}
+          <Guard3D what="gate" fallback={() => <div className={styles.still} aria-hidden />}>
+            <GateScene progress={progress} />
+          </Guard3D>
+        </div>
         <div className={styles.shade} style={{ opacity: 1 - fade * 0.85 }} />
 
         <div className={`container ${styles.inner}`} style={{ opacity: 1 - fade, transform: `translateY(${-fade * 40}px)`, pointerEvents: fade > 0.6 ? "none" : "auto" }}>

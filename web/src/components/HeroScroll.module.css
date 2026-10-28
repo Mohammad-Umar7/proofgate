@@ -2,6 +2,14 @@
 .wrap { position: relative; height: 340vh; }
 .sticky { position: sticky; top: 0; height: 100vh; min-height: 620px; overflow: hidden; }
 .canvas { position: absolute; inset: 0; }
+.still {
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(circle at 70% 50%, rgba(77, 163, 255, 0.16) 0 14vmin, transparent 30vmin),
+    radial-gradient(circle at 70% 50%, transparent 0 25vmin, rgba(232, 234, 240, 0.5) 25.3vmin 25.9vmin, transparent 26.4vmin),
+    radial-gradient(circle at 70% 50%, transparent 0 29vmin, rgba(232, 234, 240, 0.14) 29.2vmin 29.6vmin, transparent 30vmin),
+    radial-gradient(circle at 70% 50%, transparent 0 25vmin, rgba(255, 77, 94, 0.08) 26vmin, transparent 36vmin);
+}
 .shade {
   position: absolute; inset: 0; pointer-events: none;
   background:
