@@ -36,7 +36,7 @@ export const samePage = (a: string | null | undefined, b: string) =>
   (a ?? "").replace(/\/+$/, "") === b.replace(/\/+$/, "");
 
 /** Ask the onboarding layer to do something from anywhere on the page (a call to action, the nav). */
-export type OnboardingCommand = "tour" | "welcome" | "hint";
+export type OnboardingCommand = "tour" | "resume" | "welcome" | "hint";
 export const EVENT = "pg:onboarding";
 export function command(c: OnboardingCommand) {
   window.dispatchEvent(new CustomEvent<OnboardingCommand>(EVENT, { detail: c }));
