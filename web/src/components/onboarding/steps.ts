@@ -46,7 +46,7 @@ export const STEPS: TourStep[] = [
     route: "/console/", target: "evidence",
     waiting: "The evidence card appears below the console when the run finishes, in a few seconds.",
     title: "What the maintainer receives",
-    body: "The verdict with its evidence: every claim checked against a file and line at the report's version, an adversarial pass where Nemotron Ultra argues the reporter's side, and a reply draft. A human makes the final call.",
+    body: "The verdict with its evidence: every claim checked against a file, a line and git history at the report's version, and a reply draft ready to send. ProofGate only dismisses a report on a deterministic contradiction, and a human makes the final call.",
   },
   {
     route: "/galaxy/", target: "galaxy-presets",
