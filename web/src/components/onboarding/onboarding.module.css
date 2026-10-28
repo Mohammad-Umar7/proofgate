@@ -1,0 +1,65 @@
+/* Onboarding layer: above the page and the nav, below nothing. The film-grain overlay is z 100. */
+
+/* ---------- welcome ---------- */
+.backdrop {
+  position: fixed; inset: 0; z-index: 300; display: grid; place-items: center; padding: 16px;
+  background: rgba(3, 4, 8, 0.66);
+  backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+  animation: fadeIn 0.25s ease both;
+}
+.welcome {
+  position: relative; width: min(620px, 100%); max-height: calc(100vh - 32px); overflow: auto;
+  padding: 28px 28px 22px; border-radius: 18px;
+  background: linear-gradient(180deg, rgba(20, 24, 34, 0.98), rgba(12, 14, 21, 0.98));
+  border: 1px solid var(--line-2); box-shadow: 0 40px 120px -20px rgba(0, 0, 0, 0.9);
+  animation: rise 0.35s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.welcome .eyebrow { margin: 0; }
+.close {
+  position: absolute; top: 14px; right: 14px; width: 32px; height: 32px; border-radius: 50%;
+  border: 1px solid var(--line-2); background: transparent; color: var(--muted); font-size: 18px; line-height: 1;
+  cursor: pointer;
+}
+.close:hover { color: var(--text); background: rgba(255, 255, 255, 0.06); }
+.welcomeTitle { font-size: clamp(22px, 3.2vw, 28px); line-height: 1.15; letter-spacing: -0.02em; margin: 10px 0 10px; }
+.welcomeLead { color: #b6bccb; margin: 0 0 16px; font-size: 14.5px; }
+
+.places { list-style: none; margin: 0 0 14px; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.places a {
+  display: grid; grid-template-columns: 28px 120px minmax(0, 1fr) 16px; align-items: center; gap: 10px;
+  padding: 11px 14px; border-radius: 12px; border: 1px solid var(--line); background: rgba(255, 255, 255, 0.02);
+  transition: border-color 0.2s, background 0.2s;
+}
+.places a:hover, .places a:focus-visible { border-color: var(--line-2); background: rgba(255, 255, 255, 0.05); outline: none; }
+.placeN {
+  width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center;
+  font-family: var(--font-mono); font-size: 11.5px; color: var(--green); border: 1px solid rgba(61, 220, 151, 0.35);
+}
+.placeName { font-weight: 600; font-size: 14px; }
+.placeWhat { color: var(--muted); font-size: 13px; }
+.placeGo { color: var(--dim); }
+
+.demoNote {
+  display: flex; gap: 10px; align-items: baseline; margin: 0 0 18px; padding: 10px 12px; border-radius: 10px;
+  font-size: 12.5px; color: #b6bccb; background: var(--green-soft); border: 1px solid rgba(61, 220, 151, 0.22);
+}
+.demoNote .dot { color: var(--green); flex: none; transform: translateY(-1px); }
+.welcomeActions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.textBtn {
+  background: none; border: 0; color: var(--muted); font: inherit; font-size: 14px; cursor: pointer;
+  padding: 10px 6px; margin-left: auto;
+}
+.textBtn:hover { color: var(--text); text-decoration: underline; text-underline-offset: 3px; }
+.reopen { margin: 14px 0 0; font-size: 12px; color: var(--dim); }
+.reopen b { color: var(--muted); font-weight: 600; }
+
+@keyframes fadeIn { from { opacity: 0; } }
+@keyframes rise { from { opacity: 0; transform: translateY(14px) scale(0.985); } }
+
+@media (max-width: 560px) {
+  .welcome { padding: 22px 18px 18px; }
+  .places a { grid-template-columns: 24px minmax(0, 1fr) 14px; }
+  .placeWhat { grid-column: 2 / 3; }
+  .placeGo { grid-row: 1 / 3; grid-column: 3; }
+  .textBtn { margin-left: 0; }
+}
