@@ -108,19 +108,19 @@ export default function GalaxyPage() {
           </div>
         )}
         <div data-tour="galaxy-presets">
-        <form onSubmit={(e) => { e.preventDefault(); look(query); }} className={styles.search}>
-          <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Type a function name…"
-            spellCheck={false} aria-label="Function name" />
-          <button className="btn btn-primary" type="submit">Find</button>
-        </form>
-        <div className={styles.presets}>
-          {PRESETS.map((p) => (
-            <button key={p.q} onClick={() => look(p.q)} className={styles.preset}
-              data-tour={p.q === FIRST_GHOST ? "galaxy-ghost" : undefined}>
-              <code>{p.q}()</code><span>{p.note}</span>
-            </button>
-          ))}
-        </div>
+          <form onSubmit={(e) => { e.preventDefault(); look(query); }} className={styles.search}>
+            <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Type a function name…"
+              spellCheck={false} aria-label="Function name" />
+            <button className="btn btn-primary" type="submit">Find</button>
+          </form>
+          <div className={styles.presets}>
+            {PRESETS.map((p) => (
+              <button key={p.q} onClick={() => look(p.q)} className={styles.preset}
+                data-tour={p.q === FIRST_GHOST ? "galaxy-ghost" : undefined}>
+                <code>{p.q}()</code><span>{p.note}</span>
+              </button>
+            ))}
+          </div>
         </div>
         {result && (
           <div className={`${styles.result} ${result.kind === "ghost" ? styles.ghost : styles.real}`}>{result.text}</div>
