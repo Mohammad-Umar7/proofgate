@@ -271,6 +271,15 @@ judging. It is a static export of `web/` on Vercel (root directory `web`, redepl
 to `main`): recorded runs of real curl reports in the console, the code galaxy, the arena and
 SlopBench and FixBench. No model calls, so it costs nothing to keep up.
 
+**First visit.** A short welcome says what ProofGate is, points at the three places to start and
+offers a **2-minute guided tour**: eleven stops across every page, each one ringing the element it
+explains, with the page still usable underneath (← → to move, Esc to end). A page left idle for a
+few seconds gets one quiet hint with a button that does the next thing: play the flight through the
+gate, replay the next report, show a hallucinated function, open a fixed CVE. The **Guide** button
+(bottom right, or press `?`) brings back the tour, resumes it where you left it, or shows this
+page's tip. Nothing breaks on a browser without WebGL: each 3D view is replaced by a short note,
+and every page says it is loading, or offers a retry, instead of sitting blank.
+
 ## Live mode
 
 Run the engine with keys (`proofgate serve`) and build or run the site with
