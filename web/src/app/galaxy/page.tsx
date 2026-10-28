@@ -53,6 +53,17 @@ export default function GalaxyPage() {
     return () => ro.disconnect();
   }, []);
 
+  // a phone is a tall, narrow view: the galaxy stacks a ghost above itself instead of beside it,
+  // where its label would run off the screen
+  const [narrow, setNarrow] = useState(false);
+  useEffect(() => {
+    const m = window.matchMedia("(max-width: 720px)");
+    const on = () => setNarrow(m.matches);
+    on();
+    m.addEventListener("change", on);
+    return () => m.removeEventListener("change", on);
+  }, []);
+
   const stats = useMemo(() => graph && {
     fns: graph.nodes.length, edges: graph.edges.length, files: graph.files.length, version: graph.version,
   }, [graph]);
@@ -89,7 +100,7 @@ export default function GalaxyPage() {
         {graph ? (
           <>
             <Guard3D what="code galaxy" className={styles.beside}>
-              <Galaxy graph={graph} focus={focus} insetLeft={inset} />
+              <Galaxy graph={graph} focus={focus} insetLeft={inset} compact={narrow} />
             </Guard3D>
             {/* the part of the canvas the galaxy frames itself in, beside the panel: what the tour rings */}
             <div className={styles.view} style={{ left: Math.max(12, inset) }} data-tour="galaxy-view" aria-hidden />
