@@ -15,6 +15,9 @@ export function Guide() {
   const [paused, setPaused] = useState<number | null>(null);
   const root = useRef<HTMLDivElement>(null);
   const button = useRef<HTMLButtonElement>(null);
+  // until the visitor has taken the tour, a glowing button above the Guide offers it in one click
+  const [toured, setToured] = useState(true);
+  useEffect(() => { setToured(read(KEYS.toured) !== null); }, []);
 
   useEffect(() => {
     if (!open) return;
@@ -62,6 +65,11 @@ export function Guide() {
           <a role="menuitem" href={`${REPO_URL}#live-mode`} target="_blank" rel="noreferrer"><b>How live mode works ↗</b></a>
           <a role="menuitem" href={REPO_URL} target="_blank" rel="noreferrer"><b>Source on GitHub ↗</b></a>
         </div>
+      )}
+      {!toured && !open && (
+        <button className={`${styles.tourBtn} ${styles.glow}`} onClick={() => command("tour")}>
+          <b aria-hidden>▶</b> Take the guided tour
+        </button>
       )}
       <button ref={button} className={styles.guideBtn} onClick={() => setOpen((o) => !o)}
         aria-haspopup="menu" aria-expanded={open} title="Guide (press ?)">
