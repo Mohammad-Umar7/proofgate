@@ -238,6 +238,11 @@ function useSpin(world: RefObject<THREE.Group>, controls: RefObject<CameraContro
   };
 }
 
+/** Home view: up the galaxy's vertical axis, from underneath. The subsystem clusters (TLS, QUIC,
+ *  SSH) sit on a ring below the core, so from the side they hang under it; from here they circle
+ *  it, in front of it. */
+const HOME_DIR = new THREE.Vector3(0, -1, 0.12).normalize();
+
 function Scene({ graph, focus, autoRotate, compact, insetLeft }: {
   graph: GraphData; focus: GalaxyFocus; autoRotate: boolean; compact: boolean; insetLeft: number;
 }) {
@@ -334,7 +339,7 @@ function Scene({ graph, focus, autoRotate, compact, insetLeft }: {
     ghostAnchors.forEach((g) => pts.push(g.pos.clone()));
     if (focus.target && byName.has(focus.target)) pts.push(new THREE.Vector3(...graph.nodes[byName.get(focus.target)!].pos));
     if (!pts.length) {
-      const eye = bounds.c.clone().addScaledVector(new THREE.Vector3(0, 0.24, 1).normalize(), homeDist);
+      const eye = bounds.c.clone().addScaledVector(HOME_DIR, homeDist);
       c.setLookAt(eye.x, eye.y, eye.z, bounds.c.x, bounds.c.y, bounds.c.z, true);
       return;
     }
@@ -396,7 +401,7 @@ export default function Galaxy({ graph, focus = {}, autoRotate = true, compact =
     <Canvas
       dpr={[1, 1.75]}
       gl={{ antialias: false, powerPreference: "high-performance" }}
-      camera={{ position: compact ? [0, 90, 640] : [0, 80, 340], fov: 45, near: 0.5, far: 2400 }}
+      camera={{ position: compact ? [0, -640, 77] : [0, -340, 41], fov: 45, near: 0.5, far: 2400 }}
       onCreated={({ gl }) => gl.setClearColor("#05060a")}
     >
       <Scene graph={graph} focus={focus} autoRotate={autoRotate} compact={compact} insetLeft={insetLeft} />
