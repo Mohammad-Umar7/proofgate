@@ -2,8 +2,9 @@
 
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Guard3D } from "@/components/Guard3D";
+import { PLAY_HERO } from "@/lib/onboarding";
 import styles from "./HeroScroll.module.css";
 
 const GateScene = dynamic(() => import("@/three/gate/GateScene"), { ssr: false });
@@ -44,6 +45,39 @@ export function HeroScroll() {
       cancelAnimationFrame(frame);
     };
   }, []);
+
+  // play the fly-through for a visitor who has not scrolled: an eased scroll to the end of the
+  // hero, about 12 s for the whole flight, handed back the moment they scroll, tap or press a key
+  const flight = useRef(0);
+  const play = useCallback(() => {
+    const el = wrap.current;
+    if (!el || flight.current) return;
+    const start = window.scrollY, end = el.offsetTop + el.offsetHeight - window.innerHeight;
+    if (end - start < 8) return;
+    const dur = 12000 * ((end - start) / Math.max(1, end - el.offsetTop));
+    const t0 = performance.now();
+    const stops = ["wheel", "touchstart", "keydown", "pointerdown"] as const;
+    const stop = () => {
+      cancelAnimationFrame(flight.current);
+      flight.current = 0;
+      stops.forEach((e) => window.removeEventListener(e, stop));
+    };
+    stops.forEach((e) => window.addEventListener(e, stop, { passive: true }));
+    const tick = (now: number) => {
+      const k = Math.min(1, (now - t0) / dur);
+      const eased = k < 0.5 ? 2 * k * k : 1 - (-2 * k + 2) ** 2 / 2;
+      window.scrollTo(0, start + (end - start) * eased);
+      if (k < 1) flight.current = requestAnimationFrame(tick);
+      else stop();
+    };
+    flight.current = requestAnimationFrame(tick);
+  }, []);
+  useEffect(() => {
+    window.addEventListener(PLAY_HERO, play);
+    return () => { window.removeEventListener(PLAY_HERO, play); cancelAnimationFrame(flight.current); };
+  }, [play]);
+  const [still, setStill] = useState(false);
+  useEffect(() => { setStill(window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false); }, []);
 
   return (
     <section ref={wrap} className={styles.wrap}>
@@ -89,6 +123,11 @@ export function HeroScroll() {
 
         <div className={styles.hint} style={{ opacity: 1 - fade }} data-tour="hero-hint">
           <span>Scroll to fly through the gate</span>
+          {!still && (
+            <button className={styles.play} onClick={play} style={{ pointerEvents: fade > 0.6 ? "none" : "auto" }}>
+              <b aria-hidden>▶</b> or play the flight
+            </button>
+          )}
           <i />
         </div>
       </div>

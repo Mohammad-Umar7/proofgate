@@ -40,6 +40,9 @@ export function command(c: OnboardingCommand) {
   window.dispatchEvent(new CustomEvent<OnboardingCommand>(EVENT, { detail: c }));
 }
 
+/** Ask the landing hero to play its scroll-driven flight through the gate. */
+export const PLAY_HERO = "pg:play-hero";
+
 /** Respect a visitor's reduced-motion setting for scrolling the page on their behalf. */
 export const scrollBehavior = (): ScrollBehavior =>
   typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth";
