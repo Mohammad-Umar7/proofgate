@@ -26,7 +26,7 @@
   CVE-2026-6276 fixed live by Nemotron 3 Super twice (61 s / $0.034, 68 s / $0.043).
 - Demo film v2: `video/film` (HyperFrames), 2:46, built from the live runs, with subtitles, highlights
   and the engine log; rendered and mastered to `video/film/renders/ProofGate-demo.mp4` (git-ignored;
-  rebuild steps in `docs/VIDEO.md`). Not yet uploaded to YouTube.
+  rebuild steps in `docs/VIDEO.md`). Public on YouTube: https://youtu.be/d4L-x6sTMmI
 - SlopBench predates the reasoning-switch fix; a rerun (about $1.6) is pending a decision.
 
 ## Credits

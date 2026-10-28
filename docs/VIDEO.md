@@ -52,6 +52,10 @@ On Windows, run the HyperFrames commands from a short path (e.g. `%USERPROFILE%\
 paths exceed MAX_PATH inside the renderer's temp folders. Give Node a larger heap for the render
 (`NODE_OPTIONS=--max-old-space-size=6144`).
 
+## Published
+
+**https://youtu.be/d4L-x6sTMmI** (public, 1080p, uploaded Oct 28, 2026), linked from README and Devpost.
+
 ## Upload checklist
 
 - YouTube, **Public** (or Unlisted), title "ProofGate: proving AI-generated security reports, then fixing

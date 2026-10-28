@@ -104,7 +104,7 @@ Plausibility ranking of the NEEDS INFO queue, more projects through the GitHub A
 service maintainers can point their security inbox at.
 ```
 
-**Demo video URL**: YouTube link (public, under 3:00).
+**Demo video URL**: https://youtu.be/d4L-x6sTMmI (public, 2:46)
 
 ## Step 3: Additional info
 

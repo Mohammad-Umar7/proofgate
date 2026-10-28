@@ -12,7 +12,7 @@ Built on **NVIDIA Nemotron 3** via **Nebius Token Factory** · **Tavily** · **N
 **SlopBench:** 0 of 148 real curl CVEs wrongly dismissed, $0.007 per report ·
 **FixBench:** Nemotron fixed **11 of 27 real curl CVEs**, each verified by curl's own test suite
 
-**[▶ Live demo: proofgate-ten.vercel.app](https://proofgate-ten.vercel.app)** · [Video](#video) · [SlopBench](#slopbench-measured-on-curls-own-record) · [FixBench](#fixbench-nemotron-fixing-real-curl-cves-judged-by-curls-own-tests) · [Architecture](docs/ARCHITECTURE.md)
+**[▶ Live demo: proofgate-ten.vercel.app](https://proofgate-ten.vercel.app)** · **[▶ Video (2:46)](https://youtu.be/d4L-x6sTMmI)** · [SlopBench](#slopbench-measured-on-curls-own-record) · [FixBench](#fixbench-nemotron-fixing-real-curl-cves-judged-by-curls-own-tests) · [Architecture](docs/ARCHITECTURE.md)
 
 ![ProofGate: reports stream through the gate; slop dissolves, duplicates merge, real bugs pass](docs/img/hero.jpg)
 
@@ -286,6 +286,8 @@ Run the engine with keys (`proofgate serve`) and build or run the site with
   all 30 tests pass, checksrc clean).
 
 ## Video
+
+**[Watch on YouTube: https://youtu.be/d4L-x6sTMmI](https://youtu.be/d4L-x6sTMmI)**
 
 A 2:46 film made from the live runs above: the HackerOne report triaged with the engine's real log
 beside the console, the code galaxy, the pipeline, SlopBench, the live CVE fix and FixBench, with
