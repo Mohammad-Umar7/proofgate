@@ -137,6 +137,7 @@
   box-shadow: 0 24px 70px -18px rgba(0, 0, 0, 0.9);
   animation: hintIn 0.35s cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
+.hintUp { bottom: auto; top: 80px; }
 .hint p { margin: 0; flex: 1; font-size: 13.5px; color: #c9ceda; line-height: 1.45; }
 .hintDot {
   flex: none; width: 9px; height: 9px; border-radius: 50%; background: var(--green);
@@ -160,6 +161,7 @@
 
 @media (max-width: 640px) {
   .hint { flex-wrap: wrap; bottom: 76px; }
+  .hintUp { bottom: auto; top: 72px; }
   .hint p { flex-basis: calc(100% - 24px); }
   .hintActions { width: 100%; flex-wrap: wrap; }
 }

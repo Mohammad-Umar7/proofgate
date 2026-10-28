@@ -61,11 +61,13 @@ export function Hints({ suppressed, ask }: { suppressed: boolean; ask: number })
   const box = useBox(el);
   if (!hint) return null;
   const visible = box && box.top + box.height > 64 && box.top < window.innerHeight;
+  // the toast lives at the bottom of the screen; when what it points at is down there too, it moves up
+  const up = visible && box.top + box.height > window.innerHeight - 170;
 
   return createPortal(
     <>
       {visible && <div className={styles.beacon} style={{ top: box.top - 6, left: box.left - 6, width: box.width + 12, height: box.height + 12 }} aria-hidden />}
-      <div className={styles.hint} role="status" aria-live="polite">
+      <div className={`${styles.hint} ${up ? styles.hintUp : ""}`} role="status" aria-live="polite">
         <span className={styles.hintDot} aria-hidden />
         <p>{hint.text}</p>
         <div className={styles.hintActions}>
