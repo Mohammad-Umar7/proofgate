@@ -226,4 +226,7 @@
 
 @media (max-width: 640px) {
   .guide { right: 12px; bottom: 12px; }
+  /* side by side on a phone, so a page hint above them keeps its room */
+  .guide:has(.tourBtn) { flex-direction: row; align-items: center; gap: 8px; }
+  .tourBtn { height: 40px; padding: 0 14px 0 12px; font-size: 13px; }
 }
