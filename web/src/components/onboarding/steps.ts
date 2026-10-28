@@ -100,7 +100,13 @@ export const STEPS: TourStep[] = [
   {
     route: "/fixbench/", target: "fixbench-grid",
     title: "From a proven bug to a tested patch",
-    body: "Each tile is a real curl CVE. Nemotron reads the public advisory, edits curl's C code, builds it and runs curl's own tests in a sandbox with no network. Click a tile for the full transcript and the patch beside the one curl shipped.",
+    body: "Each tile is a real curl CVE. Nemotron reads the public advisory, edits curl's C code, builds it and runs curl's own tests in a sandbox with no network. Next, the tour opens one it fixed.",
+  },
+  {
+    route: "/fixbench/", target: "fixbench-detail", run: { click: "fixbench-fixed", delay: 400 },
+    waiting: "Opening a CVE the agent fixed…",
+    title: "One fix, start to finish",
+    body: "The agent's transcript turn by turn, curl's regression test failing on the vulnerable build and passing after the patch, the cost on Token Factory, and the agent's patch beside the one curl shipped.",
   },
   {
     route: "/fixbench/",
