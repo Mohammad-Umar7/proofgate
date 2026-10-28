@@ -22,6 +22,7 @@ const PRESETS = [
   { q: "Curl_cookie_parse_header", note: "hallucinated" },
   { q: "Curl_http2_stream_reset_internal", note: "hallucinated" },
 ];
+const FIRST_GHOST = PRESETS.find((p) => p.note === "hallucinated")?.q;
 
 export default function GalaxyPage() {
   const [graph, setGraph] = useState<GraphData | null>(null);
@@ -106,6 +107,7 @@ export default function GalaxyPage() {
             <div><b>{stats.files}</b><span>source files</span></div>
           </div>
         )}
+        <div data-tour="galaxy-presets">
         <form onSubmit={(e) => { e.preventDefault(); look(query); }} className={styles.search}>
           <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Type a function name…"
             spellCheck={false} aria-label="Function name" />
@@ -113,10 +115,12 @@ export default function GalaxyPage() {
         </form>
         <div className={styles.presets}>
           {PRESETS.map((p) => (
-            <button key={p.q} onClick={() => look(p.q)} className={styles.preset}>
+            <button key={p.q} onClick={() => look(p.q)} className={styles.preset}
+              data-tour={p.q === FIRST_GHOST ? "galaxy-ghost" : undefined}>
               <code>{p.q}()</code><span>{p.note}</span>
             </button>
           ))}
+        </div>
         </div>
         {result && (
           <div className={`${styles.result} ${result.kind === "ghost" ? styles.ghost : styles.real}`}>{result.text}</div>
