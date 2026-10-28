@@ -30,6 +30,7 @@ export function Onboarding() {
 
   const go = useCallback((step: number) => {
     write(KEYS.tourStep, String(step), "session");
+    write(KEYS.toured, "1");
     setPhase({ kind: "tour", step });
   }, []);
   const end = useCallback(() => {

@@ -5,6 +5,8 @@
 export const KEYS = {
   /** localStorage: set once the visitor has answered the welcome, so it is not shown again */
   welcomed: "pg.onboarding.welcomed.v1",
+  /** localStorage: set once the visitor has started the tour, so its button stops calling for them */
+  toured: "pg.onboarding.toured.v1",
   /** sessionStorage: index of the tour step in progress, so a reload resumes the tour */
   tourStep: "pg.onboarding.tour",
   /** sessionStorage: the step a visitor was on when they left the tour's page on their own */
