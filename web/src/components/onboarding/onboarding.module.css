@@ -152,3 +152,35 @@
   .hint p { flex-basis: calc(100% - 24px); }
   .hintActions { width: 100%; flex-wrap: wrap; }
 }
+
+/* ---------- Guide button ---------- */
+.guide { position: fixed; z-index: 260; right: 18px; bottom: 18px; display: flex; flex-direction: column; align-items: flex-end; gap: 10px; }
+.guideBtn {
+  display: inline-flex; align-items: center; gap: 8px; height: 40px; padding: 0 16px 0 6px; border-radius: 999px;
+  border: 1px solid var(--line-2); background: rgba(16, 19, 27, 0.92); color: var(--text); cursor: pointer;
+  font: inherit; font-size: 13.5px; font-weight: 550; box-shadow: 0 12px 40px -12px rgba(0, 0, 0, 0.8);
+  transition: background 0.2s, border-color 0.2s;
+}
+.guideBtn:hover { background: rgba(28, 32, 44, 0.96); border-color: rgba(255, 255, 255, 0.24); }
+.guideBtn span {
+  width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center;
+  background: var(--green); color: #05060a; font-weight: 700; font-size: 14px;
+}
+.menu {
+  width: 292px; padding: 8px; border-radius: 14px; display: flex; flex-direction: column;
+  background: rgba(16, 19, 27, 0.98); border: 1px solid var(--line-2); box-shadow: 0 30px 80px -20px rgba(0, 0, 0, 0.9);
+  animation: rise 0.22s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.menuHead { margin: 4px 10px 6px; font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+.menu button, .menu a {
+  display: flex; flex-direction: column; gap: 1px; text-align: left; padding: 9px 10px; border-radius: 9px;
+  background: none; border: 0; color: var(--text); font: inherit; cursor: pointer;
+}
+.menu button:hover, .menu a:hover, .menu button:focus-visible, .menu a:focus-visible { background: rgba(255, 255, 255, 0.06); outline: none; }
+.menu b { font-weight: 550; font-size: 13.5px; }
+.menu span { color: var(--muted); font-size: 12px; }
+.menuSep { height: 1px; margin: 6px 4px; background: var(--line); }
+
+@media (max-width: 640px) {
+  .guide { right: 12px; bottom: 12px; }
+}
