@@ -19,8 +19,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className={`${inter.variable} ${mono.variable}`}>
       <body className="grain">
+        <a className="skip" href="#content">Skip to content</a>
         <Nav />
-        {children}
+        <div id="content" tabIndex={-1}>{children}</div>
         <Onboarding />
       </body>
     </html>
