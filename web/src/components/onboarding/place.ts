@@ -24,6 +24,6 @@ export function place(target: Box | null, card: { width: number; height: number 
   if (above >= NAV + EDGE) return { top: above, left: clampX(midX), side: "top" };
   if (right + card.width <= view.width - EDGE) return { top: clampY(midY), left: right, side: "right" };
   if (left >= EDGE) return { top: clampY(midY), left, side: "left" };
-  // the element fills the screen: put the card over its lower part, where it covers the least
-  return { top: clampY(view.height - card.height - EDGE * 2), left: clampX(midX), side: "center" };
+  // the element fills the screen: dock the card in the bottom-right corner, where it covers the least
+  return { top: clampY(view.height - card.height - EDGE * 2), left: clampX(view.width - card.width - EDGE * 2), side: "center" };
 }
