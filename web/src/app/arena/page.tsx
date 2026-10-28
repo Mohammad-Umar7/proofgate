@@ -29,6 +29,8 @@ export default function ArenaPage() {
   }, []);
 
   const caught = rounds.filter((r) => r.caught).length;
+  // the hint opens the hardest round: the highest level, first of its kind
+  const hardest = rounds.reduce((best, r, i) => (best < 0 || r.level > rounds[best].level ? i : best), -1);
   const fooled = rounds.length - caught;
 
   async function liveRound() {
@@ -71,7 +73,7 @@ export default function ArenaPage() {
         </motion.div>
       </div>
 
-      <div className={styles.ladder}>
+      <div className={styles.ladder} data-tour="arena-ladder">
         {[1, 2, 3, 4, 5].map((lvl) => {
           const rs = rounds.filter((r) => r.level === lvl);
           return (
@@ -113,7 +115,8 @@ export default function ArenaPage() {
           const top = r.card.ledger.find((l) => l.status === "contradicted") ?? r.card.ledger[0];
           return (
             <div key={`${r.seed}-${r.level}-${i}`} className={`panel ${styles.round}`}>
-              <button className={styles.roundHead} onClick={() => setOpen(open === i ? null : i)}>
+              <button className={styles.roundHead} onClick={() => setOpen(open === i ? null : i)}
+                data-tour={i === hardest ? "arena-hardest" : undefined} aria-expanded={open === i}>
                 <span className={styles.lvl}>L{r.level}</span>
                 <span className={styles.roundTitle}>{r.report.title}</span>
                 {r.card.flags.includes("prompt-injection") && <span className="chip amber">injection flagged</span>}
