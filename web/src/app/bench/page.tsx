@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { LoadError, Loading } from "@/components/Status";
 import { loadBench } from "@/lib/api";
 import { VERDICT_META, type Verdict } from "@/lib/types";
 import styles from "./bench.module.css";
@@ -41,7 +42,8 @@ function Stacked({ counts, total }: { counts: Partial<Record<Verdict, number>>; 
 export default function BenchPage() {
   const [bench, setBench] = useState<{ configs: Record<string, Metrics>; rows: Row[]; rows_config: string; generated: string } | null>(null);
   const [filter, setFilter] = useState<"all" | "slop" | "valid">("all");
-  useEffect(() => { loadBench().then(setBench).catch(() => {}); }, []);
+  const [failed, setFailed] = useState(false);
+  useEffect(() => { loadBench().then((b) => (b ? setBench(b) : setFailed(true))).catch(() => setFailed(true)); }, []);
 
   const configs = bench ? Object.entries(bench.configs) : [];
   const main = bench?.configs.full ?? bench?.configs.deterministic;
@@ -58,7 +60,9 @@ export default function BenchPage() {
         the answer.
       </p>
 
-      {!bench && <div className={`panel ${styles.empty}`}>Benchmark results are being generated.</div>}
+      {!bench && <div className={`panel ${styles.empty}`}>
+        {failed ? <LoadError what="The benchmark results" /> : <Loading label="Loading 197 benchmark results…" />}
+      </div>}
 
       {main && (
         <div className={styles.kpis}>
