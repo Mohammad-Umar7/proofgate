@@ -44,7 +44,7 @@ const PAGES: [route: string, hints: PageHints][] = [
         actions: [{ label: "Show the evidence ↓", run: () => show("evidence") }],
       };
       const cards = [...document.querySelectorAll<HTMLElement>(`${selector("picker")} button`)];
-      const on = cards.findIndex((c) => c.className.includes("pickOn"));
+      const on = cards.findIndex((c) => c.getAttribute("aria-pressed") === "true");
       const nextCard = cards[(on + 1) % Math.max(1, cards.length)];
       return {
         text: "Each card above is a recorded run. Click one to replay it, with its real timings and Token Factory spend.",
