@@ -23,6 +23,7 @@ const PRESETS = [
   { q: "Curl_http2_stream_reset_internal", note: "hallucinated" },
 ];
 const FIRST_GHOST = PRESETS.find((p) => p.note === "hallucinated")?.q;
+const FIRST_REAL = PRESETS[0].q;
 
 export default function GalaxyPage() {
   const [graph, setGraph] = useState<GraphData | null>(null);
@@ -86,9 +87,13 @@ export default function GalaxyPage() {
     <main className={styles.page}>
       <div className={styles.canvas} ref={canvas}>
         {graph ? (
-          <Guard3D what="code galaxy" className={styles.beside}>
-            <Galaxy graph={graph} focus={focus} insetLeft={inset} />
-          </Guard3D>
+          <>
+            <Guard3D what="code galaxy" className={styles.beside}>
+              <Galaxy graph={graph} focus={focus} insetLeft={inset} />
+            </Guard3D>
+            {/* the part of the canvas the galaxy frames itself in, beside the panel: what the tour rings */}
+            <div className={styles.view} style={{ left: Math.max(12, inset) }} data-tour="galaxy-view" aria-hidden />
+          </>
         ) : failed ? <LoadError what="The code galaxy" fill style={{ left: inset }} />
           : <Loading label="Loading every function in curl…" fill style={{ left: inset }} />}
       </div>
@@ -116,7 +121,7 @@ export default function GalaxyPage() {
           <div className={styles.presets}>
             {PRESETS.map((p) => (
               <button key={p.q} onClick={() => look(p.q)} className={styles.preset}
-                data-tour={p.q === FIRST_GHOST ? "galaxy-ghost" : undefined}>
+                data-tour={p.q === FIRST_GHOST ? "galaxy-ghost" : p.q === FIRST_REAL ? "galaxy-real" : undefined}>
                 <code>{p.q}()</code><span>{p.note}</span>
               </button>
             ))}
