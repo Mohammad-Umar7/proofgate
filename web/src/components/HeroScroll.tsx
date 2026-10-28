@@ -16,6 +16,10 @@ const CAPTIONS = [
   { from: 0.55, to: 0.98, eyebrow: "03 · verdict", title: "Real bugs pass through.", body: "What survives goes to the maintainer as an evidence card. Duplicates of published advisories merge into the blue cluster." },
 ];
 
+/** Played flight: progress reached at the end of each leg, and how long the leg takes (ms). The
+ *  caption legs are long enough to read; the stretches between them are quick. */
+const LEGS: [to: number, ms: number][] = [[0.08, 1200], [0.34, 3800], [0.55, 3800], [0.98, 4400], [1, 500]];
+
 /** The landing hero, pinned while the camera flies through the gate as you scroll. */
 export function HeroScroll() {
   const wrap = useRef<HTMLElement>(null);
@@ -46,15 +50,23 @@ export function HeroScroll() {
     };
   }, []);
 
-  // play the fly-through for a visitor who has not scrolled: an eased scroll to the end of the
-  // hero, about 12 s for the whole flight, handed back the moment they scroll, tap or press a key
+  // play the fly-through for a visitor who has not scrolled: a scroll to the end of the hero,
+  // paced so each caption stays up long enough to read, handed back the moment they scroll, tap
+  // or press a key
   const flight = useRef(0);
   const play = useCallback(() => {
     const el = wrap.current;
     if (!el || flight.current) return;
-    const start = window.scrollY, end = el.offsetTop + el.offsetHeight - window.innerHeight;
-    if (end - start < 8) return;
-    const dur = 12000 * ((end - start) / Math.max(1, end - el.offsetTop));
+    const total = el.offsetHeight - window.innerHeight;
+    const p0 = Math.min(1, Math.max(0, (window.scrollY - el.offsetTop) / Math.max(1, total)));
+    if (total < 8 || p0 > 0.99) return;
+    // the legs still ahead, each shortened by how much of it is already behind us
+    let from = 0;
+    const legs = LEGS.flatMap(([to, ms]) => {
+      const a = Math.max(from, p0), leg = to > p0 ? [{ a, b: to, ms: (ms * (to - a)) / (to - from) }] : [];
+      from = to;
+      return leg;
+    });
     const t0 = performance.now();
     const stops = ["wheel", "touchstart", "keydown", "pointerdown"] as const;
     const stop = () => {
@@ -64,10 +76,13 @@ export function HeroScroll() {
     };
     stops.forEach((e) => window.addEventListener(e, stop, { passive: true }));
     const tick = (now: number) => {
-      const k = Math.min(1, (now - t0) / dur);
-      const eased = k < 0.5 ? 2 * k * k : 1 - (-2 * k + 2) ** 2 / 2;
-      window.scrollTo(0, start + (end - start) * eased);
-      if (k < 1) flight.current = requestAnimationFrame(tick);
+      let t = now - t0, p = 1;
+      for (const l of legs) {
+        if (t < l.ms) { p = l.a + (l.b - l.a) * (t / l.ms); break; }
+        t -= l.ms;
+      }
+      window.scrollTo(0, el.offsetTop + total * p);
+      if (p < 1) flight.current = requestAnimationFrame(tick);
       else stop();
     };
     flight.current = requestAnimationFrame(tick);
