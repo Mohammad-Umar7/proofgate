@@ -4,7 +4,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { command, KEYS, read, write } from "@/lib/onboarding";
-import { type Hint, hintsFor } from "./hints";
+import { type Hint, hintsFor } from "./pageHints";
 import { useIdle } from "./useIdle";
 import { useBox, useTarget } from "./useTarget";
 import styles from "./onboarding.module.css";
